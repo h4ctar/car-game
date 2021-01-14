@@ -27,7 +27,6 @@ cars.push(myCar);
 
 socket.on('update', (event) => {
   let car = cars.find((c) => c.id === event.id);
-  console.log(`update for car ${event.id}`);
   if (!car) {
     car = new Car(event.id);
     cars.push(car);

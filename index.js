@@ -26,7 +26,7 @@ ioServer.on('connection', (socket) => {
     car.steerDirection = event.steerDirection;
     car.accelerate = event.accelerate;
     car.brake = event.brake;
-    ioServer.emit('update', car);
+    // ioServer.emit('update', car);
   });
 
   socket.on('disconnect', () => {
