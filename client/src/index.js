@@ -1,7 +1,12 @@
 import { io } from 'socket.io-client';
 import Car from './car';
 
-const socket = io.connect('http://localhost:3000');
+const myId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  const r = Math.random() * 16 | 0; const v = c === 'x' ? r : (r & 0x3 | 0x8);
+  return v.toString(16);
+});
+
+const socket = io.connect('http://localhost:3000', { query: `id=${myId}` });
 socket.on('connect', () => console.log('Socket connected'));
 
 const canvas = document.getElementById('canvas');
@@ -15,10 +20,27 @@ const keys = new Array(256);
 window.onkeydown = (event) => { keys[event.which] = true; };
 window.onkeyup = (event) => { keys[event.which] = false; };
 
-const car = new Car([200, 200]);
+const cars = [];
+
+const myCar = new Car(myId);
+cars.push(myCar);
+
 socket.on('update', (event) => {
-  for (var k in event[0]) {
-    car[k] = event[0][k];
+  let car = cars.find((c) => c.id === event.id);
+  console.log(`update for car ${event.id}`);
+  if (!car) {
+    car = new Car(event.id);
+    cars.push(car);
+  }
+  for (var k in event) {
+    car[k] = event[k];
+  }
+});
+
+socket.on('delete', (id) => {
+  const index = cars.findIndex((car) => car.id === id);
+  if (index !== -1) {
+    cars.splice(index);
   }
 });
 
@@ -32,31 +54,31 @@ const input = () => {
     steerDirection = -1;
   }
 
-  if (steerDirection !== car.steerDirection) {
-    car.steerDirection = steerDirection;
+  if (steerDirection !== myCar.steerDirection) {
+    myCar.steerDirection = steerDirection;
     dirty = true;
   }
 
-  if (keys[87] !== car.accelerate) {
-    car.accelerate = keys[87];
+  if (keys[87] !== myCar.accelerate) {
+    myCar.accelerate = keys[87];
     dirty = true;
   }
 
-  if (keys[83] !== car.brake) {
-    car.brake = keys[83];
+  if (keys[83] !== myCar.brake) {
+    myCar.brake = keys[83];
     dirty = true;
   }
 
   if (dirty) {
-    socket.emit('input', { steerDirection: car.steerDirection, accelerate: car.accelerate, brake: car.brake });
+    socket.emit('input', { steerDirection: myCar.steerDirection, accelerate: myCar.accelerate, brake: myCar.brake });
   }
 };
 
 const update = (dt) => {
-  car.update(dt);
+  cars.forEach((car) => car.update(dt));
 };
 
-const simPeriod = 20;
+const simPeriod = 16;
 
 const loop = () => {
   input();
@@ -69,7 +91,7 @@ const draw = () => {
   context.fillStyle = 'black';
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  car.draw(context);
+  cars.forEach((car) => car.draw(context));
 
   window.requestAnimationFrame(draw);
 };

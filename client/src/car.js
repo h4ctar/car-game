@@ -22,8 +22,9 @@ const WHEEL_RL = 2;
 const WHEEL_RR = 3;
 
 export default class Car {
-  constructor(position) {
-    this.position = position;
+  constructor(id) {
+    this.id = id;
+    this.position = [0, 0];
     this.angle = 0;
     this.velocity = [0, 0];
     this.angularVelocity = 0;
