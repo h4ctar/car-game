@@ -40,7 +40,7 @@ ioServer.on('connection', (socket) => {
 
 app.use(express.static('client/dist'));
 
-const port = 3000;
+const port = process.env.PORT || 80;
 httpServer.listen(port, () => console.log(`Listening at ${port}`));
 
 const simPeriod = 16;
