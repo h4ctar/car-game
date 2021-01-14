@@ -6,7 +6,7 @@ const myId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
   return v.toString(16);
 });
 
-const socket = io.connect('http://localhost:3000', { query: `id=${myId}` });
+const socket = io.connect({ query: `id=${myId}` });
 socket.on('connect', () => console.log('Socket connected'));
 
 const canvas = document.getElementById('canvas');
