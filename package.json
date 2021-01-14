@@ -10,7 +10,9 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "mathjs": "^8.1.1",
+    "socket.io": "^3.0.5"
   },
   "devDependencies": {
     "eslint": "^7.16.0",

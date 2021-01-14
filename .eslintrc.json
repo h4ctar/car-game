@@ -14,9 +14,11 @@
     "rules": {
         "max-len": "off",
         "no-mixed-operators": "off",
-        "max-classes-per-file": "off"
-    },
-    "globals": {
-        "math": true
+        "max-classes-per-file": "off",
+        "no-console": "off",
+        "import/extensions": "off",
+        "prefer-destructuring": "off",
+        "no-nested-ternary": "off",
+        "object-curly-newline": "off"
     }
 }
