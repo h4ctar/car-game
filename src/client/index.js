@@ -11,12 +11,10 @@ socket.on('connect', () => console.log('Socket connected'));
 
 let pingTime;
 let latency;
-
 setInterval(() => {
   pingTime = Date.now();
   socket.emit('ping');
 }, 1000);
-
 socket.on('pong', () => latency = Date.now() - pingTime);
 
 const canvas = document.getElementById('canvas');
@@ -28,6 +26,7 @@ const keys = new Array(256);
 window.onkeydown = (event) => { keys[event.which] = true; };
 window.onkeyup = (event) => { keys[event.which] = false; };
 
+const simPeriod = 16;
 let simRunning;
 let simStep;
 let simStartStep;
@@ -108,8 +107,6 @@ const update = () => {
   cars.forEach((car) => car.update());
 };
 
-const simPeriod = 16;
-
 const loop = () => {
   if (simRunning) {
     const desiredSimStep = simStartStep + (Date.now() - simStartTime) / simPeriod;
@@ -120,7 +117,6 @@ const loop = () => {
     }
   }
 };
-
 setInterval(loop, simPeriod);
 
 const draw = () => {
@@ -138,5 +134,4 @@ const draw = () => {
 
   window.requestAnimationFrame(draw);
 };
-
 draw();
