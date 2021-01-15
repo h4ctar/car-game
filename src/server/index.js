@@ -51,5 +51,6 @@ const loop = () => {
   simStep += 1;
 };
 
+// todo: remove interval if no connected sockets
 const simPeriod = 16;
 setInterval(loop, simPeriod);

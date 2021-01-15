@@ -28,11 +28,15 @@ const keys = new Array(256);
 window.onkeydown = (event) => { keys[event.which] = true; };
 window.onkeyup = (event) => { keys[event.which] = false; };
 
-let simRunning = false;
-let simStep = 0;
+let simRunning;
+let simStep;
+let simStartStep;
+let simStartTime;
 socket.on('start', (event) => {
   simRunning = true;
   simStep = event;
+  simStartStep = event;
+  simStartTime = Date.now();
 });
 
 const cars = [];
@@ -104,15 +108,19 @@ const update = () => {
   cars.forEach((car) => car.update());
 };
 
+const simPeriod = 16;
+
 const loop = () => {
   if (simRunning) {
-    input();
-    update();
-    simStep += 1;
+    const desiredSimStep = simStartStep + (Date.now() - simStartTime) / simPeriod;
+    while (simStep < desiredSimStep) {
+      input();
+      update();
+      simStep += 1;
+    }
   }
 };
 
-const simPeriod = 16;
 setInterval(loop, simPeriod);
 
 const draw = () => {
