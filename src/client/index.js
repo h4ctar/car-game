@@ -18,7 +18,12 @@ const keys = new Array(256);
 window.onkeydown = (event) => { keys[event.which] = true; };
 window.onkeyup = (event) => { keys[event.which] = false; };
 
+let simRunning = false;
 let simStep = 0;
+socket.on('start', (event) => {
+  simRunning = true;
+  simStep = event;
+});
 
 const cars = [];
 
@@ -45,6 +50,9 @@ socket.on('delete', (id) => {
 
 const input = () => {
   let dirty = false;
+  let event = {
+    simStep
+  };
 
   let steerDirection = 0;
   if (keys[65]) {
@@ -54,37 +62,40 @@ const input = () => {
   }
 
   if (steerDirection !== myCar.steerDirection) {
-    myCar.steerDirection = steerDirection;
+    event.steerDirection = steerDirection;
     dirty = true;
   }
 
   if (keys[87] !== myCar.accelerate) {
-    myCar.accelerate = keys[87];
+    event.accelerate = keys[87];
     dirty = true;
   }
 
   if (keys[83] !== myCar.brake) {
-    myCar.brake = keys[83];
+    event.brake = keys[83];
     dirty = true;
   }
 
+  // myCar.input(event, simStep);
+
   if (dirty) {
-    socket.emit('input', { steerDirection: myCar.steerDirection, accelerate: myCar.accelerate, brake: myCar.brake });
+    socket.emit('input', event);
   }
 };
 
-const update = (dt) => {
-  cars.forEach((car) => car.update(dt));
+const update = () => {
+  cars.forEach((car) => car.update());
+};
+
+const loop = () => {
+  if (simRunning) {
+    input();
+    update();
+    simStep += 1;
+  }
 };
 
 const simPeriod = 16;
-
-const loop = () => {
-  input();
-  update(simPeriod / 1000);
-  simStep += 1;
-};
-
 setInterval(loop, simPeriod);
 
 const draw = () => {
@@ -98,7 +109,7 @@ const draw = () => {
   context.restore();
 
   context.fillStyle = 'white';
-  context.fillText(`Step: ${simStep}`, 10, 10);
+  context.fillText(`Step: ${simStep}`, 10, 15);
 
   window.requestAnimationFrame(draw);
 };

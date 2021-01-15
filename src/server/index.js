@@ -4,7 +4,7 @@ const { Car } = require('../car')
 
 const app = express();
 const httpServer = http.createServer(app);
-const ioServer = require("socket.io")(httpServer);
+const ioServer = require("socket.io")(httpServer, { pingInterval: 5000 });
 
 let simStep = 0;
 
@@ -20,13 +20,11 @@ ioServer.on('connection', (socket) => {
   cars.push(car);
   ioServer.emit('update', car);
 
+  socket.emit('start', simStep);
   cars.forEach((c) => socket.emit('update', c));
 
   socket.on('input', (event) => {
-    console.log(event);
-    car.steerDirection = event.steerDirection;
-    car.accelerate = event.accelerate;
-    car.brake = event.brake;
+    car.input(event, simStep);
     ioServer.emit('update', car);
   });
 
@@ -44,11 +42,10 @@ app.use(express.static('static'));
 const port = process.env.PORT || 3000;
 httpServer.listen(port, () => console.log(`Listening at ${port}`));
 
-const simPeriod = 16;
-
 const loop = () => {
-  cars.forEach((car) => car.update(simPeriod / 1000));
+  cars.forEach((car) => car.update());
   simStep += 1;
 };
 
+const simPeriod = 16;
 setInterval(loop, simPeriod);

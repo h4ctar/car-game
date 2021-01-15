@@ -21,9 +21,14 @@ const WHEEL_FR = 1;
 const WHEEL_RL = 2;
 const WHEEL_RR = 3;
 
+const dt = 0.016;
+
 exports.Car = class {
   constructor(id) {
     this.id = id;
+
+    this.history = [];
+
     this.position = [0, 0];
     this.angle = 0;
     this.velocity = [0, 0];
@@ -58,7 +63,32 @@ exports.Car = class {
     };
   }
 
-  update(dt) {
+  input(event, currentSimStep) {
+    // go back in history to find when the input should be applied
+    // apply the input
+    // step forward until now
+    this.steerDirection = event.steerDirection === undefined ? this.steerDirection : event.steerDirection;
+    this.accelerate = event.accelerate === undefined ? this.accelerate : event.accelerate;
+    this.brake = event.brake === undefined ? this.brake : event.brake;
+  }
+
+  update() {
+    this.history.push({
+      position: this.position,
+      angle: this.angle,
+      velocity: this.velocity,
+      angularVelocity: this.angularVelocity,
+      steerDirection: this.steerDirection,
+      accelerate: this.accelerate,
+      brake: this.brake,
+      wheels: this.wheels.map((wheel) => ({ ...wheel }))
+    });
+
+    // make sure it never gets too long
+    if (this.history.length > 100) {
+      this.history.shift();
+    }
+
     // steer the wheels
     // ackerman https://datagenetics.com/blog/december12016/index.html
     let targetLeftAngle = 0;
