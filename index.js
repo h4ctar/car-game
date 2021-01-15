@@ -7,6 +7,8 @@ const app = express();
 const httpServer = http.createServer(app);
 const ioServer = new Server(httpServer, { serveClient: false });
 
+let simStep = 0;
+
 const cars = [];
 
 ioServer.on('connection', (socket) => {
@@ -26,7 +28,7 @@ ioServer.on('connection', (socket) => {
     car.steerDirection = event.steerDirection;
     car.accelerate = event.accelerate;
     car.brake = event.brake;
-    // ioServer.emit('update', car);
+    ioServer.emit('update', car);
   });
 
   socket.on('disconnect', () => {
@@ -47,6 +49,7 @@ const simPeriod = 16;
 
 const loop = () => {
   cars.forEach((car) => car.update(simPeriod / 1000));
+  simStep += 1;
 };
 
 setInterval(loop, simPeriod);

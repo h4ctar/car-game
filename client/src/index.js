@@ -13,12 +13,12 @@ const canvas = document.getElementById('canvas');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const context = canvas.getContext('2d');
-context.translate(0, canvas.height);
-context.scale(1, -1);
 
 const keys = new Array(256);
 window.onkeydown = (event) => { keys[event.which] = true; };
 window.onkeyup = (event) => { keys[event.which] = false; };
+
+let simStep = 0;
 
 const cars = [];
 
@@ -82,6 +82,7 @@ const simPeriod = 16;
 const loop = () => {
   input();
   update(simPeriod / 1000);
+  simStep += 1;
 };
 
 setInterval(loop, simPeriod);
@@ -90,7 +91,14 @@ const draw = () => {
   context.fillStyle = 'black';
   context.fillRect(0, 0, canvas.width, canvas.height);
 
+  context.save();
+  context.translate(0, canvas.height);
+  context.scale(1, -1);
   cars.forEach((car) => car.draw(context));
+  context.restore();
+
+  context.fillStyle = 'white';
+  context.fillText(`Step: ${simStep}`, 10, 10);
 
   window.requestAnimationFrame(draw);
 };
