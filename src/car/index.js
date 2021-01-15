@@ -21,7 +21,7 @@ const WHEEL_FR = 1;
 const WHEEL_RL = 2;
 const WHEEL_RR = 3;
 
-const dt = 0.016;
+const DT = 0.016;
 
 exports.Car = class {
   constructor(id) {
@@ -99,8 +99,8 @@ exports.Car = class {
       targetRightAngle = this.steerDirection * atan(this.wheelbase / (turnRadius - this.steerDirection * this.track / 2));
     }
 
-    this.wheels[WHEEL_FL].angle = tween(this.wheels[WHEEL_FL].angle, targetLeftAngle, 4 * dt);
-    this.wheels[WHEEL_FR].angle = tween(this.wheels[WHEEL_FR].angle, targetRightAngle, 4 * dt);
+    this.wheels[WHEEL_FL].angle = tween(this.wheels[WHEEL_FL].angle, targetLeftAngle, 4 * DT);
+    this.wheels[WHEEL_FR].angle = tween(this.wheels[WHEEL_FR].angle, targetRightAngle, 4 * DT);
 
     // todo: power curve
     // todo: reverse
@@ -117,17 +117,17 @@ exports.Car = class {
       let force = rotate([wheelForce, 0], this.angle + wheel.angle);
 
       // brake
-      if (this.brake) {
-        const longitudinalNormal = rotate([1, 0], this.angle + wheel.angle);
-        const longitudinalVelocity = multiply(dot(longitudinalNormal, wheelVelocity), longitudinalNormal);
-        const longitudinalFrictionForce = multiply(longitudinalVelocity, -0.9);
-        force = add(force, longitudinalFrictionForce);
-      }
+      const longitudinalFrictionConstant = this.brake ? 0.9 : 0.1;
+      const longitudinalNormal = rotate([1, 0], this.angle + wheel.angle);
+      const longitudinalVelocity = multiply(dot(longitudinalNormal, wheelVelocity), longitudinalNormal);
+      const longitudinalFrictionForce = multiply(longitudinalVelocity, -longitudinalFrictionConstant);
+      force = add(force, longitudinalFrictionForce);
 
       // slide
+      const lateralFrictionConstant = 0.9;
       const lateralNormal = rotate([0, 1], this.angle + wheel.angle);
       const lateralVelocity = multiply(dot(lateralNormal, wheelVelocity), lateralNormal);
-      const lateralFrictionForce = multiply(lateralVelocity, -0.9);
+      const lateralFrictionForce = multiply(lateralVelocity, -lateralFrictionConstant);
       force = add(force, lateralFrictionForce);
 
       acceleration = add(acceleration, multiply(force, this.mass));
@@ -135,12 +135,12 @@ exports.Car = class {
     });
 
     // update velocity with new forces
-    this.velocity = add(this.velocity, multiply(acceleration, dt));
-    this.angularVelocity = add(this.angularVelocity, multiply(angularAcceleration, dt));
+    this.velocity = add(this.velocity, multiply(acceleration, DT));
+    this.angularVelocity = add(this.angularVelocity, multiply(angularAcceleration, DT));
 
     // update position with velocity
-    this.position = add(this.position, multiply(this.velocity, dt));
-    this.angle = add(this.angle, multiply(this.angularVelocity, dt));
+    this.position = add(this.position, multiply(this.velocity, DT));
+    this.angle = add(this.angle, multiply(this.angularVelocity, DT));
   }
 
   draw(context) {

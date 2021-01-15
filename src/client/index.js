@@ -9,6 +9,16 @@ const myId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
 const socket = io.connect({ query: `id=${myId}` });
 socket.on('connect', () => console.log('Socket connected'));
 
+let pingTime;
+let latency;
+
+setInterval(() => {
+  pingTime = Date.now();
+  socket.emit('ping');
+}, 1000);
+
+socket.on('pong', () => latency = Date.now() - pingTime);
+
 const canvas = document.getElementById('canvas');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -31,7 +41,7 @@ const myCar = new Car(myId);
 cars.push(myCar);
 
 socket.on('update', (event) => {
-  let car = cars.find((c) => c.id === event.id);
+  let car = cars.find((car) => car.id === event.id);
   if (!car) {
     car = new Car(event.id);
     cars.push(car);
@@ -48,9 +58,17 @@ socket.on('delete', (id) => {
   }
 });
 
+socket.on('input', (event) => {
+  const car = cars.find((car) => car.id === event.id);
+  if (car) {
+    car.input(event);
+  }
+});
+
 const input = () => {
   let dirty = false;
   let event = {
+    id: myId,
     simStep
   };
 
@@ -76,9 +94,8 @@ const input = () => {
     dirty = true;
   }
 
-  // myCar.input(event, simStep);
-
   if (dirty) {
+    myCar.input(event, simStep);
     socket.emit('input', event);
   }
 };
@@ -109,7 +126,7 @@ const draw = () => {
   context.restore();
 
   context.fillStyle = 'white';
-  context.fillText(`Step: ${simStep}`, 10, 15);
+  context.fillText(`Step: ${simStep}, Latency: ${latency}`, 10, 15);
 
   window.requestAnimationFrame(draw);
 };

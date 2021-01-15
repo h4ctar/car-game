@@ -4,7 +4,7 @@ const { Car } = require('../car')
 
 const app = express();
 const httpServer = http.createServer(app);
-const ioServer = require("socket.io")(httpServer, { pingInterval: 5000 });
+const ioServer = require("socket.io")(httpServer);
 
 let simStep = 0;
 
@@ -12,6 +12,8 @@ const cars = [];
 
 ioServer.on('connection', (socket) => {
   console.log('New client connected');
+
+  socket.on('ping', () => socket.emit('pong'));
 
   const id = socket.request._query.id;
 
@@ -21,11 +23,13 @@ ioServer.on('connection', (socket) => {
   ioServer.emit('update', car);
 
   socket.emit('start', simStep);
-  cars.forEach((c) => socket.emit('update', c));
+  cars.forEach((car) => socket.emit('update', car));
 
   socket.on('input', (event) => {
     car.input(event, simStep);
-    ioServer.emit('update', car);
+
+    // send the input to everyone except the sender
+    socket.broadcast.emit('input', event);
   });
 
   socket.on('disconnect', () => {
