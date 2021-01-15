@@ -1,4 +1,4 @@
-import { add, atan, dot, multiply, rotate } from 'mathjs';
+const { add, atan, dot, multiply, rotate } = require('mathjs');
 
 const tween = (currentValue, targetValue, step) => {
   let newValue = currentValue;
@@ -21,7 +21,7 @@ const WHEEL_FR = 1;
 const WHEEL_RL = 2;
 const WHEEL_RR = 3;
 
-export default class Car {
+exports.Car = class {
   constructor(id) {
     this.id = id;
     this.position = [0, 0];

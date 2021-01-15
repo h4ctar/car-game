@@ -1,11 +1,10 @@
-import express from 'express';
-import http from 'http';
-import { Server } from 'socket.io';
-import Car from './car.js';
+const express = require('express')
+const http = require('http');
+const { Car } = require('../car')
 
 const app = express();
 const httpServer = http.createServer(app);
-const ioServer = new Server(httpServer, { serveClient: false });
+const ioServer = require("socket.io")(httpServer);
 
 let simStep = 0;
 
@@ -40,7 +39,7 @@ ioServer.on('connection', (socket) => {
   });
 });
 
-app.use(express.static('client/dist'));
+app.use(express.static('static'));
 
 const port = process.env.PORT || 3000;
 httpServer.listen(port, () => console.log(`Listening at ${port}`));
