@@ -5,6 +5,7 @@ const myId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
   const r = Math.random() * 16 | 0; const v = c === 'x' ? r : (r & 0x3 | 0x8);
   return v.toString(16);
 });
+console.info(`id ${myId}`);
 
 const socket = io.connect({ query: `id=${myId}` });
 socket.on('connect', () => console.log('Socket connected'));
@@ -22,16 +23,17 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const context = canvas.getContext('2d');
 
-const keys = new Array(256);
+const keys = new Array(256).fill(false);
 window.onkeydown = (event) => { keys[event.which] = true; };
 window.onkeyup = (event) => { keys[event.which] = false; };
 
-const simPeriod = 16;
+const SIM_PERIOD = 16;
 let simRunning;
 let simStep;
 let simStartStep;
 let simStartTime;
 socket.on('start', (event) => {
+  console.info(`start ${event}`);
   simRunning = true;
   simStep = event;
   simStartStep = event;
@@ -44,17 +46,28 @@ const myCar = new Car(myId);
 cars.push(myCar);
 
 socket.on('update', (event) => {
+  console.log('update', event);
+  
   let car = cars.find((car) => car.id === event.id);
   if (!car) {
     car = new Car(event.id);
     cars.push(car);
   }
-  for (var k in event) {
-    car[k] = event[k];
-  }
+
+  car.position = event.position;
+  car.angle = event.angle;
+  car.velocity = event.velocity;
+  car.angularVelocity = event.angularVelocity;
+  car.steerDirection = event.steerDirection;
+  car.accelerate = event.accelerate;
+  car.brake = event.brake;
+  car.wheels = event.wheels;
+  car.histories = event.histories;
 });
 
 socket.on('delete', (id) => {
+  console.info(`delete ${id}`);
+
   const index = cars.findIndex((car) => car.id === id);
   if (index !== -1) {
     cars.splice(index);
@@ -62,9 +75,11 @@ socket.on('delete', (id) => {
 });
 
 socket.on('input', (event) => {
+  console.info(`input ${event.id}`);
+
   const car = cars.find((car) => car.id === event.id);
   if (car) {
-    car.input(event);
+    car.input(event, simStep);
   }
 });
 
@@ -104,21 +119,23 @@ const input = () => {
 };
 
 const update = () => {
-  cars.forEach((car) => car.update());
+  cars.forEach((car) => car.update(simStep));
 };
 
+// simulation loop with fixed step
 const loop = () => {
   if (simRunning) {
-    const desiredSimStep = simStartStep + (Date.now() - simStartTime) / simPeriod;
+    const desiredSimStep = simStartStep + (Date.now() - simStartTime) / SIM_PERIOD;
     while (simStep < desiredSimStep) {
-      input();
       update();
       simStep += 1;
     }
+    input(); 
   }
 };
-setInterval(loop, simPeriod);
+setInterval(loop, SIM_PERIOD);
 
+// draw on animation frame
 const draw = () => {
   context.fillStyle = 'black';
   context.fillRect(0, 0, canvas.width, canvas.height);

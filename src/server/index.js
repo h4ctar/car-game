@@ -7,7 +7,7 @@ const app = express();
 const httpServer = http.createServer(app);
 const ioServer = io(httpServer);
 
-const simPeriod = 16;
+const SIM_PERIOD = 16;
 const simStartTime = Date.now();
 let simStep = 0;
 
@@ -25,10 +25,21 @@ ioServer.on('connection', (socket) => {
   cars.push(car);
 
   // send this car to everyone else
-  ioServer.emit('update', car);
+  socket.broadcast.emit('update', car);
 
   // send all cars to the new client
-  cars.forEach((car) => socket.emit('update', car));
+  cars.forEach((car) => socket.emit('update', {
+    id: car.id,
+    position: car.position,
+    angle: car.angle,
+    velocity: car.velocity,
+    angularVelocity: car.angularVelocity,
+    steerDirection: car.steerDirection,
+    accelerate: car.accelerate,
+    brake: car.brake,
+    wheels: car.wheels,
+    histories: car.histories,
+  }));
 
   // tell them to start the simulation at the current simulation step
   socket.emit('start', simStep);
@@ -43,20 +54,20 @@ ioServer.on('connection', (socket) => {
   socket.on('disconnect', () => {
     const index = cars.indexOf(car);
     if (index !== -1) {
-      cars.splice(index);
+      cars.splice(index, 1);
     }
     ioServer.emit('delete', id);
   });
 });
 
 const loop = () => {
-  const desiredSimStep = (Date.now() - simStartTime) / simPeriod;
+  const desiredSimStep = (Date.now() - simStartTime) / SIM_PERIOD;
   while (simStep < desiredSimStep) {
-    cars.forEach((car) => car.update());
+    cars.forEach((car) => car.update(simStep));
     simStep += 1;
   }
 };
-setInterval(loop, simPeriod);
+setInterval(loop, SIM_PERIOD);
 
 app.use(express.static('static'));
 
