@@ -16,6 +16,7 @@ module.exports = {
     'max-len': 'off',
     'no-console': 'off',
     'no-mixed-operators': 'off',
+    'no-param-reassign': 'off',
     'prefer-destructuring': 'off',
   },
 };
