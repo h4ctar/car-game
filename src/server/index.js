@@ -1,7 +1,7 @@
 const express = require('express');
 const http = require('http');
+const io = require('socket.io');
 const { Car } = require('../car');
-const io = require("socket.io");
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -18,6 +18,7 @@ ioServer.on('connection', (socket) => {
 
   socket.on('ping', () => socket.emit('pong'));
 
+  // eslint-disable-next-line no-underscore-dangle
   const id = socket.request._query.id;
 
   const car = new Car(id);
@@ -28,17 +29,17 @@ ioServer.on('connection', (socket) => {
   socket.broadcast.emit('update', car);
 
   // send all cars to the new client
-  cars.forEach((car) => socket.emit('update', {
-    id: car.id,
-    position: car.position,
-    angle: car.angle,
-    velocity: car.velocity,
-    angularVelocity: car.angularVelocity,
-    steerDirection: car.steerDirection,
-    accelerate: car.accelerate,
-    brake: car.brake,
-    wheels: car.wheels,
-    histories: car.histories,
+  cars.forEach((c) => socket.emit('update', {
+    id: c.id,
+    position: c.position,
+    angle: c.angle,
+    velocity: c.velocity,
+    angularVelocity: c.angularVelocity,
+    steerDirection: c.steerDirection,
+    accelerate: c.accelerate,
+    brake: c.brake,
+    wheels: c.wheels,
+    histories: c.histories,
   }));
 
   // tell them to start the simulation at the current simulation step
@@ -63,6 +64,7 @@ ioServer.on('connection', (socket) => {
 const loop = () => {
   const desiredSimStep = (Date.now() - simStartTime) / SIM_PERIOD;
   while (simStep < desiredSimStep) {
+    // eslint-disable-next-line no-loop-func
     cars.forEach((car) => car.update(simStep));
     simStep += 1;
   }

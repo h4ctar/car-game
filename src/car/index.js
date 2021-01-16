@@ -1,4 +1,6 @@
-const { add, atan, dot, multiply, rotate } = require('mathjs');
+const {
+  add, atan, dot, multiply, rotate,
+} = require('mathjs');
 
 const tween = (currentValue, targetValue, step) => {
   let newValue = currentValue;
@@ -40,7 +42,7 @@ exports.Car = class {
     this.wheelbase = 50;
     this.track = 25;
     this.mass = 2;
-    this.momentOfInertia = this.mass * (this.wheelbase * this.wheelbase + this.track * this.track) / 12;
+    this.momentOfInertia = (this.mass / 12) * (this.wheelbase * this.wheelbase + this.track * this.track);
 
     this.wheelWidth = 8;
     this.wheelDiameter = 16;
@@ -77,7 +79,7 @@ exports.Car = class {
       // go back in history to find when the input should be applied
       // note: when an input event comes in it will clobber previous input events that have a later sim step
       // todo: make this more effecient (does not need to loop, can calculate the index)
-      const historyIndex = this.histories.findIndex((history) => history.simStep === event.simStep);
+      let historyIndex = this.histories.findIndex((history) => history.simStep === event.simStep);
 
       if (historyIndex === -1) {
         console.warn(`received old event ${event.simStep} ${currentSimStep}`);
@@ -105,7 +107,7 @@ exports.Car = class {
       this.brake = event.brake === undefined ? this.brake : event.brake;
 
       // step forward until now
-      let simStep = history.simStep;
+      let { simStep } = history;
       while (simStep < currentSimStep) {
         this.update(simStep);
         simStep += 1;
@@ -130,14 +132,13 @@ exports.Car = class {
       steerDirection: this.steerDirection,
       accelerate: this.accelerate,
       brake: this.brake,
-      wheels: this.wheels.map((wheel) => ({ ...wheel }))
+      wheels: this.wheels.map((wheel) => ({ ...wheel })),
     });
 
     // check that the history is complete
     // todo: only if development
-    for (let i = 1; i < this.histories.length; i++) {
+    for (let i = 1; i < this.histories.length; i += 1) {
       if (this.histories[i].simStep - this.histories[i - 1].simStep !== 1) {
-        console.log(i, this.histories[i-1], this.histories[i]);
         throw Error('History is out of order');
       }
     }
@@ -153,7 +154,8 @@ exports.Car = class {
     let targetLeftAngle = 0;
     let targetRightAngle = 0;
     if (this.steerDirection !== 0) {
-      const turnRadius = 80;
+      // todo: turn radius based on speed
+      const turnRadius = 120;
       targetLeftAngle = this.steerDirection * atan(this.wheelbase / (turnRadius + this.steerDirection * this.track / 2));
       targetRightAngle = this.steerDirection * atan(this.wheelbase / (turnRadius - this.steerDirection * this.track / 2));
     }
@@ -183,7 +185,7 @@ exports.Car = class {
       force = add(force, longitudinalFrictionForce);
 
       // slide
-      const lateralFrictionConstant = 0.9;
+      const lateralFrictionConstant = 1;
       const lateralNormal = rotate([0, 1], this.angle + wheel.angle);
       const lateralVelocity = multiply(dot(lateralNormal, wheelVelocity), lateralNormal);
       const lateralFrictionForce = multiply(lateralVelocity, -lateralFrictionConstant);
@@ -222,4 +224,4 @@ exports.Car = class {
 
     context.restore();
   }
-}
+};
