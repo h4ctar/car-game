@@ -37,11 +37,11 @@ jobs:
           replace-with: '-'
           flags: 'g'
       - uses: einaregilsson/beanstalk-deploy@v14
-          with:
-            aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            application_name: io-cool
-            environment_name: IoCool-env
-            version_label: "io-cool-${{ steps.format-time.outputs.replaced }}"
-            region: ap-southeast-2
-            deployment_package: deploy.zip
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: io-cool
+          environment_name: IoCool-env
+          version_label: "io-cool-${{ steps.format-time.outputs.replaced }}"
+          region: ap-southeast-2
+          deployment_package: deploy.zip
