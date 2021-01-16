@@ -10,5 +10,6 @@ module.exports = {
   externals: {
     mathjs: 'math',
     'socket.io-client': 'io',
+    'pixi.js': 'PIXI',
   }
 };

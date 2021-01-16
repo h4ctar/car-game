@@ -5,7 +5,7 @@ const io = require("socket.io");
 
 const app = express();
 const httpServer = http.createServer(app);
-const ioServer = io(httpServer);
+const ioServer = io(httpServer, { serveClient: false });
 
 const SIM_PERIOD = 16;
 const simStartTime = Date.now();
