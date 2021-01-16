@@ -64,9 +64,9 @@ exports.Car = class {
     };
   }
 
-  input(event, currentSimStep) {
+  processInput(event, currentSimStep) {
     if (event.simStep > currentSimStep) {
-      console.warn(`future event ${event.simStep} ${currentSimStep}`);
+      console.warn(`received future event ${event.simStep} ${currentSimStep}`);
 
       this.futureInputs.push(event);
     } else if (event.simStep === currentSimStep) {
@@ -80,41 +80,48 @@ exports.Car = class {
       const historyIndex = this.histories.findIndex((history) => history.simStep === event.simStep);
 
       if (historyIndex === -1) {
-        console.warn(`old event ${event.simStep} ${currentSimStep} ${this.histories.map((h) => h.simStep)}`);
-      } else {
-        const history = this.histories[historyIndex];
+        console.warn(`received old event ${event.simStep} ${currentSimStep}`);
+        historyIndex = 0;
+      }
 
-        // remove history after this history point
-        this.histories.splice(historyIndex);
+      const history = this.histories[historyIndex];
 
-        // reset this to the history point
-        this.position = history.position;
-        this.angle = history.angle;
-        this.velocity = history.velocity;
-        this.angularVelocity = history.angularVelocity;
-        this.steerDirection = history.steerDirection;
-        this.accelerate = history.accelerate;
-        this.brake = history.brake;
-        this.wheels = history.wheels.map((wheel) => ({ ...wheel }));
+      // remove history after this history point
+      this.histories.splice(historyIndex);
 
-        // apply the input
-        this.steerDirection = event.steerDirection === undefined ? this.steerDirection : event.steerDirection;
-        this.accelerate = event.accelerate === undefined ? this.accelerate : event.accelerate;
-        this.brake = event.brake === undefined ? this.brake : event.brake;
+      // reset this to the history point
+      this.position = history.position;
+      this.angle = history.angle;
+      this.velocity = history.velocity;
+      this.angularVelocity = history.angularVelocity;
+      this.steerDirection = history.steerDirection;
+      this.accelerate = history.accelerate;
+      this.brake = history.brake;
+      this.wheels = history.wheels.map((wheel) => ({ ...wheel }));
 
-        // step forward until now
-        let simStep = history.simStep;
-        while (simStep < currentSimStep) {
-          this.update(simStep);
-          simStep += 1;
-        }
+      // apply the input
+      this.steerDirection = event.steerDirection === undefined ? this.steerDirection : event.steerDirection;
+      this.accelerate = event.accelerate === undefined ? this.accelerate : event.accelerate;
+      this.brake = event.brake === undefined ? this.brake : event.brake;
+
+      // step forward until now
+      let simStep = history.simStep;
+      while (simStep < currentSimStep) {
+        this.update(simStep);
+        simStep += 1;
       }
     }
   }
 
   update(simStep) {
-    // add history to start of queue
-    this.histories.unshift({
+    // todo: instead of this ugly only put input for events that are good
+    // also, make sure they go in the correct order
+    const futureInputs = [...this.futureInputs];
+    this.futureInputs.length = 0;
+    futureInputs.forEach((event) => this.processInput(event, simStep));
+
+    // add history to start of histories queue
+    this.histories.push({
       simStep,
       position: this.position,
       angle: this.angle,
@@ -126,17 +133,19 @@ exports.Car = class {
       wheels: this.wheels.map((wheel) => ({ ...wheel }))
     });
 
-    // make sure it never gets too long
-    while (this.histories.length > 1000) {
-      // remove history from the end of the queue
-      this.histories.pop();
+    // check that the history is complete
+    for (let i = 1; i < this.histories.length; i++) {
+      if (this.histories[i].simStep - this.histories[i - 1].simStep !== 1) {
+        console.log(i, this.histories[i-1], this.histories[i]);
+        throw Error();
+      }
     }
 
-    // todo: instead of this ugly only put input for events that are good
-    // also, make sure they go in the correct order
-    const futureInputs = [...this.futureInputs];
-    this.futureInputs.length = 0;
-    futureInputs.forEach((event) => this.input(event, simStep));
+    // make sure it never gets too long
+    while (this.histories.length > 100) {
+      // remove history from the end of the queue
+      this.histories.shift();
+    }
 
     // steer the wheels
     // ackerman https://datagenetics.com/blog/december12016/index.html

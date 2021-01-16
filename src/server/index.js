@@ -45,7 +45,7 @@ ioServer.on('connection', (socket) => {
   socket.emit('start', simStep);
 
   socket.on('input', (event) => {
-    car.input(event, simStep);
+    car.processInput(event, simStep);
 
     // send the input to everyone except the sender
     socket.broadcast.emit('input', event);

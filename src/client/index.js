@@ -46,10 +46,10 @@ const myCar = new Car(myId);
 cars.push(myCar);
 
 socket.on('update', (event) => {
-  console.log('update', event);
-  
   let car = cars.find((car) => car.id === event.id);
   if (!car) {
+    console.log('new car', event.id);
+
     car = new Car(event.id);
     cars.push(car);
   }
@@ -66,7 +66,7 @@ socket.on('update', (event) => {
 });
 
 socket.on('delete', (id) => {
-  console.info(`delete ${id}`);
+  console.info(`delete car ${id}`);
 
   const index = cars.findIndex((car) => car.id === id);
   if (index !== -1) {
@@ -75,15 +75,13 @@ socket.on('delete', (id) => {
 });
 
 socket.on('input', (event) => {
-  console.info(`input ${event.id}`);
-
   const car = cars.find((car) => car.id === event.id);
   if (car) {
-    car.input(event, simStep);
+    car.processInput(event, simStep);
   }
 });
 
-const input = () => {
+const checkKeyInput = () => {
   let dirty = false;
   let event = {
     id: myId,
@@ -113,7 +111,7 @@ const input = () => {
   }
 
   if (dirty) {
-    myCar.input(event, simStep);
+    myCar.processInput(event, simStep);
     socket.emit('input', event);
   }
 };
@@ -130,7 +128,7 @@ const loop = () => {
       update();
       simStep += 1;
     }
-    input(); 
+    checkKeyInput(); 
   }
 };
 setInterval(loop, SIM_PERIOD);
