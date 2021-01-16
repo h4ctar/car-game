@@ -22,35 +22,18 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
-      # Runs a single command using the runners shell
-#       - name: Run a one-line script
-#         run: echo Hello, world!
-
-#       # Runs a set of commands using the runners shell
-#       - name: Run a multi-line script
-#         run: |
-#           echo Add other actions to build,
-#           echo test, and deploy your project.
-          
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.1.4
-#         with:
-#           # Set always-auth in npmrc
-#           always-auth: # optional, default is false
-#           # Version Spec of the version to use.  Examples: 12.x, 10.15.1, >=10.15.0
-#           node-version: # optional
-#           # Target architecture for Node to use. Examples: x86, x64. Will use system architecture by default.
-#           architecture: # optional
-#           # Set this option if you want the action to check for the latest available version that satisfies the version spec
-#           check-latest: # optional
-#           # Optional registry to set up for auth. Will set the registry in a project level .npmrc and .yarnrc file, and set up auth to read in from env.NODE_AUTH_TOKEN
-#           registry-url: # optional
-#           # Optional scope for authenticating against scoped registries
-#           scope: # optional
-#           # Used to pull node distributions from node-versions.  Since there's a default, this is typically not supplied by the user.
-#           token: # optional, default is ${{ github.token }}
-#           # Deprecated. Use node-version instead. Will not be supported after October 1, 2019
-#           version: # optional
+      - uses: actions/setup-node@v2.1.4
+      - run: npm install
+      - run: npm run lint
+      - run: npm run build
+      - run: zip -r deploy.zip * -x "**node_modules**"
+#       - uses: einaregilsson/beanstalk-deploy@v14
+#           with:
+#             aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#             aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#             application_name: MyApplicationName
+#             environment_name: MyApplication-Environment
+#             version_label: 12345
+#             region: us-west-2
+#             deployment_package: deploy.zip
