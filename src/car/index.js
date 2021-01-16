@@ -86,7 +86,7 @@ exports.Car = class {
 
       const history = this.histories[historyIndex];
 
-      // remove history after this history point
+      // remove history after this history point (including this point)
       this.histories.splice(historyIndex);
 
       // reset this to the history point
@@ -134,10 +134,11 @@ exports.Car = class {
     });
 
     // check that the history is complete
+    // todo: only if development
     for (let i = 1; i < this.histories.length; i++) {
       if (this.histories[i].simStep - this.histories[i - 1].simStep !== 1) {
         console.log(i, this.histories[i-1], this.histories[i]);
-        throw Error();
+        throw Error('History is out of order');
       }
     }
 
@@ -162,7 +163,7 @@ exports.Car = class {
 
     // todo: power curve
     // todo: reverse
-    const wheelForce = this.accelerate ? 300 : 0;
+    const wheelForce = this.accelerate ? 200 : 0;
 
     // calculate the acceleration
     let acceleration = [0, 0];
