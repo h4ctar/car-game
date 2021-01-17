@@ -1,19 +1,14 @@
 const io = require('socket.io-client');
 const PIXI = require('pixi.js');
 const { Car } = require('../car');
+const util = require('../util');
 
-const myId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-  // eslint-disable-next-line no-bitwise, no-mixed-operators
-  const r = Math.random() * 16 | 0; const v = c === 'x' ? r : (r & 0x3 | 0x8);
-  return v.toString(16);
-});
+const myId = util.uuid();
 console.info(`id ${myId}`);
 
 PIXI.Loader.shared
   .add('car.png')
   .load(() => {
-    console.log('Sprites loaded');
-
     const socket = io.connect({ query: `id=${myId}` });
     socket.on('connect', () => console.log('Socket connected'));
 
@@ -48,13 +43,6 @@ PIXI.Loader.shared
         console.log('New car', event.id);
 
         car = new Car(event.id);
-        car.sprite = new PIXI.Sprite(PIXI.utils.TextureCache['car.png']);
-        car.sprite.width = car.wheelbase;
-        car.sprite.height = car.track;
-        car.sprite.anchor.x = 0.5;
-        car.sprite.anchor.y = 0.5;
-        app.stage.addChild(car.sprite);
-
         cars.push(car);
 
         if (car.id === myId) {
@@ -74,10 +62,11 @@ PIXI.Loader.shared
     });
 
     socket.on('delete', (id) => {
-      console.info(`delete car ${id}`);
+      console.info(`Delete car ${id}`);
 
       const index = cars.findIndex((car) => car.id === id);
       if (index !== -1) {
+        cars[index].remove(app);
         cars.splice(index);
       }
     });
@@ -89,7 +78,7 @@ PIXI.Loader.shared
       }
     });
 
-    const checkKeyInput = () => {
+    const checkInput = () => {
       let dirty = false;
       const event = {
         id: myId,
@@ -129,10 +118,7 @@ PIXI.Loader.shared
     };
 
     const draw = () => {
-      cars.forEach((car) => {
-        car.sprite.position.set(car.position[0], app.view.height - car.position[1]);
-        car.sprite.rotation = -car.angle;
-      });
+      cars.forEach((car) => car.draw(app));
     };
 
     // simulation loop with fixed step
@@ -145,7 +131,7 @@ PIXI.Loader.shared
           simStep += 1;
         }
         draw();
-        checkKeyInput();
+        checkInput();
       }
     };
     setInterval(loop, SIM_PERIOD);

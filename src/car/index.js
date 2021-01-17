@@ -1,22 +1,6 @@
-const {
-  add, atan, dot, multiply, rotate,
-} = require('mathjs');
-
-const tween = (currentValue, targetValue, step) => {
-  let newValue = currentValue;
-  if (currentValue > targetValue) {
-    newValue = currentValue - step;
-    if (newValue < targetValue) {
-      newValue = targetValue;
-    }
-  } else if (currentValue < targetValue) {
-    newValue = currentValue + step;
-    if (newValue > targetValue) {
-      newValue = targetValue;
-    }
-  }
-  return newValue;
-};
+const math = require('mathjs');
+const PIXI = typeof window === 'undefined' ? undefined : require('pixi.js');
+const util = require('../util');
 
 const WHEEL_FL = 0;
 const WHEEL_FR = 1;
@@ -135,14 +119,6 @@ exports.Car = class {
       wheels: this.wheels.map((wheel) => ({ ...wheel })),
     });
 
-    // check that the history is complete
-    // todo: only if development
-    for (let i = 1; i < this.histories.length; i += 1) {
-      if (this.histories[i].simStep - this.histories[i - 1].simStep !== 1) {
-        throw Error('History is out of order');
-      }
-    }
-
     // make sure it never gets too long
     while (this.histories.length > 100) {
       // remove history from the end of the queue
@@ -154,14 +130,15 @@ exports.Car = class {
     let targetLeftAngle = 0;
     let targetRightAngle = 0;
     if (this.steerDirection !== 0) {
-      // todo: turn radius based on speed
-      const turnRadius = 120;
-      targetLeftAngle = this.steerDirection * atan(this.wheelbase / (turnRadius + this.steerDirection * this.track / 2));
-      targetRightAngle = this.steerDirection * atan(this.wheelbase / (turnRadius - this.steerDirection * this.track / 2));
+      const speed = Math.sqrt(this.velocity[0] * this.velocity[0] + this.velocity[1] * this.velocity[1]);
+      // bigger turn radius when going faster
+      const turnRadius = util.clamp(speed, 0, 1500) / 1500 * 300 + 40;
+      targetLeftAngle = this.steerDirection * math.atan(this.wheelbase / (turnRadius + this.steerDirection * this.track / 2));
+      targetRightAngle = this.steerDirection * math.atan(this.wheelbase / (turnRadius - this.steerDirection * this.track / 2));
     }
 
-    this.wheels[WHEEL_FL].angle = tween(this.wheels[WHEEL_FL].angle, targetLeftAngle, 4 * DT);
-    this.wheels[WHEEL_FR].angle = tween(this.wheels[WHEEL_FR].angle, targetRightAngle, 4 * DT);
+    this.wheels[WHEEL_FL].angle = util.tween(this.wheels[WHEEL_FL].angle, targetLeftAngle, 4 * DT);
+    this.wheels[WHEEL_FR].angle = util.tween(this.wheels[WHEEL_FR].angle, targetRightAngle, 4 * DT);
 
     // todo: power curve
     // todo: reverse
@@ -171,57 +148,57 @@ exports.Car = class {
     let acceleration = [0, 0];
     let angularAcceleration = 0;
     this.wheels.forEach((wheel) => {
-      const wheelPosition = rotate(wheel.position, this.angle);
-      const wheelVelocity = add(this.velocity, multiply([-wheelPosition[1], wheelPosition[0]], this.angularVelocity));
+      const wheelPosition = math.rotate(wheel.position, this.angle);
+      const wheelVelocity = math.add(this.velocity, math.multiply([-wheelPosition[1], wheelPosition[0]], this.angularVelocity));
 
       // power
-      let force = rotate([wheelForce, 0], this.angle + wheel.angle);
+      let force = math.rotate([wheelForce, 0], this.angle + wheel.angle);
 
       // brake
       const longitudinalFrictionConstant = this.brake ? 0.9 : 0.1;
-      const longitudinalNormal = rotate([1, 0], this.angle + wheel.angle);
-      const longitudinalVelocity = multiply(dot(longitudinalNormal, wheelVelocity), longitudinalNormal);
-      const longitudinalFrictionForce = multiply(longitudinalVelocity, -longitudinalFrictionConstant);
-      force = add(force, longitudinalFrictionForce);
+      const longitudinalNormal = math.rotate([1, 0], this.angle + wheel.angle);
+      const longitudinalVelocity = math.multiply(math.dot(longitudinalNormal, wheelVelocity), longitudinalNormal);
+      const longitudinalFrictionForce = math.multiply(longitudinalVelocity, -longitudinalFrictionConstant);
+      force = math.add(force, longitudinalFrictionForce);
 
       // slide
       const lateralFrictionConstant = 1;
-      const lateralNormal = rotate([0, 1], this.angle + wheel.angle);
-      const lateralVelocity = multiply(dot(lateralNormal, wheelVelocity), lateralNormal);
-      const lateralFrictionForce = multiply(lateralVelocity, -lateralFrictionConstant);
-      force = add(force, lateralFrictionForce);
+      const lateralNormal = math.rotate([0, 1], this.angle + wheel.angle);
+      const lateralVelocity = math.multiply(math.dot(lateralNormal, wheelVelocity), lateralNormal);
+      const lateralFrictionForce = math.multiply(lateralVelocity, -lateralFrictionConstant);
+      force = math.add(force, lateralFrictionForce);
 
-      acceleration = add(acceleration, multiply(force, this.mass));
-      angularAcceleration = add(angularAcceleration, (wheelPosition[0] * force[1] - wheelPosition[1] * force[0]) / this.momentOfInertia);
+      acceleration = math.add(acceleration, math.multiply(force, this.mass));
+      angularAcceleration = math.add(angularAcceleration, (wheelPosition[0] * force[1] - wheelPosition[1] * force[0]) / this.momentOfInertia);
     });
 
     // update velocity with new forces
-    this.velocity = add(this.velocity, multiply(acceleration, DT));
-    this.angularVelocity = add(this.angularVelocity, multiply(angularAcceleration, DT));
+    this.velocity = math.add(this.velocity, math.multiply(acceleration, DT));
+    this.angularVelocity = math.add(this.angularVelocity, math.multiply(angularAcceleration, DT));
 
     // update position with velocity
-    this.position = add(this.position, multiply(this.velocity, DT));
-    this.angle = add(this.angle, multiply(this.angularVelocity, DT));
+    this.position = math.add(this.position, math.multiply(this.velocity, DT));
+    this.angle = math.add(this.angle, math.multiply(this.angularVelocity, DT));
   }
 
-  draw(context) {
-    context.save();
+  draw(app) {
+    if (!this.sprite) {
+      this.sprite = new PIXI.Sprite(PIXI.utils.TextureCache['car.png']);
+      this.sprite.width = this.wheelbase;
+      this.sprite.height = this.track;
+      this.sprite.anchor.x = 0.5;
+      this.sprite.anchor.y = 0.5;
+      app.stage.addChild(this.sprite);
+    }
 
-    context.translate(this.position[0], this.position[1]);
-    context.rotate(this.angle);
-    this.wheels.forEach((wheel) => this.drawWheel(wheel, context));
-
-    context.restore();
+    this.sprite.position.set(this.position[0], app.view.height - this.position[1]);
+    this.sprite.rotation = -this.angle;
   }
 
-  drawWheel(wheel, context) {
-    context.save();
-
-    context.translate(wheel.position[0], wheel.position[1]);
-    context.rotate(wheel.angle);
-    context.fillStyle = 'white';
-    context.fillRect(-this.wheelDiameter / 2, -this.wheelWidth / 2, this.wheelDiameter, this.wheelWidth);
-
-    context.restore();
+  remove(app) {
+    if (this.sprite) {
+      app.stage.removeChild(this.sprite);
+      this.sprite = undefined;
+    }
   }
 };

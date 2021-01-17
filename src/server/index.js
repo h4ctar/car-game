@@ -62,6 +62,7 @@ ioServer.on('connection', (socket) => {
 });
 
 const loop = () => {
+  // todo: kill if too many steps required
   const desiredSimStep = (Date.now() - simStartTime) / SIM_PERIOD;
   while (simStep < desiredSimStep) {
     // eslint-disable-next-line no-loop-func
