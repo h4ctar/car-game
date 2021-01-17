@@ -17,13 +17,7 @@ jobs:
       - run: npm install
       - run: npm run lint
       - run: npm run build
-
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - run: zip -r deploy.zip *
+      - run: zip -r deploy.zip * -x node_modules
       - uses: gerred/actions/current-time@master
         id: current-time
       - uses: frabert/replace-string-action@master
@@ -42,3 +36,4 @@ jobs:
           version_label: "io-cool-${{ steps.format-time.outputs.replaced }}"
           region: ap-southeast-2
           deployment_package: deploy.zip
+          
