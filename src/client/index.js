@@ -10,7 +10,13 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const context = canvas.getContext('2d');
 
+const camera = [0, 0];
+
 const socket = io.connect({ query: `id=${myId}` });
+socket.on('disconnect', () => {
+  console.error('Socked disconnected');
+  socket.close();
+});
 
 let pingTime;
 let latency;
@@ -30,7 +36,8 @@ let simStep;
 let simStartStep;
 let simStartTime;
 socket.on('start', (event) => {
-  console.info(`start ${event}`);
+  console.info(`Start simulation ${event}`);
+
   simRunning = true;
   simStep = event;
   simStartStep = event;
@@ -70,8 +77,7 @@ socket.on('delete', (id) => {
 
   const index = cars.findIndex((car) => car.id === id);
   if (index !== -1) {
-    // cars[index].remove(app);
-    cars.splice(index);
+    cars.splice(index, 1);
   }
 });
 
@@ -124,13 +130,22 @@ const update = () => {
 // simulation loop with fixed step
 const loop = () => {
   if (simRunning) {
-    const desiredSimStep = simStartStep + (Date.now() - simStartTime) / SIM_PERIOD;
+    const desiredSimStep = Math.floor(simStartStep + (Date.now() - simStartTime) / SIM_PERIOD);
+    if (desiredSimStep - simStep > 100) {
+      console.error('Missed too many simulation steps');
+      simRunning = false;
+      socket.close();
+    }
+
     // todo: kill if too many steps required
     while (simStep < desiredSimStep) {
       update();
       simStep += 1;
     }
     checkInput();
+
+    camera[0] = myCar.position[0];
+    camera[1] = myCar.position[1];
   }
 };
 setInterval(loop, SIM_PERIOD);
@@ -141,8 +156,21 @@ const draw = () => {
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   context.save();
-  context.translate(0, canvas.height);
-  context.scale(1, -1);
+  context.translate(canvas.width / 2, canvas.height - canvas.height / 2);
+  context.scale(0.5, -0.5);
+
+  context.translate(-camera[0], -camera[1]);
+
+  context.beginPath();
+  context.strokeStyle = 'grey';
+  for (let i = 0; i < 50; i += 1) {
+    context.moveTo(0, i * 400);
+    context.lineTo(49 * 400, i * 400);
+    context.moveTo(i * 400, 0);
+    context.lineTo(i * 400, 49 * 400);
+  }
+  context.stroke();
+
   cars.forEach((car) => car.draw(context));
   context.restore();
 

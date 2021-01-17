@@ -62,8 +62,11 @@ ioServer.on('connection', (socket) => {
 });
 
 const loop = () => {
-  // todo: kill if too many steps required
-  const desiredSimStep = (Date.now() - simStartTime) / SIM_PERIOD;
+  const desiredSimStep = Math.floor((Date.now() - simStartTime) / SIM_PERIOD);
+  if (desiredSimStep - simStep > 100) {
+    throw new Error('Too many simulation steps missed');
+  }
+
   while (simStep < desiredSimStep) {
     // eslint-disable-next-line no-loop-func
     cars.forEach((car) => car.update(simStep));

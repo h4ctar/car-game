@@ -51,8 +51,6 @@ exports.Car = class {
 
   processInput(event, currentSimStep) {
     if (event.simStep > currentSimStep) {
-      console.warn(`received future event ${event.simStep} ${currentSimStep}`);
-
       this.futureInputs.push(event);
     } else if (event.simStep === currentSimStep) {
       this.steerDirection = event.steerDirection === undefined ? this.steerDirection : event.steerDirection;
@@ -65,7 +63,7 @@ exports.Car = class {
       let historyIndex = this.histories.findIndex((history) => history.simStep === event.simStep);
 
       if (historyIndex === -1) {
-        console.warn(`received old event ${event.simStep} ${currentSimStep}`);
+        console.warn(`Received old event ${event.simStep} ${currentSimStep}`);
         historyIndex = 0;
       }
 
