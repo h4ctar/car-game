@@ -1,5 +1,4 @@
 const math = require('mathjs');
-const PIXI = typeof window === 'undefined' ? undefined : require('pixi.js');
 const util = require('../util');
 
 const WHEEL_FL = 0;
@@ -181,24 +180,21 @@ exports.Car = class {
     this.angle = math.add(this.angle, math.multiply(this.angularVelocity, DT));
   }
 
-  draw(app) {
-    if (!this.sprite) {
-      this.sprite = new PIXI.Sprite(PIXI.utils.TextureCache['car.png']);
-      this.sprite.width = this.wheelbase;
-      this.sprite.height = this.track;
-      this.sprite.anchor.x = 0.5;
-      this.sprite.anchor.y = 0.5;
-      app.stage.addChild(this.sprite);
-    }
-
-    this.sprite.position.set(this.position[0], app.view.height - this.position[1]);
-    this.sprite.rotation = -this.angle;
+  draw(context) {
+    context.save();
+    context.translate(this.position[0], this.position[1]);
+    context.rotate(this.angle);
+    this.wheels.forEach((wheel) => this.drawWheel(wheel, context));
+    context.restore();
   }
 
-  remove(app) {
-    if (this.sprite) {
-      app.stage.removeChild(this.sprite);
-      this.sprite = undefined;
-    }
+  drawWheel(wheel, context) {
+    context.save();
+    context.translate(wheel.position[0], wheel.position[1]);
+    context.rotate(wheel.angle);
+    context.fillStyle = 'white';
+    context.fillRect(-this.wheelDiameter / 2, -this.wheelWidth / 2, this.wheelDiameter, this.wheelWidth);
+
+    context.restore();
   }
 };
