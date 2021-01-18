@@ -35,7 +35,7 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
           application_name: io-cool
           environment_name: IoCool-env
-          version_label: ${{ GITHUB_SHA }}
+          version_label: ${GITHUB_SHA}
           region: ap-southeast-2
           deployment_package: deploy.zip
           
