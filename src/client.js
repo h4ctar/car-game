@@ -1,6 +1,6 @@
 const io = require('socket.io-client');
-const { Car } = require('../car');
-const util = require('../util');
+const { Car } = require('./car');
+const util = require('./util');
 
 const myId = util.uuid();
 console.info(`id ${myId}`);
@@ -66,6 +66,7 @@ socket.on('update', (event) => {
   car.steerDirection = event.steerDirection;
   car.accelerate = event.accelerate;
   car.brake = event.brake;
+  car.shoot = event.shoot;
   car.wheels = event.wheels;
   car.histories = event.histories;
 });
@@ -112,6 +113,11 @@ const checkInput = () => {
 
   if (keys[83] !== myCar.brake) {
     event.brake = keys[83];
+    dirty = true;
+  }
+
+  if (keys[32] !== myCar.shoot) {
+    event.shoot = keys[32];
     dirty = true;
   }
 

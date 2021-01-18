@@ -1,13 +1,13 @@
 const express = require('express');
 const http = require('http');
 const io = require('socket.io');
-const { Car } = require('../car');
+const { Car } = require('./car');
+const { SIM_PERIOD } = require('./config');
 
 const app = express();
 const httpServer = http.createServer(app);
 const ioServer = io(httpServer, { serveClient: false });
 
-const SIM_PERIOD = 16;
 const simStartTime = Date.now();
 let simStep = 0;
 
@@ -38,6 +38,7 @@ ioServer.on('connection', (socket) => {
     steerDirection: c.steerDirection,
     accelerate: c.accelerate,
     brake: c.brake,
+    shoot: c.shoot,
     wheels: c.wheels,
     histories: c.histories,
   }));

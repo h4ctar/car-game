@@ -1,12 +1,12 @@
 const math = require('mathjs');
-const util = require('../util');
+const util = require('./util');
+const { DT } = require('./config');
+const { Bullet } = require('./bullet');
 
 const WHEEL_FL = 0;
 const WHEEL_FR = 1;
 const WHEEL_RL = 2;
 const WHEEL_RR = 3;
-
-const DT = 0.016;
 
 exports.Car = class {
   constructor(id) {
@@ -17,11 +17,12 @@ exports.Car = class {
 
     this.position = [0, 0];
     this.angle = 0;
-    this.velocity = [0, 0];
+    this.velocity = [1, 0];
     this.angularVelocity = 0;
     this.steerDirection = 0;
     this.accelerate = false;
     this.brake = false;
+    this.shoot = false;
     this.wheelbase = 50;
     this.track = 25;
     this.mass = 2;
@@ -47,6 +48,8 @@ exports.Car = class {
       position: [-this.wheelbase / 2, this.track / 2],
       angle: 0,
     };
+
+    this.bullets = [];
   }
 
   processInput(event, currentSimStep) {
@@ -56,6 +59,7 @@ exports.Car = class {
       this.steerDirection = event.steerDirection === undefined ? this.steerDirection : event.steerDirection;
       this.accelerate = event.accelerate === undefined ? this.accelerate : event.accelerate;
       this.brake = event.brake === undefined ? this.brake : event.brake;
+      this.shoot = event.shoot === undefined ? this.shoot : event.shoot;
     } else {
       // go back in history to find when the input should be applied
       // note: when an input event comes in it will clobber previous input events that have a later sim step
@@ -79,12 +83,14 @@ exports.Car = class {
       this.steerDirection = history.steerDirection;
       this.accelerate = history.accelerate;
       this.brake = history.brake;
+      this.shoot = history.shoot;
       this.wheels = history.wheels.map((wheel) => ({ ...wheel }));
 
       // apply the input
       this.steerDirection = event.steerDirection === undefined ? this.steerDirection : event.steerDirection;
       this.accelerate = event.accelerate === undefined ? this.accelerate : event.accelerate;
       this.brake = event.brake === undefined ? this.brake : event.brake;
+      this.shoot = event.shoot === undefined ? this.shoot : event.shoot;
 
       // step forward until now
       let { simStep } = history;
@@ -112,6 +118,7 @@ exports.Car = class {
       steerDirection: this.steerDirection,
       accelerate: this.accelerate,
       brake: this.brake,
+      shoot: this.shoot,
       wheels: this.wheels.map((wheel) => ({ ...wheel })),
     });
 
@@ -175,6 +182,15 @@ exports.Car = class {
     // update position with velocity
     this.position = math.add(this.position, math.multiply(this.velocity, DT));
     this.angle = math.add(this.angle, math.multiply(this.angularVelocity, DT));
+
+    if (this.shoot) {
+      const bulletSpeed = 1000;
+      const bullet = new Bullet(this.position, math.add(this.velocity, math.rotate([bulletSpeed, 0], this.angle)));
+      this.bullets.push(bullet);
+    }
+
+    this.bullets = this.bullets.filter((bullet) => bullet.isAlive());
+    this.bullets.forEach((bullet) => bullet.update());
   }
 
   draw(context) {
@@ -183,6 +199,8 @@ exports.Car = class {
     context.rotate(this.angle);
     this.wheels.forEach((wheel) => this.drawWheel(wheel, context));
     context.restore();
+
+    this.bullets.forEach((bullet) => bullet.draw(context));
   }
 
   drawWheel(wheel, context) {
