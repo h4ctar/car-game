@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const io = require('socket.io');
+const math = require('mathjs');
 const { Car } = require('./car');
 const { SIM_PERIOD } = require('./config');
 
@@ -26,22 +27,10 @@ ioServer.on('connection', (socket) => {
   cars.push(car);
 
   // send this car to everyone else
-  socket.broadcast.emit('update', car);
+  socket.broadcast.emit('update', car.serialize());
 
   // send all cars to the new client
-  cars.forEach((c) => socket.emit('update', {
-    id: c.id,
-    position: c.position,
-    angle: c.angle,
-    velocity: c.velocity,
-    angularVelocity: c.angularVelocity,
-    steerDirection: c.steerDirection,
-    accelerate: c.accelerate,
-    brake: c.brake,
-    shoot: c.shoot,
-    wheels: c.wheels,
-    histories: c.histories,
-  }));
+  cars.forEach((c) => socket.emit('update', c.serialize()));
 
   // tell them to start the simulation at the current simulation step
   socket.emit('start', simStep);
@@ -71,6 +60,17 @@ const loop = () => {
   while (simStep < desiredSimStep) {
     // eslint-disable-next-line no-loop-func
     cars.forEach((car) => car.update(simStep));
+
+    // check if bullet hits car
+    const bullets = cars.flatMap((car) => car.bullets);
+    bullets.forEach((bullet) => cars.forEach((car) => {
+      const distance = math.subtract(bullet.position, car.position);
+      if (Math.abs(distance[0]) < 10 && Math.abs(distance[1]) < 10) {
+        car.reset();
+        ioServer.emit('update', car.serialize());
+      }
+    }));
+
     simStep += 1;
   }
 };

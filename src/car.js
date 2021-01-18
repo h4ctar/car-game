@@ -12,6 +12,10 @@ exports.Car = class {
   constructor(id) {
     this.id = id;
 
+    this.reset();
+  }
+
+  reset() {
     this.histories = [];
     this.futureInputs = [];
 
@@ -52,24 +56,50 @@ exports.Car = class {
     this.bullets = [];
   }
 
+  serialize() {
+    return {
+      id: this.id,
+      position: this.position,
+      angle: this.angle,
+      velocity: this.velocity,
+      angularVelocity: this.angularVelocity,
+      steerDirection: this.steerDirection,
+      accelerate: this.accelerate,
+      brake: this.brake,
+      shoot: this.shoot,
+      wheels: this.wheels,
+      histories: this.histories,
+    };
+  }
+
+  deserialize(event) {
+    this.position = event.position;
+    this.angle = event.angle;
+    this.velocity = event.velocity;
+    this.angularVelocity = event.angularVelocity;
+    this.steerDirection = event.steerDirection;
+    this.accelerate = event.accelerate;
+    this.brake = event.brake;
+    this.shoot = event.shoot;
+    this.wheels = event.wheels;
+    this.histories = event.histories;
+  }
+
   processInput(event, currentSimStep) {
     if (event.simStep > currentSimStep) {
       this.futureInputs.push(event);
     } else if (event.simStep === currentSimStep) {
-      this.steerDirection = event.steerDirection === undefined ? this.steerDirection : event.steerDirection;
-      this.accelerate = event.accelerate === undefined ? this.accelerate : event.accelerate;
-      this.brake = event.brake === undefined ? this.brake : event.brake;
-      this.shoot = event.shoot === undefined ? this.shoot : event.shoot;
+      this.applyInput(event);
+    } else if (this.histories.length === 0) {
+      console.warn(`Received old event ${event.simStep} ${currentSimStep}`);
+      this.applyInput(event);
     } else {
       // go back in history to find when the input should be applied
-      // note: when an input event comes in it will clobber previous input events that have a later sim step
       let historyIndex = event.simStep - this.histories[0].simStep;
-
-      if (historyIndex < 0 || historyIndex > this.histories.length) {
+      if (historyIndex < 0) {
         console.warn(`Received old event ${event.simStep} ${currentSimStep}`);
         historyIndex = 0;
       }
-
       const history = this.histories[historyIndex];
 
       // remove history after this history point (including this point)
@@ -87,13 +117,10 @@ exports.Car = class {
       this.wheels = history.wheels.map((wheel) => ({ ...wheel }));
 
       // apply the input
-      this.steerDirection = event.steerDirection === undefined ? this.steerDirection : event.steerDirection;
-      this.accelerate = event.accelerate === undefined ? this.accelerate : event.accelerate;
-      this.brake = event.brake === undefined ? this.brake : event.brake;
-      this.shoot = event.shoot === undefined ? this.shoot : event.shoot;
+      this.applyInput(event);
 
       // step forward until now
-      let { simStep } = history;
+      let simStep = history.simStep;
       while (simStep < currentSimStep) {
         this.update(simStep);
         simStep += 1;
@@ -101,14 +128,20 @@ exports.Car = class {
     }
   }
 
+  applyInput(event) {
+    this.steerDirection = event.steerDirection === undefined ? this.steerDirection : event.steerDirection;
+    this.accelerate = event.accelerate === undefined ? this.accelerate : event.accelerate;
+    this.brake = event.brake === undefined ? this.brake : event.brake;
+    this.shoot = event.shoot === undefined ? this.shoot : event.shoot;
+  }
+
   update(simStep) {
-    // todo: instead of this ugly only put input for events that are good
-    // also, make sure they go in the correct order
+    // process previously received inputs
     const futureInputs = [...this.futureInputs];
     this.futureInputs.length = 0;
     futureInputs.forEach((event) => this.processInput(event, simStep));
 
-    // add history to start of histories queue
+    // add history to the end of histories queue
     this.histories.push({
       simStep,
       position: this.position,
@@ -124,7 +157,7 @@ exports.Car = class {
 
     // make sure it never gets too long
     while (this.histories.length > 100) {
-      // remove history from the end of the queue
+      // remove history from the start of the queue
       this.histories.shift();
     }
 
@@ -184,6 +217,7 @@ exports.Car = class {
     this.angle = math.add(this.angle, math.multiply(this.angularVelocity, DT));
 
     if (this.shoot) {
+      // todo: reload timer
       const bulletSpeed = 1000;
       const bullet = new Bullet(this.position, math.add(this.velocity, math.rotate([bulletSpeed, 0], this.angle)));
       this.bullets.push(bullet);

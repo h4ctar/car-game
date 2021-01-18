@@ -59,16 +59,7 @@ socket.on('update', (event) => {
     }
   }
 
-  car.position = event.position;
-  car.angle = event.angle;
-  car.velocity = event.velocity;
-  car.angularVelocity = event.angularVelocity;
-  car.steerDirection = event.steerDirection;
-  car.accelerate = event.accelerate;
-  car.brake = event.brake;
-  car.shoot = event.shoot;
-  car.wheels = event.wheels;
-  car.histories = event.histories;
+  car.deserialize(event);
 });
 
 socket.on('delete', (id) => {
