@@ -20,7 +20,7 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: zip -rq deploy.zip * -x node_modules
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v2
         with:
           name: deploy
           path: deploy.zip
@@ -31,7 +31,7 @@ jobs:
       max-parallel: 1
 
     steps:
-      - uses: actions/download-artifact@master
+      - uses: actions/download-artifact@v2
         with:
           name: deploy
       - uses: gerred/actions/current-time@master
