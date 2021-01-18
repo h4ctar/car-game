@@ -10,8 +10,6 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const context = canvas.getContext('2d');
 
-const camera = [0, 0];
-
 const socket = io.connect({ query: `id=${myId}` });
 socket.on('disconnect', () => {
   console.error('Socked disconnected');
@@ -143,9 +141,6 @@ const loop = () => {
       simStep += 1;
     }
     checkInput();
-
-    camera[0] = myCar.position[0];
-    camera[1] = myCar.position[1];
   }
 };
 setInterval(loop, SIM_PERIOD);
@@ -159,8 +154,9 @@ const draw = () => {
   context.translate(canvas.width / 2, canvas.height - canvas.height / 2);
   context.scale(0.5, -0.5);
 
-  context.translate(-camera[0], -camera[1]);
+  context.translate(-myCar.position[0], -myCar.position[1]);
 
+  // todo: make this good
   context.beginPath();
   context.strokeStyle = 'grey';
   for (let i = 0; i < 50; i += 1) {

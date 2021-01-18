@@ -6,7 +6,6 @@ module.exports = {
     filename: 'main.js',
     path: path.resolve(__dirname, 'static'),
   },
-  mode: 'development',
   externals: {
     mathjs: 'math',
     'socket.io-client': 'io',
