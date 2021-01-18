@@ -34,7 +34,6 @@ jobs:
       - uses: actions/download-artifact@master
         with:
           name: deploy
-          path: deploy.zip
       - uses: gerred/actions/current-time@master
         id: current-time
       - uses: frabert/replace-string-action@master
