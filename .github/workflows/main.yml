@@ -8,11 +8,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  strategy:
-    max-parallel: 1
-
   build:
     runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
 
     steps:
       - uses: actions/checkout@v2
@@ -28,6 +27,8 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
 
     steps:
       - uses: actions/download-artifact@master
