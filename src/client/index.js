@@ -135,7 +135,6 @@ const loop = () => {
       socket.close();
     }
 
-    // todo: kill if too many steps required
     while (simStep < desiredSimStep) {
       update();
       simStep += 1;
@@ -151,22 +150,24 @@ const draw = () => {
     context.fillStyle = 'black';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
+    const GRID_SIZE = 200;
+    context.beginPath();
+    context.strokeStyle = 'grey';
+    for (let x = -(myCar.position[0] / 2 % GRID_SIZE); x < canvas.width; x += GRID_SIZE) {
+      context.moveTo(x, 0);
+      context.lineTo(x, canvas.height);
+    }
+    for (let y = myCar.position[1] / 2 % GRID_SIZE; y < canvas.height; y += GRID_SIZE) {
+      context.moveTo(0, y);
+      context.lineTo(canvas.width, y);
+    }
+    context.stroke();
+
     context.save();
     context.translate(canvas.width / 2, canvas.height - canvas.height / 2);
     context.scale(0.5, -0.5);
 
     context.translate(-myCar.position[0], -myCar.position[1]);
-
-    // todo: make this good
-    context.beginPath();
-    context.strokeStyle = 'grey';
-    for (let i = 0; i < 50; i += 1) {
-      context.moveTo(0, i * 400);
-      context.lineTo(49 * 400, i * 400);
-      context.moveTo(i * 400, 0);
-      context.lineTo(i * 400, 49 * 400);
-    }
-    context.stroke();
 
     cars.forEach((car) => car.draw(context));
     context.restore();

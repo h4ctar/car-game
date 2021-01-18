@@ -59,10 +59,9 @@ exports.Car = class {
     } else {
       // go back in history to find when the input should be applied
       // note: when an input event comes in it will clobber previous input events that have a later sim step
-      // todo: make this more effecient (does not need to loop, can calculate the index)
-      let historyIndex = this.histories.findIndex((history) => history.simStep === event.simStep);
+      let historyIndex = event.simStep - this.histories[0].simStep;
 
-      if (historyIndex === -1) {
+      if (historyIndex < 0 || historyIndex > this.histories.length) {
         console.warn(`Received old event ${event.simStep} ${currentSimStep}`);
         historyIndex = 0;
       }
