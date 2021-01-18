@@ -8,6 +8,9 @@ on:
   workflow_dispatch:
 
 jobs:
+  strategy:
+    max-parallel: 1
+
   build:
     runs-on: ubuntu-latest
 
@@ -18,6 +21,19 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: zip -r deploy.zip * -x node_modules
+      - uses: actions/upload-artifact@master
+        with:
+          name: deploy
+          path: deploy.zip
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@master
+        with:
+          name: deploy
+          path: deploy.zip
       - uses: gerred/actions/current-time@master
         id: current-time
       - uses: frabert/replace-string-action@master
