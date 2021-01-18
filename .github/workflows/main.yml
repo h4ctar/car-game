@@ -29,22 +29,13 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: deploy
-      - uses: gerred/actions/current-time@master
-        id: current-time
-      - uses: frabert/replace-string-action@master
-        id: format-time
-        with:
-          pattern: '[:\.]+'
-          string: "${{ steps.current-time.outputs.time }}"
-          replace-with: '-'
-          flags: 'g'
       - uses: einaregilsson/beanstalk-deploy@v14
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
           aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
           application_name: io-cool
           environment_name: IoCool-env
-          version_label: "io-cool-${{ steps.format-time.outputs.replaced }}"
+          version_label: $GITHUB_SHA
           region: ap-southeast-2
           deployment_package: deploy.zip
           
