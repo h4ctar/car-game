@@ -236,10 +236,9 @@ exports.Car = class {
 
     context.save();
     context.fillStyle = 'white';
-    context.font = '30px Verdana';
     context.textAlign = 'center';
-    context.scale(1, -1);
-    context.fillText(this.username, 0, 100);
+    context.scale(2, -2);
+    context.fillText(this.username, 0, 40);
     context.restore();
 
     context.rotate(this.angle);
