@@ -24,6 +24,12 @@ setInterval(() => {
 }, 1000);
 socket.on('pong', () => { latency = Date.now() - pingTime; });
 
+document.getElementById('start-button').addEventListener('click', () => {
+  console.info('Starting');
+  const username = document.getElementById('username-text-input').value;
+  socket.emit('start', { username });
+});
+
 const keys = new Array(256).fill(false);
 window.onkeydown = (event) => { keys[event.which] = true; };
 window.onkeyup = (event) => { keys[event.which] = false; };
@@ -43,7 +49,6 @@ socket.on('start', (event) => {
 });
 
 const cars = [];
-
 let myCar;
 
 socket.on('update', (event) => {
@@ -56,6 +61,7 @@ socket.on('update', (event) => {
 
     if (car.id === myId) {
       myCar = car;
+      document.getElementById('start-card').style.display = 'none';
     }
   }
 
@@ -69,6 +75,11 @@ socket.on('delete', (id) => {
   if (index !== -1) {
     cars.splice(index, 1);
   }
+
+  if (id === myCar?.id) {
+    myCar = undefined;
+    document.getElementById('start-card').style.display = 'block';
+  }
 });
 
 socket.on('input', (event) => {
@@ -79,42 +90,44 @@ socket.on('input', (event) => {
 });
 
 const checkInput = () => {
-  let dirty = false;
-  const event = {
-    id: myId,
-    simStep,
-  };
+  if (myCar) {
+    let dirty = false;
+    const event = {
+      id: myId,
+      simStep,
+    };
 
-  let steerDirection = 0;
-  if (keys[65]) {
-    steerDirection = 1;
-  } else if (keys[68]) {
-    steerDirection = -1;
-  }
+    let steerDirection = 0;
+    if (keys[65]) {
+      steerDirection = 1;
+    } else if (keys[68]) {
+      steerDirection = -1;
+    }
 
-  if (steerDirection !== myCar.steerDirection) {
-    event.steerDirection = steerDirection;
-    dirty = true;
-  }
+    if (steerDirection !== myCar.steerDirection) {
+      event.steerDirection = steerDirection;
+      dirty = true;
+    }
 
-  if (keys[87] !== myCar.accelerate) {
-    event.accelerate = keys[87];
-    dirty = true;
-  }
+    if (keys[87] !== myCar.accelerate) {
+      event.accelerate = keys[87];
+      dirty = true;
+    }
 
-  if (keys[83] !== myCar.brake) {
-    event.brake = keys[83];
-    dirty = true;
-  }
+    if (keys[83] !== myCar.brake) {
+      event.brake = keys[83];
+      dirty = true;
+    }
 
-  if (keys[32] !== myCar.shoot) {
-    event.shoot = keys[32];
-    dirty = true;
-  }
+    if (keys[32] !== myCar.shoot) {
+      event.shoot = keys[32];
+      dirty = true;
+    }
 
-  if (dirty) {
-    myCar.processInput(event, simStep);
-    socket.emit('input', event);
+    if (dirty) {
+      myCar.processInput(event, simStep);
+      socket.emit('input', event);
+    }
   }
 };
 
@@ -144,17 +157,18 @@ setInterval(loop, SIM_PERIOD);
 // draw on animation frame
 const draw = () => {
   if (simRunning) {
+    const camera = myCar ? myCar.position : [0, 0];
     context.fillStyle = 'black';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     const GRID_SIZE = 200;
     context.beginPath();
     context.strokeStyle = 'grey';
-    for (let x = -(myCar.position[0] / 2 % GRID_SIZE); x < canvas.width; x += GRID_SIZE) {
+    for (let x = -(camera[0] / 2 % GRID_SIZE); x < canvas.width; x += GRID_SIZE) {
       context.moveTo(x, 0);
       context.lineTo(x, canvas.height);
     }
-    for (let y = myCar.position[1] / 2 % GRID_SIZE; y < canvas.height; y += GRID_SIZE) {
+    for (let y = camera[1] / 2 % GRID_SIZE; y < canvas.height; y += GRID_SIZE) {
       context.moveTo(0, y);
       context.lineTo(canvas.width, y);
     }
@@ -164,7 +178,7 @@ const draw = () => {
     context.translate(canvas.width / 2, canvas.height - canvas.height / 2);
     context.scale(0.5, -0.5);
 
-    context.translate(-myCar.position[0], -myCar.position[1]);
+    context.translate(-camera[0], -camera[1]);
 
     cars.forEach((car) => car.draw(context));
     context.restore();

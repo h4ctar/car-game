@@ -9,8 +9,9 @@ const WHEEL_RL = 2;
 const WHEEL_RR = 3;
 
 exports.Car = class {
-  constructor(id) {
+  constructor(id, username) {
     this.id = id;
+    this.username = username;
 
     this.reset();
   }
@@ -59,6 +60,7 @@ exports.Car = class {
   serialize() {
     return {
       id: this.id,
+      username: this.username,
       position: this.position,
       angle: this.angle,
       velocity: this.velocity,
@@ -73,6 +75,7 @@ exports.Car = class {
   }
 
   deserialize(event) {
+    this.username = event.username;
     this.position = event.position;
     this.angle = event.angle;
     this.velocity = event.velocity;
@@ -230,6 +233,15 @@ exports.Car = class {
   draw(context) {
     context.save();
     context.translate(this.position[0], this.position[1]);
+
+    context.save();
+    context.fillStyle = 'white';
+    context.font = '30px Verdana';
+    context.textAlign = 'center';
+    context.scale(1, -1);
+    context.fillText(this.username, 0, 100);
+    context.restore();
+
     context.rotate(this.angle);
     this.wheels.forEach((wheel) => this.drawWheel(wheel, context));
     context.restore();

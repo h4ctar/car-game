@@ -14,6 +14,14 @@ let simStep = 0;
 
 const cars = [];
 
+const deleteCar = (car) => {
+  const index = cars.indexOf(car);
+  if (index !== -1) {
+    cars.splice(index, 1);
+  }
+  ioServer.emit('delete', car.id);
+};
+
 ioServer.on('connection', (socket) => {
   console.log('New client connected');
 
@@ -21,13 +29,7 @@ ioServer.on('connection', (socket) => {
 
   // eslint-disable-next-line no-underscore-dangle
   const id = socket.request._query.id;
-
-  const car = new Car(id);
-  car.position = [200, 200];
-  cars.push(car);
-
-  // send this car to everyone else
-  socket.broadcast.emit('update', car.serialize());
+  let car;
 
   // send all cars to the new client
   cars.forEach((c) => socket.emit('update', c.serialize()));
@@ -35,19 +37,28 @@ ioServer.on('connection', (socket) => {
   // tell them to start the simulation at the current simulation step
   socket.emit('start', simStep);
 
-  socket.on('input', (event) => {
-    car.processInput(event, simStep);
+  socket.on('start', (event) => {
+    console.info(`Starting ${event.username}`);
+    car = new Car(id, event.username);
+    car.position = [200, 200];
+    cars.push(car);
 
-    // send the input to everyone except the sender
-    socket.broadcast.emit('input', event);
+    ioServer.emit('update', car.serialize());
+  });
+
+  socket.on('input', (event) => {
+    if (car) {
+      car.processInput(event, simStep);
+
+      // send the input to everyone except the sender
+      socket.broadcast.emit('input', event);
+    }
   });
 
   socket.on('disconnect', () => {
-    const index = cars.indexOf(car);
-    if (index !== -1) {
-      cars.splice(index, 1);
+    if (car) {
+      deleteCar(car);
     }
-    ioServer.emit('delete', id);
   });
 });
 
@@ -66,8 +77,8 @@ const loop = () => {
     bullets.forEach((bullet) => cars.forEach((car) => {
       const distance = math.subtract(bullet.position, car.position);
       if (Math.abs(distance[0]) < 10 && Math.abs(distance[1]) < 10) {
-        car.reset();
-        ioServer.emit('update', car.serialize());
+        // todo: delete while iterating? could be bad
+        deleteCar(car);
       }
     }));
 
