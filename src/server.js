@@ -62,6 +62,10 @@ ioServer.on('connection', (socket) => {
   });
 });
 
+const update = () => {
+  cars.forEach((car) => car.update(simStep));
+};
+
 const loop = () => {
   const desiredSimStep = Math.floor((Date.now() - simStartTime) / SIM_PERIOD);
   if (desiredSimStep - simStep > 100) {
@@ -69,21 +73,23 @@ const loop = () => {
   }
 
   while (simStep < desiredSimStep) {
-    // eslint-disable-next-line no-loop-func
-    cars.forEach((car) => car.update(simStep));
+    update();
 
     // check if bullet hits car
     [...cars].forEach((thisCar) => {
       const otherCars = cars.filter((car) => car !== thisCar);
-      thisCar.bullets.forEach((bullet) => otherCars.forEach((car) => {
-        const distance = math.subtract(bullet.position, car.position);
+      thisCar.bullets.forEach((bullet) => otherCars.forEach((otherCar) => {
+        const distance = math.subtract(bullet.position, otherCar.position);
         // todo: better collision
         if (Math.abs(distance[0]) < 20 && Math.abs(distance[1]) < 20) {
-          car.health -= 10;
-          if (car.health > 0) {
-            ioServer.emit('update', car.serialize());
+          thisCar.score += 10;
+          ioServer.emit('update', thisCar.serialize());
+
+          otherCar.health -= 10;
+          if (otherCar.health > 0) {
+            ioServer.emit('update', otherCar.serialize());
           } else {
-            deleteCar(car);
+            deleteCar(otherCar);
           }
         }
       }));

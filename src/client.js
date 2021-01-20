@@ -69,6 +69,7 @@ socket.on('update', (event) => {
   car.deserialize(event);
 
   if (car.id === myId) {
+    document.getElementById('score-span').textContent = car.score;
     document.getElementById('health-span').textContent = car.health;
   }
 });

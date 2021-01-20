@@ -13,14 +13,12 @@ exports.Car = class {
     this.id = id;
     this.username = username;
 
-    this.reset();
-  }
-
-  reset() {
     this.histories = [];
     this.futureInputs = [];
 
+    this.score = 0;
     this.health = 100;
+
     this.position = [0, 0];
     this.angle = 0;
     this.velocity = [1, 0];
@@ -62,6 +60,7 @@ exports.Car = class {
     return {
       id: this.id,
       username: this.username,
+      score: this.score,
       health: this.health,
       position: this.position,
       angle: this.angle,
@@ -78,6 +77,7 @@ exports.Car = class {
 
   deserialize(event) {
     this.username = event.username;
+    this.score = event.score;
     this.health = event.health;
     this.position = event.position;
     this.angle = event.angle;
