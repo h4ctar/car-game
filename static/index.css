@@ -12,5 +12,11 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  /* display: block; */
+}
+
+#health-card {
+  z-index: 2;
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
 }

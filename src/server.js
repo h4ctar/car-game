@@ -50,7 +50,7 @@ ioServer.on('connection', (socket) => {
     if (car) {
       car.processInput(event, simStep);
 
-      // send the input to everyone except the sender
+      // send the input to everyone except the sender because they have already processed it
       socket.broadcast.emit('input', event);
     }
   });
@@ -76,9 +76,16 @@ const loop = () => {
     const bullets = cars.flatMap((car) => car.bullets);
     bullets.forEach((bullet) => cars.forEach((car) => {
       const distance = math.subtract(bullet.position, car.position);
+      // todo: better collision
+      // todo: no friendly fire
       if (Math.abs(distance[0]) < 10 && Math.abs(distance[1]) < 10) {
         // todo: delete while iterating? could be bad
-        deleteCar(car);
+        car.health -= 10;
+        if (car.health > 0) {
+          ioServer.emit('update', car.serialize());
+        } else {
+          deleteCar(car);
+        }
       }
     }));
 

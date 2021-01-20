@@ -62,10 +62,15 @@ socket.on('update', (event) => {
     if (car.id === myId) {
       myCar = car;
       document.getElementById('start-card').style.display = 'none';
+      document.getElementById('health-card').style.display = 'block';
     }
   }
 
   car.deserialize(event);
+
+  if (car.id === myId) {
+    document.getElementById('health-span').textContent = car.health;
+  }
 });
 
 socket.on('delete', (id) => {
@@ -79,6 +84,7 @@ socket.on('delete', (id) => {
   if (id === myCar?.id) {
     myCar = undefined;
     document.getElementById('start-card').style.display = 'block';
+    document.getElementById('health-card').style.display = 'none';
   }
 });
 

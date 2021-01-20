@@ -20,6 +20,7 @@ exports.Car = class {
     this.histories = [];
     this.futureInputs = [];
 
+    this.health = 100;
     this.position = [0, 0];
     this.angle = 0;
     this.velocity = [1, 0];
@@ -61,6 +62,7 @@ exports.Car = class {
     return {
       id: this.id,
       username: this.username,
+      health: this.health,
       position: this.position,
       angle: this.angle,
       velocity: this.velocity,
@@ -76,6 +78,7 @@ exports.Car = class {
 
   deserialize(event) {
     this.username = event.username;
+    this.health = event.health;
     this.position = event.position;
     this.angle = event.angle;
     this.velocity = event.velocity;
