@@ -73,21 +73,21 @@ const loop = () => {
     cars.forEach((car) => car.update(simStep));
 
     // check if bullet hits car
-    const bullets = cars.flatMap((car) => car.bullets);
-    bullets.forEach((bullet) => cars.forEach((car) => {
-      const distance = math.subtract(bullet.position, car.position);
-      // todo: better collision
-      // todo: no friendly fire
-      if (Math.abs(distance[0]) < 10 && Math.abs(distance[1]) < 10) {
-        // todo: delete while iterating? could be bad
-        car.health -= 10;
-        if (car.health > 0) {
-          ioServer.emit('update', car.serialize());
-        } else {
-          deleteCar(car);
+    [...cars].forEach((thisCar) => {
+      const otherCars = cars.filter((car) => car !== thisCar);
+      thisCar.bullets.forEach((bullet) => otherCars.forEach((car) => {
+        const distance = math.subtract(bullet.position, car.position);
+        // todo: better collision
+        if (Math.abs(distance[0]) < 20 && Math.abs(distance[1]) < 20) {
+          car.health -= 10;
+          if (car.health > 0) {
+            ioServer.emit('update', car.serialize());
+          } else {
+            deleteCar(car);
+          }
         }
-      }
-    }));
+      }));
+    });
 
     simStep += 1;
   }
