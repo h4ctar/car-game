@@ -17,17 +17,17 @@ socket.on('disconnect', () => {
 });
 
 let pingTime;
-let latency;
 setInterval(() => {
   pingTime = Date.now();
   socket.emit('ping');
 }, 1000);
-socket.on('pong', () => { latency = Date.now() - pingTime; });
+socket.on('pong', () => console.info(`latency: ${Date.now() - pingTime}`));
 
-document.getElementById('start-button').addEventListener('click', () => {
+document.getElementById('start-form').addEventListener('submit', (event) => {
   console.info('Starting');
   const username = document.getElementById('username-text-input').value;
   socket.emit('start', { username });
+  event.preventDefault();
 });
 
 const keys = new Array(256).fill(false);
@@ -62,11 +62,11 @@ socket.on('update', (event) => {
     if (car.id === myId) {
       myCar = car;
       document.getElementById('start-card').style.display = 'none';
-      document.getElementById('health-card').style.display = 'block';
+      document.getElementById('info-card').style.display = 'block';
     }
   }
 
-  car.deserialize(event);
+  car.deserialize(event, simStep);
 
   if (car.id === myId) {
     document.getElementById('score-span').textContent = car.score;
@@ -85,7 +85,7 @@ socket.on('delete', (id) => {
   if (id === myCar?.id) {
     myCar = undefined;
     document.getElementById('start-card').style.display = 'block';
-    document.getElementById('health-card').style.display = 'none';
+    document.getElementById('info-card').style.display = 'none';
   }
 });
 
@@ -189,9 +189,6 @@ const draw = () => {
 
     cars.forEach((car) => car.draw(context));
     context.restore();
-
-    context.fillStyle = 'white';
-    context.fillText(`Step: ${simStep}, Latency: ${latency}`, 10, 15);
   }
 
   window.requestAnimationFrame(draw);

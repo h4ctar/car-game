@@ -38,7 +38,7 @@ ioServer.on('connection', (socket) => {
   socket.emit('start', simStep);
 
   socket.on('start', (event) => {
-    console.info(`Starting ${event.username}`);
+    console.info(`Client starting ${event.username}`);
     car = new Car(id, event.username);
     car.position = [200, 200];
     cars.push(car);

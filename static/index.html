@@ -24,20 +24,31 @@
   <canvas id="canvas"></canvas>
   <div id="start-card" class="card">
     <div class="card-body">
-      <h5 class="card-title">io cool</h5>
-      <div class="mb-3">
-        <label for="username-text-input">Username:</label>
-        <input id="username-text-input" type="text" class="form-control" name="username-text-input">
-      </div>
-      <a id="start-button" class="btn btn-primary">Start</a>
+      <form id="start-form">
+        <div class="mb-3">
+          <label for="username-text-input">Username:</label>
+          <input id="username-text-input" type="text" class="form-control" name="username-text-input">
+        </div>
+        <button type="submit" class="btn btn-primary">Start</button>
+      </form>
     </div>
   </div>
 
-  <div id="health-card" class="card">
+  <div id="info-card" class="card">
     <div class="card-body">
       <p class="card-text">Score: <span id="score-span">100</span></p>
       <p class="card-text">Health: <span id="health-span">100</span></p>
     </div>
+  </div>
+
+  <div id="scoreboard-card" class="card">
+    <ul class="list-group list-group-flush">
+      <li id="scoreboard-li-1" class="list-group-item"></li>
+      <li id="scoreboard-li-2" class="list-group-item"></li>
+      <li id="scoreboard-li-3" class="list-group-item"></li>
+      <li id="scoreboard-li-4" class="list-group-item"></li>
+      <li id="scoreboard-li-5" class="list-group-item"></li>
+    </ul>
   </div>
 
   <script src="main.js" type="module"></script>
