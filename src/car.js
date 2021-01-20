@@ -75,7 +75,7 @@ exports.Car = class {
     };
   }
 
-  deserialize(event) {
+  deserialize(event, currentSimStep) {
     this.username = event.username;
     this.score = event.score;
     this.health = event.health;
@@ -89,6 +89,25 @@ exports.Car = class {
     this.shoot = event.shoot;
     this.wheels = event.wheels;
     this.histories = event.histories;
+
+    let lastHistory = this.histories[this.histories.length - 1];
+    if (lastHistory) {
+      // remove future history
+      const historyToDeleteCount = lastHistory.simStep - currentSimStep;
+      this.histories.splice(this.histories.length - historyToDeleteCount);
+
+      // write missing history
+      lastHistory = this.histories[this.histories.length - 1];
+      for (let simStep = lastHistory.simStep + 1; simStep <= currentSimStep; simStep += 1) {
+        this.update(simStep);
+      }
+    }
+
+    // check that the history is good
+    lastHistory = this.histories[this.histories.length - 1];
+    if (lastHistory && lastHistory.simStep !== currentSimStep) {
+      console.log(lastHistory, ',', currentSimStep);
+    }
   }
 
   processInput(event, currentSimStep) {
