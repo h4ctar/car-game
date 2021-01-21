@@ -96,6 +96,11 @@ exports.Car = class {
       const historyToDeleteCount = lastHistory.simStep - currentSimStep;
       this.histories.splice(this.histories.length - historyToDeleteCount);
 
+      // remove future bullets
+      this.bullets = this.bullets.filter((bullet) => bullet.startSimStep <= currentSimStep);
+
+      // todo: need to keep events so they can be replayed on update
+
       // write missing history
       lastHistory = this.histories[this.histories.length - 1];
       for (let simStep = lastHistory.simStep + 1; simStep <= currentSimStep; simStep += 1) {
@@ -111,8 +116,10 @@ exports.Car = class {
   }
 
   processInput(event, currentSimStep) {
+    // todo: save all inputEvents not just events in the future
     if (event.simStep > currentSimStep) {
       this.futureInputs.push(event);
+      // todo: make sure inputEvents doesnt get too long
     } else if (event.simStep === currentSimStep) {
       this.applyInput(event);
     } else if (this.histories.length === 0) {
@@ -161,6 +168,8 @@ exports.Car = class {
   }
 
   update(simStep) {
+    // todo: rename futureInputs to inputEvents
+
     // process previously received inputs
     const futureInputs = [...this.futureInputs];
     this.futureInputs.length = 0;
@@ -181,6 +190,7 @@ exports.Car = class {
     });
 
     // make sure it never gets too long
+    // todo: dont use shift, use splice
     while (this.histories.length > 100) {
       // remove history from the start of the queue
       this.histories.shift();

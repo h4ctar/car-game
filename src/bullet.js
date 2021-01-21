@@ -2,14 +2,14 @@ const math = require('mathjs');
 const { DT } = require('./config');
 
 exports.Bullet = class {
-  constructor(position, velocity) {
+  constructor(position, velocity, startSimStep) {
     this.position = position;
     this.velocity = velocity;
-    this.shootTime = Date.now();
+    this.startSimStep = startSimStep;
   }
 
-  isAlive() {
-    return Date.now() - this.shootTime < 1000;
+  isAlive(currentSimStep) {
+    return currentSimStep - this.shootTime < 50;
   }
 
   update() {
