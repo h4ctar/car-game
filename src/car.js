@@ -100,7 +100,7 @@ exports.Car = class {
     this.brake = event.brake;
     this.shoot = event.shoot;
     this.wheels = event.wheels;
-    this.bullets = event.bullets;
+    this.bullets = event.bullets.map((bullet) => new Bullet(bullet.position, bullet.velocity, bullet.startTimStep));
 
     let lastHistory = this.histories[this.histories.length - 1];
     if (lastHistory) {
