@@ -5,8 +5,7 @@ const util = require('./util');
 const myId = util.uuid();
 console.info(`id ${myId}`);
 
-/** @type { HTMLCanvasElement } */
-const canvas = document.getElementById('canvas');
+const canvas = /** @type { HTMLCanvasElement } */ (document.getElementById('canvas'));
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const context = canvas.getContext('2d');
@@ -26,8 +25,7 @@ socket.on('pong', () => console.info(`latency: ${Date.now() - pingTime}`));
 
 document.getElementById('start-form').addEventListener('submit', (event) => {
   console.info('Starting');
-  /** @type { HTMLInputElement} */
-  const usernameInput = document.getElementById('username-input');
+  const usernameInput = /** @type { HTMLInputElement} */ (document.getElementById('username-input'));
   const username = usernameInput.value;
   socket.emit('start', { username });
   event.preventDefault();
