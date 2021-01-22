@@ -9,12 +9,16 @@ const WHEEL_RL = 2;
 const WHEEL_RR = 3;
 
 exports.Car = class {
+  /**
+   * @param {string} id
+   * @param {string} username
+   */
   constructor(id, username) {
     this.id = id;
     this.username = username;
 
     this.histories = [];
-    this.futureInputs = [];
+    this.inputEvents = [];
 
     this.score = 0;
     this.health = 100;
@@ -53,6 +57,7 @@ exports.Car = class {
       angle: 0,
     };
 
+    /** @type { Bullet[] } */
     this.bullets = [];
   }
 
@@ -116,48 +121,56 @@ exports.Car = class {
   }
 
   processInput(event, currentSimStep) {
-    // todo: save all inputEvents not just events in the future
+    this.inputEvents.push(event);
+    this.inputEvents.sort((a, b) => a.simStep - b.simStep);
+    // only remember 10 input events
+    this.inputEvents.splice(0, this.inputEvents.length - 10);
+
     if (event.simStep > currentSimStep) {
-      this.futureInputs.push(event);
-      // todo: make sure inputEvents doesnt get too long
+      // it's in the future, process it later
     } else if (event.simStep === currentSimStep) {
       this.applyInput(event);
     } else if (this.histories.length === 0) {
-      console.warn(`Received old event ${event.simStep} ${currentSimStep}`);
       this.applyInput(event);
     } else {
-      // go back in history to find when the input should be applied
-      let historyIndex = event.simStep - this.histories[0].simStep;
-      if (historyIndex < 0) {
-        console.warn(`Received old event ${event.simStep} ${currentSimStep}`);
-        historyIndex = 0;
-      }
-      const history = this.histories[historyIndex];
-
-      // remove history after this history point (including this point)
-      this.histories.splice(historyIndex);
-
-      // reset this to the history point
-      this.position = history.position;
-      this.angle = history.angle;
-      this.velocity = history.velocity;
-      this.angularVelocity = history.angularVelocity;
-      this.steerDirection = history.steerDirection;
-      this.accelerate = history.accelerate;
-      this.brake = history.brake;
-      this.shoot = history.shoot;
-      this.wheels = history.wheels.map((wheel) => ({ ...wheel }));
+      this.windBackTime(event.simStep);
 
       // apply the input
       this.applyInput(event);
 
       // step forward until now
-      let simStep = history.simStep;
+      let simStep = event.simStep;
       while (simStep < currentSimStep) {
         this.update(simStep);
         simStep += 1;
       }
     }
+  }
+
+  /**
+   * @param { number } desiredSimStep
+   */
+  windBackTime(desiredSimStep) {
+    // find the point with desired simulation step
+    let historyIndex = desiredSimStep - this.histories[0].simStep;
+    if (historyIndex < 0) {
+      historyIndex = 0;
+    }
+    const history = this.histories[historyIndex];
+
+    // remove history after this history point (including this point)
+    this.histories.splice(historyIndex);
+
+    // reset this to the history point
+    this.position = history.position;
+    this.angle = history.angle;
+    this.velocity = history.velocity;
+    this.angularVelocity = history.angularVelocity;
+    this.steerDirection = history.steerDirection;
+    this.accelerate = history.accelerate;
+    this.brake = history.brake;
+    this.shoot = history.shoot;
+    this.wheels = history.wheels.map((wheel) => ({ ...wheel }));
   }
 
   applyInput(event) {
@@ -167,13 +180,14 @@ exports.Car = class {
     this.shoot = event.shoot === undefined ? this.shoot : event.shoot;
   }
 
+  /**
+   * @param { number } simStep
+   */
   update(simStep) {
-    // todo: rename futureInputs to inputEvents
-
     // process previously received inputs
-    const futureInputs = [...this.futureInputs];
-    this.futureInputs.length = 0;
-    futureInputs.forEach((event) => this.processInput(event, simStep));
+    this.inputEvents
+      .filter((event) => event.simStep === simStep)
+      .forEach((event) => this.processInput(event, simStep));
 
     // add history to the end of histories queue
     this.histories.push({
@@ -190,11 +204,7 @@ exports.Car = class {
     });
 
     // make sure it never gets too long
-    // todo: dont use shift, use splice
-    while (this.histories.length > 100) {
-      // remove history from the start of the queue
-      this.histories.shift();
-    }
+    this.histories.splice(0, this.histories.length - 100);
 
     // steer the wheels
     // ackerman https://datagenetics.com/blog/december12016/index.html
@@ -254,11 +264,12 @@ exports.Car = class {
     if (this.shoot) {
       // todo: reload timer
       const bulletSpeed = 1000;
-      const bullet = new Bullet(this.position, math.add(this.velocity, math.rotate([bulletSpeed, 0], this.angle)));
+      const bulletVelocity = math.add(this.velocity, math.rotate([bulletSpeed, 0], this.angle));
+      const bullet = new Bullet(this.position, bulletVelocity, simStep);
       this.bullets.push(bullet);
     }
 
-    this.bullets = this.bullets.filter((bullet) => bullet.isAlive());
+    this.bullets = this.bullets.filter((bullet) => bullet.isAlive(simStep));
     this.bullets.forEach((bullet) => bullet.update());
   }
 
