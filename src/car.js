@@ -63,7 +63,6 @@ exports.Car = class Car {
     return {
       id: this.id,
       username: this.username,
-
       histories: this.histories,
 
       score: this.score,
@@ -82,9 +81,6 @@ exports.Car = class Car {
   }
 
   deserialize(event, currentSimStep) {
-    // todo: does username need to be here
-    this.username = event.username;
-
     this.histories = event.histories;
 
     this.score = event.score;
@@ -99,6 +95,8 @@ exports.Car = class Car {
     this.shoot = event.shoot;
     this.wheels = event.wheels;
     this.bullets = event.bullets;
+
+    // todo: there are bugs here
 
     let lastHistory = this.histories[this.histories.length - 1];
     if (lastHistory) {
@@ -116,10 +114,10 @@ exports.Car = class Car {
     }
 
     // check that the history is good
-    lastHistory = this.histories[this.histories.length - 1];
-    if (lastHistory && lastHistory.simStep !== currentSimStep) {
-      console.log(lastHistory, ',', currentSimStep);
-    }
+    // lastHistory = this.histories[this.histories.length - 1];
+    // if (lastHistory && lastHistory.simStep !== currentSimStep) {
+    //   console.log(lastHistory, ',', currentSimStep);
+    // }
   }
 
   processInput(event, currentSimStep) {

@@ -10,6 +10,13 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const context = canvas.getContext('2d');
 
+const startCard = document.getElementById('start-card');
+const startForm = document.getElementById('start-form');
+const usernameInput = /** @type { HTMLInputElement} */ (document.getElementById('username-input'));
+const infoCard = document.getElementById('info-card');
+const scoreSpan = /** @type { HTMLSpanElement } */ (document.getElementById('score-span'));
+const healthSpan = /** @type { HTMLSpanElement } */ (document.getElementById('health-span'));
+
 const socket = io.connect({ query: `id=${myId}` });
 socket.on('disconnect', () => {
   console.error('Socked disconnected');
@@ -23,9 +30,8 @@ setInterval(() => {
 }, 10000);
 socket.on('pong', () => console.info(`latency: ${Date.now() - pingTime}`));
 
-document.getElementById('start-form').addEventListener('submit', (event) => {
+startForm.addEventListener('submit', (event) => {
   console.info('Starting');
-  const usernameInput = /** @type { HTMLInputElement} */ (document.getElementById('username-input'));
   const username = usernameInput.value;
   socket.emit('start', { username });
   event.preventDefault();
@@ -49,10 +55,13 @@ socket.on('start', (event) => {
   simStartTime = Date.now();
 });
 
+/** @type { Car[] } */
 const cars = [];
+/** @type { Car } */
 let myCar;
 
 socket.on('update', (event) => {
+  console.log('Received update');
   let car = cars.find((c) => c.id === event.id);
   if (!car) {
     console.log('New car', event.id);
@@ -62,17 +71,12 @@ socket.on('update', (event) => {
 
     if (car.id === myId) {
       myCar = car;
-      document.getElementById('start-card').style.display = 'none';
-      document.getElementById('info-card').style.display = 'block';
+      startCard.style.display = 'none';
+      infoCard.style.display = 'block';
     }
   }
 
   car.deserialize(event, simStep);
-
-  if (car.id === myId) {
-    document.getElementById('score-span').textContent = car.score;
-    document.getElementById('health-span').textContent = car.health;
-  }
 });
 
 socket.on('delete', (id) => {
@@ -85,8 +89,8 @@ socket.on('delete', (id) => {
 
   if (id === myCar?.id) {
     myCar = undefined;
-    document.getElementById('start-card').style.display = 'block';
-    document.getElementById('info-card').style.display = 'none';
+    startCard.style.display = 'block';
+    infoCard.style.display = 'none';
   }
 });
 
@@ -94,6 +98,28 @@ socket.on('input', (event) => {
   const car = cars.find((c) => c.id === event.id);
   if (car) {
     car.processInput(event, simStep);
+  }
+});
+
+socket.on('score', (event) => {
+  const car = cars.find((c) => c.id === event.id);
+  if (car) {
+    car.score = event.score;
+
+    if (car.id === myId) {
+      scoreSpan.textContent = String(car.score);
+    }
+  }
+});
+
+socket.on('health', (event) => {
+  const car = cars.find((c) => c.id === event.id);
+  if (car) {
+    car.health = event.health;
+
+    if (car.id === myId) {
+      healthSpan.textContent = String(car.health);
+    }
   }
 });
 

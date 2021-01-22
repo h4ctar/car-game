@@ -83,11 +83,11 @@ const loop = () => {
         // todo: better collision
         if (Math.abs(distance[0]) < 20 && Math.abs(distance[1]) < 20) {
           thisCar.score += 10;
-          ioServer.emit('update', thisCar.serialize());
+          ioServer.emit('score', { id: thisCar.id, score: thisCar.score });
 
           otherCar.health -= 10;
           if (otherCar.health > 0) {
-            ioServer.emit('update', otherCar.serialize());
+            ioServer.emit('health', { id: otherCar.id, health: otherCar.health });
           } else {
             deleteCar(otherCar);
           }

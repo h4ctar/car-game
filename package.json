@@ -7,7 +7,7 @@
     "build": "webpack --config webpack.dev.js",
     "build-dev": "webpack --config webpack.dev.js",
     "lint": "eslint .",
-    "typecheck": "tsc -allowJs -checkJs -noEmit -moduleResolution node -target ES6 src/*.js",
+    "typecheck": "tsc -allowJs -checkJs -noEmit -moduleResolution node -module commonjs -target ES6 src/*.js",
     "start": "node src/server.js"
   },
   "author": "Ben",
