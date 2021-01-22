@@ -65,6 +65,9 @@ exports.Car = class {
     return {
       id: this.id,
       username: this.username,
+
+      histories: this.histories,
+
       score: this.score,
       health: this.health,
       position: this.position,
@@ -76,12 +79,16 @@ exports.Car = class {
       brake: this.brake,
       shoot: this.shoot,
       wheels: this.wheels,
-      histories: this.histories,
+      bullets: this.bullets,
     };
   }
 
   deserialize(event, currentSimStep) {
+    // todo: does username need to be here
     this.username = event.username;
+
+    this.histories = event.histories;
+
     this.score = event.score;
     this.health = event.health;
     this.position = event.position;
@@ -93,16 +100,13 @@ exports.Car = class {
     this.brake = event.brake;
     this.shoot = event.shoot;
     this.wheels = event.wheels;
-    this.histories = event.histories;
+    this.bullets = event.bullets;
 
     let lastHistory = this.histories[this.histories.length - 1];
     if (lastHistory) {
       // remove future history
       const historyToDeleteCount = lastHistory.simStep - currentSimStep;
       this.histories.splice(this.histories.length - historyToDeleteCount);
-
-      // remove future bullets
-      this.bullets = this.bullets.filter((bullet) => bullet.startSimStep <= lastHistory.simStep);
 
       // todo: need to keep events so they can be replayed on update
 
@@ -171,6 +175,7 @@ exports.Car = class {
     this.brake = history.brake;
     this.shoot = history.shoot;
     this.wheels = history.wheels.map((wheel) => ({ ...wheel }));
+    this.bullets = history.bullets.map((bullet) => new Bullet(bullet.position, bullet.velocity, bullet.startTimStep));
   }
 
   applyInput(event) {
@@ -201,6 +206,7 @@ exports.Car = class {
       brake: this.brake,
       shoot: this.shoot,
       wheels: this.wheels.map((wheel) => ({ ...wheel })),
+      bullets: this.bullets.map((bullet) => ({ ...bullet })),
     });
 
     // make sure it never gets too long
