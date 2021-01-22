@@ -312,7 +312,7 @@ exports.Car = class {
     context.restore();
   }
 
-  drawBullet(bullet, context) {
+  static drawBullet(bullet, context) {
     context.fillStyle = 'white';
     context.fillRect(bullet.position[0], bullet.position[1], 4, 4);
   }
