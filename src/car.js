@@ -1,7 +1,6 @@
 const math = require('mathjs');
 const util = require('./util');
 const { DT } = require('./config');
-const { Bullet } = require('./bullet');
 
 const WHEEL_FL = 0;
 const WHEEL_FR = 1;
@@ -57,7 +56,6 @@ exports.Car = class {
       angle: 0,
     };
 
-    /** @type { Bullet[] } */
     this.bullets = [];
   }
 
@@ -100,19 +98,18 @@ exports.Car = class {
     this.brake = event.brake;
     this.shoot = event.shoot;
     this.wheels = event.wheels;
-    this.bullets = event.bullets.map((bullet) => new Bullet(bullet.position, bullet.velocity, bullet.startTimStep));
+    this.bullets = event.bullets;
 
     let lastHistory = this.histories[this.histories.length - 1];
     if (lastHistory) {
       // remove future history
       const historyToDeleteCount = lastHistory.simStep - currentSimStep;
       this.histories.splice(this.histories.length - historyToDeleteCount);
+    }
 
-      // remove future bullets
-      this.bullets = this.bullets.filter((bullet) => bullet.startSimStep <= lastHistory.simStep);
-
-      // write missing history
-      lastHistory = this.histories[this.histories.length - 1];
+    // write missing history
+    lastHistory = this.histories[this.histories.length - 1];
+    if (lastHistory) {
       for (let simStep = lastHistory.simStep + 1; simStep <= currentSimStep; simStep += 1) {
         this.update(simStep);
       }
@@ -176,7 +173,7 @@ exports.Car = class {
     this.brake = history.brake;
     this.shoot = history.shoot;
     this.wheels = history.wheels.map((wheel) => ({ ...wheel }));
-    this.bullets = history.bullets.map((bullet) => new Bullet(bullet.position, bullet.velocity, bullet.startTimStep));
+    this.bullets = history.bullets.map((bullet) => ({ ...bullet }));
   }
 
   applyInput(event) {
@@ -272,14 +269,17 @@ exports.Car = class {
       // todo: reload timer
       const bulletSpeed = 1000;
       const bulletVelocity = math.add(this.velocity, math.rotate([bulletSpeed, 0], this.angle));
-      const bullet = new Bullet(this.position, bulletVelocity, simStep);
+      const bullet = { position: this.position, velocity: bulletVelocity, startSimStep: simStep };
       this.bullets.push(bullet);
     }
 
-    this.bullets = this.bullets.filter((bullet) => bullet.isAlive(simStep));
-    this.bullets.forEach((bullet) => bullet.update());
+    this.bullets = this.bullets.filter((bullet) => simStep - bullet.startSimStep < 50);
+    this.bullets.forEach((bullet) => { bullet.position = math.add(bullet.position, math.multiply(bullet.velocity, DT)); });
   }
 
+  /**
+   * @param { CanvasRenderingContext2D } context
+   */
   draw(context) {
     context.save();
     context.translate(this.position[0], this.position[1]);
@@ -295,7 +295,7 @@ exports.Car = class {
     this.wheels.forEach((wheel) => this.drawWheel(wheel, context));
     context.restore();
 
-    this.bullets.forEach((bullet) => bullet.draw(context));
+    this.bullets.forEach((bullet) => this.drawBullet(bullet, context));
   }
 
   drawWheel(wheel, context) {
@@ -306,5 +306,10 @@ exports.Car = class {
     context.fillRect(-this.wheelDiameter / 2, -this.wheelWidth / 2, this.wheelDiameter, this.wheelWidth);
 
     context.restore();
+  }
+
+  drawBullet(bullet, context) {
+    context.fillStyle = 'white';
+    context.fillRect(bullet.position[0], bullet.position[1], 4, 4);
   }
 };
