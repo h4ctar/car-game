@@ -96,20 +96,16 @@ exports.Car = class Car {
     this.wheels = event.wheels;
     this.bullets = event.bullets;
 
-    // todo: there are bugs here
-
-    let lastHistory = this.histories[this.histories.length - 1];
+    const lastHistory = this.histories[this.histories.length - 1];
     if (lastHistory) {
-      // remove future history
-      const historyToDeleteCount = lastHistory.simStep - currentSimStep;
-      this.histories.splice(this.histories.length - historyToDeleteCount);
-    }
-
-    // write missing history
-    lastHistory = this.histories[this.histories.length - 1];
-    if (lastHistory) {
-      for (let simStep = lastHistory.simStep + 1; simStep <= currentSimStep; simStep += 1) {
-        this.update(simStep);
+      if (lastHistory.simStep + 1 > currentSimStep) {
+        this.windBackTime(currentSimStep);
+      } else if (lastHistory.simStep + 1 < currentSimStep) {
+        let simStep = lastHistory.simStep;
+        while (simStep < currentSimStep) {
+          this.update(simStep);
+          simStep += 1;
+        }
       }
     }
 

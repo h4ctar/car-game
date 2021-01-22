@@ -73,6 +73,8 @@ socket.on('update', (event) => {
       myCar = car;
       startCard.style.display = 'none';
       infoCard.style.display = 'block';
+      scoreSpan.textContent = String(myCar.score);
+      healthSpan.textContent = String(myCar.score);
     }
   }
 
