@@ -7,7 +7,7 @@ const WHEEL_FR = 1;
 const WHEEL_RL = 2;
 const WHEEL_RR = 3;
 
-exports.Car = class {
+exports.Car = class Car {
   /**
    * @param {string} id
    * @param {string} username
@@ -299,7 +299,7 @@ exports.Car = class {
     this.wheels.forEach((wheel) => this.drawWheel(wheel, context));
     context.restore();
 
-    this.bullets.forEach((bullet) => this.drawBullet(bullet, context));
+    this.bullets.forEach((bullet) => Car.drawBullet(bullet, context));
   }
 
   drawWheel(wheel, context) {
