@@ -108,7 +108,8 @@ exports.Car = class {
       const historyToDeleteCount = lastHistory.simStep - currentSimStep;
       this.histories.splice(this.histories.length - historyToDeleteCount);
 
-      // todo: need to keep events so they can be replayed on update
+      // remove future bullets
+      this.bullets = this.bullets.filter((bullet) => bullet.startSimStep <= lastHistory.simStep);
 
       // write missing history
       lastHistory = this.histories[this.histories.length - 1];
