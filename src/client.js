@@ -21,7 +21,7 @@ let pingTime;
 setInterval(() => {
   pingTime = Date.now();
   socket.emit('ping');
-}, 1000);
+}, 10000);
 socket.on('pong', () => console.info(`latency: ${Date.now() - pingTime}`));
 
 document.getElementById('start-form').addEventListener('submit', (event) => {

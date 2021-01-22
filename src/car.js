@@ -131,16 +131,16 @@ exports.Car = class {
     if (event.simStep > currentSimStep) {
       // it's in the future, process it later
     } else if (event.simStep === currentSimStep) {
-      this.applyInput(event);
-    } else if (this.histories.length === 0) {
+      // it's this update, process it now
       this.applyInput(event);
     } else {
+      // it's in the past, wind back time
       this.windBackTime(event.simStep);
 
       // apply the input
       this.applyInput(event);
 
-      // step forward until now
+      // and step forward until now
       let simStep = event.simStep;
       while (simStep < currentSimStep) {
         this.update(simStep);
@@ -160,20 +160,24 @@ exports.Car = class {
     }
     const history = this.histories[historyIndex];
 
-    // remove history after this history point (including this point)
-    this.histories.splice(historyIndex);
+    if (history) {
+      // remove history after this history point (including this point)
+      this.histories.splice(historyIndex);
 
-    // reset this to the history point
-    this.position = history.position;
-    this.angle = history.angle;
-    this.velocity = history.velocity;
-    this.angularVelocity = history.angularVelocity;
-    this.steerDirection = history.steerDirection;
-    this.accelerate = history.accelerate;
-    this.brake = history.brake;
-    this.shoot = history.shoot;
-    this.wheels = history.wheels.map((wheel) => ({ ...wheel }));
-    this.bullets = history.bullets.map((bullet) => ({ ...bullet }));
+      // reset this to the history point
+      this.position = history.position;
+      this.angle = history.angle;
+      this.velocity = history.velocity;
+      this.angularVelocity = history.angularVelocity;
+      this.steerDirection = history.steerDirection;
+      this.accelerate = history.accelerate;
+      this.brake = history.brake;
+      this.shoot = history.shoot;
+      this.wheels = history.wheels.map((wheel) => ({ ...wheel }));
+      this.bullets = history.bullets.map((bullet) => ({ ...bullet }));
+    } else {
+      console.warn(`No history at ${desiredSimStep}`);
+    }
   }
 
   applyInput(event) {
