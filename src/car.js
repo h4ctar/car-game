@@ -63,7 +63,9 @@ exports.Car = class Car {
     return {
       id: this.id,
       username: this.username,
+
       histories: this.histories,
+      inputEvents: this.inputEvents,
 
       score: this.score,
       health: this.health,
@@ -82,6 +84,7 @@ exports.Car = class Car {
 
   deserialize(event, currentSimStep) {
     this.histories = event.histories;
+    this.inputEvents = event.inputEvents;
 
     this.score = event.score;
     this.health = event.health;

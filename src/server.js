@@ -14,12 +14,23 @@ let simStep = 0;
 
 const cars = [];
 
+const createScoreboard = () => {
+  const scoreboard = cars
+    .map((car) => ({ username: car.username, score: car.score }))
+    .sort((a, b) => b.score - a.score)
+    .splice(0, 5);
+  return scoreboard;
+};
+
 const deleteCar = (car) => {
   const index = cars.indexOf(car);
   if (index !== -1) {
     cars.splice(index, 1);
   }
   ioServer.emit('delete', car.id);
+
+  // send an updated scoreboard without the deleted
+  ioServer.emit('scoreboard', createScoreboard());
 };
 
 ioServer.on('connection', (socket) => {
@@ -37,11 +48,17 @@ ioServer.on('connection', (socket) => {
   // tell them to start the simulation at the current simulation step
   socket.emit('start', simStep);
 
+  // send the initial scoreboard
+  socket.emit('scoreboard', createScoreboard());
+
   socket.on('start', (event) => {
     console.info(`Client starting ${event.username}`);
     car = new Car(id, event.username);
     car.position = [200, 200];
     cars.push(car);
+
+    // send an updated scoreboard including the new car
+    ioServer.emit('scoreboard', createScoreboard());
 
     ioServer.emit('update', car.serialize());
   });
@@ -84,6 +101,8 @@ const loop = () => {
         if (Math.abs(distance[0]) < 20 && Math.abs(distance[1]) < 20) {
           thisCar.score += 10;
           ioServer.emit('score', { id: thisCar.id, score: thisCar.score });
+
+          ioServer.emit('scoreboard', createScoreboard());
 
           otherCar.health -= 10;
           if (otherCar.health > 0) {

@@ -16,6 +16,13 @@ const usernameInput = /** @type { HTMLInputElement} */ (document.getElementById(
 const infoCard = document.getElementById('info-card');
 const scoreSpan = /** @type { HTMLSpanElement } */ (document.getElementById('score-span'));
 const healthSpan = /** @type { HTMLSpanElement } */ (document.getElementById('health-span'));
+const scoreboardTableBody = /** @type { HTMLTableSectionElement } */ (document.getElementById('scoreboard-tbody'));
+[1, 2, 3, 4, 5].forEach((i) => {
+  const row = scoreboardTableBody.insertRow();
+  row.insertCell().textContent = String(i);
+  row.insertCell();
+  row.insertCell();
+});
 
 const socket = io.connect({ query: `id=${myId}` });
 socket.on('disconnect', () => {
@@ -123,6 +130,15 @@ socket.on('health', (event) => {
       healthSpan.textContent = String(car.health);
     }
   }
+});
+
+socket.on('scoreboard', (scoreboard) => {
+  scoreboard.forEach((entry, index) => {
+    const row = scoreboardTableBody.rows[index];
+    row.cells[1].textContent = entry.username;
+    row.cells[2].textContent = entry.score;
+    // todo: hide remaining rows
+  });
 });
 
 const checkInput = () => {
