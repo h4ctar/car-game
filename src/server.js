@@ -1,9 +1,9 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const math = require('mathjs');
 const { Car } = require('./car');
 const { SIM_PERIOD } = require('./config');
+const { sub } = require('./vector');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -12,6 +12,7 @@ const ioServer = new Server(httpServer, { serveClient: false });
 const simStartTime = Date.now();
 let simStep = 0;
 
+/** @type {Car[]} */
 const cars = [];
 
 const createScoreboard = () => {
@@ -22,6 +23,10 @@ const createScoreboard = () => {
   return scoreboard;
 };
 
+/**
+ * Delete a car.
+ * @param {Car} car the car to delete
+ */
 const deleteCar = (car) => {
   const index = cars.indexOf(car);
   if (index !== -1) {
@@ -54,7 +59,7 @@ ioServer.on('connection', (socket) => {
   socket.on('start', (event) => {
     console.info(`Client starting ${event.username}`);
     car = new Car(id, event.username);
-    car.position = [200, 200];
+    car.position = { x: 200, y: 200 };
     cars.push(car);
 
     // send an updated scoreboard including the new car
@@ -96,7 +101,7 @@ const loop = () => {
     [...cars].forEach((thisCar) => {
       const otherCars = cars.filter((car) => car !== thisCar);
       thisCar.bullets.forEach((bullet) => otherCars.forEach((otherCar) => {
-        const distance = math.subtract(bullet.position, otherCar.position);
+        const distance = sub(bullet.position, otherCar.position);
         // todo: better collision
         if (Math.abs(distance[0]) < 20 && Math.abs(distance[1]) < 20) {
           thisCar.score += 10;

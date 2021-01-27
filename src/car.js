@@ -1,6 +1,14 @@
-const math = require('mathjs');
+/**
+ * @typedef { import("./vector").Point2 } Point2
+ * @typedef { { position: Point2, angle: number } } Wheel
+ * @typedef { { position: Point2, velocity: Point2, startSimStep: number } } Bullet
+ */
+
 const util = require('./util');
 const { DT } = require('./config');
+const {
+  add, multiply, dot, rotate, length,
+} = require('./vector');
 
 const WHEEL_FL = 0;
 const WHEEL_FR = 1;
@@ -28,9 +36,9 @@ exports.Car = class Car {
     this.score = 0;
     this.health = 100;
 
-    this.position = [0, 0];
+    this.position = { x: 0, y: 0 };
     this.angle = 0;
-    this.velocity = [1, 0];
+    this.velocity = { x: 1, y: 0 };
     this.angularVelocity = 0;
     this.steerDirection = 0;
     this.accelerate = false;
@@ -44,24 +52,26 @@ exports.Car = class Car {
     this.wheelWidth = 6;
     this.wheelDiameter = 16;
 
+    /** @type { Wheel[] } */
     this.wheels = new Array(4);
     this.wheels[WHEEL_FL] = {
-      position: [this.wheelbase / 2, -this.track / 2],
+      position: { x: this.wheelbase / 2, y: -this.track / 2 },
       angle: 0,
     };
     this.wheels[WHEEL_FR] = {
-      position: [this.wheelbase / 2, this.track / 2],
+      position: { x: this.wheelbase / 2, y: this.track / 2 },
       angle: 0,
     };
     this.wheels[WHEEL_RL] = {
-      position: [-this.wheelbase / 2, -this.track / 2],
+      position: { x: -this.wheelbase / 2, y: -this.track / 2 },
       angle: 0,
     };
     this.wheels[WHEEL_RR] = {
-      position: [-this.wheelbase / 2, this.track / 2],
+      position: { x: -this.wheelbase / 2, y: this.track / 2 },
       angle: 0,
     };
 
+    /** @type { Bullet[] } */
     this.bullets = [];
   }
 
@@ -222,11 +232,11 @@ exports.Car = class Car {
     let targetLeftAngle = 0;
     let targetRightAngle = 0;
     if (this.steerDirection !== 0) {
-      const speed = Math.sqrt(this.velocity[0] * this.velocity[0] + this.velocity[1] * this.velocity[1]);
+      const speed = length(this.velocity);
       // bigger turn radius when going faster
       const turnRadius = util.clamp(speed, 0, 1500) / 1500 * 300 + 40;
-      targetLeftAngle = this.steerDirection * math.atan(this.wheelbase / (turnRadius + this.steerDirection * this.track / 2));
-      targetRightAngle = this.steerDirection * math.atan(this.wheelbase / (turnRadius - this.steerDirection * this.track / 2));
+      targetLeftAngle = this.steerDirection * Math.atan(this.wheelbase / (turnRadius + this.steerDirection * this.track / 2));
+      targetRightAngle = this.steerDirection * Math.atan(this.wheelbase / (turnRadius - this.steerDirection * this.track / 2));
     }
 
     this.wheels[WHEEL_FL].angle = util.tween(this.wheels[WHEEL_FL].angle, targetLeftAngle, 4 * DT);
@@ -237,51 +247,51 @@ exports.Car = class Car {
     const wheelForce = this.accelerate ? 200 : 0;
 
     // calculate the acceleration
-    let acceleration = [0, 0];
+    let acceleration = { x: 0, y: 0 };
     let angularAcceleration = 0;
     this.wheels.forEach((wheel) => {
-      const wheelPosition = math.rotate(wheel.position, this.angle);
-      const wheelVelocity = math.add(this.velocity, math.multiply([-wheelPosition[1], wheelPosition[0]], this.angularVelocity));
+      const wheelPosition = rotate(wheel.position, this.angle);
+      const wheelVelocity = add(this.velocity, multiply({ x: -wheelPosition.y, y: wheelPosition.x }, this.angularVelocity));
 
       // power
-      let force = math.rotate([wheelForce, 0], this.angle + wheel.angle);
+      let force = rotate({ x: wheelForce, y: 0 }, this.angle + wheel.angle);
 
       // brake
       const longitudinalFrictionConstant = this.brake ? 0.9 : 0.1;
-      const longitudinalNormal = math.rotate([1, 0], this.angle + wheel.angle);
-      const longitudinalVelocity = math.multiply(math.dot(longitudinalNormal, wheelVelocity), longitudinalNormal);
-      const longitudinalFrictionForce = math.multiply(longitudinalVelocity, -longitudinalFrictionConstant);
-      force = math.add(force, longitudinalFrictionForce);
+      const longitudinalNormal = rotate({ x: 1, y: 0 }, this.angle + wheel.angle);
+      const longitudinalVelocity = multiply(longitudinalNormal, dot(longitudinalNormal, wheelVelocity));
+      const longitudinalFrictionForce = multiply(longitudinalVelocity, -longitudinalFrictionConstant);
+      force = add(force, longitudinalFrictionForce);
 
       // slide
       const lateralFrictionConstant = 1;
-      const lateralNormal = math.rotate([0, 1], this.angle + wheel.angle);
-      const lateralVelocity = math.multiply(math.dot(lateralNormal, wheelVelocity), lateralNormal);
-      const lateralFrictionForce = math.multiply(lateralVelocity, -lateralFrictionConstant);
-      force = math.add(force, lateralFrictionForce);
+      const lateralNormal = rotate({ x: 0, y: 1 }, this.angle + wheel.angle);
+      const lateralVelocity = multiply(lateralNormal, dot(lateralNormal, wheelVelocity));
+      const lateralFrictionForce = multiply(lateralVelocity, -lateralFrictionConstant);
+      force = add(force, lateralFrictionForce);
 
-      acceleration = math.add(acceleration, math.multiply(force, this.mass));
-      angularAcceleration = math.add(angularAcceleration, (wheelPosition[0] * force[1] - wheelPosition[1] * force[0]) / this.momentOfInertia);
+      acceleration = add(acceleration, multiply(force, this.mass));
+      angularAcceleration += (wheelPosition.x * force.y - wheelPosition.y * force.x) / this.momentOfInertia;
     });
 
     // update velocity with new forces
-    this.velocity = math.add(this.velocity, math.multiply(acceleration, DT));
-    this.angularVelocity = math.add(this.angularVelocity, math.multiply(angularAcceleration, DT));
+    this.velocity = add(this.velocity, multiply(acceleration, DT));
+    this.angularVelocity += angularAcceleration * DT;
 
     // update position with velocity
-    this.position = math.add(this.position, math.multiply(this.velocity, DT));
-    this.angle = math.add(this.angle, math.multiply(this.angularVelocity, DT));
+    this.position = add(this.position, multiply(this.velocity, DT));
+    this.angle += this.angularVelocity * DT;
 
     if (this.shoot) {
       // todo: reload timer
       const bulletSpeed = 1000;
-      const bulletVelocity = math.add(this.velocity, math.rotate([bulletSpeed, 0], this.angle));
+      const bulletVelocity = add(this.velocity, rotate({ x: bulletSpeed, y: 0 }, this.angle));
       const bullet = { position: this.position, velocity: bulletVelocity, startSimStep: simStep };
       this.bullets.push(bullet);
     }
 
     this.bullets = this.bullets.filter((bullet) => simStep - bullet.startSimStep < 50);
-    this.bullets.forEach((bullet) => { bullet.position = math.add(bullet.position, math.multiply(bullet.velocity, DT)); });
+    this.bullets.forEach((bullet) => { bullet.position = add(bullet.position, multiply(bullet.velocity, DT)); });
   }
 
   /**
@@ -289,7 +299,7 @@ exports.Car = class Car {
    */
   draw(context) {
     context.save();
-    context.translate(this.position[0], this.position[1]);
+    context.translate(this.position.x, this.position.y);
 
     // draw the username
     context.save();
@@ -320,7 +330,7 @@ exports.Car = class Car {
 
   drawWheel(wheel, context) {
     context.save();
-    context.translate(wheel.position[0], wheel.position[1]);
+    context.translate(wheel.position.x, wheel.position.y);
     context.rotate(wheel.angle);
     context.rect(-this.wheelDiameter / 2, -this.wheelWidth / 2, this.wheelDiameter, this.wheelWidth);
 
@@ -329,6 +339,6 @@ exports.Car = class Car {
 
   static drawBullet(bullet, context) {
     context.fillStyle = 'white';
-    context.fillRect(bullet.position[0], bullet.position[1], 2, 2);
+    context.fillRect(bullet.position.x, bullet.position.y, 2, 2);
   }
 };

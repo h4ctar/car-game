@@ -7,7 +7,6 @@ module.exports = {
     path: path.resolve(__dirname, 'static'),
   },
   externals: {
-    mathjs: 'math',
     'socket.io-client': 'io',
   },
 };

@@ -209,18 +209,18 @@ setInterval(loop, SIM_PERIOD);
 // draw on animation frame
 const draw = () => {
   if (simRunning) {
-    const camera = myCar ? myCar.position : [0, 0];
+    const camera = myCar ? myCar.position : { x: 0, y: 0 };
     context.fillStyle = 'black';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     const GRID_SIZE = 200;
     context.beginPath();
     context.strokeStyle = 'grey';
-    for (let x = -(camera[0] % GRID_SIZE); x < canvas.width; x += GRID_SIZE) {
+    for (let x = -(camera.x % GRID_SIZE); x < canvas.width; x += GRID_SIZE) {
       context.moveTo(x, 0);
       context.lineTo(x, canvas.height);
     }
-    for (let y = camera[1] % GRID_SIZE; y < canvas.height; y += GRID_SIZE) {
+    for (let y = camera.y % GRID_SIZE; y < canvas.height; y += GRID_SIZE) {
       context.moveTo(0, y);
       context.lineTo(canvas.width, y);
     }
@@ -230,7 +230,7 @@ const draw = () => {
     context.translate(canvas.width / 2, canvas.height - canvas.height / 2);
     context.scale(1, -1);
 
-    context.translate(-camera[0], -camera[1]);
+    context.translate(-camera.x, -camera.y);
 
     cars.forEach((car) => car.draw(context));
     context.restore();
