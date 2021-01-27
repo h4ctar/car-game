@@ -7,6 +7,12 @@ const WHEEL_FR = 1;
 const WHEEL_RL = 2;
 const WHEEL_RR = 3;
 
+let image;
+if (typeof window !== 'undefined') {
+  image = new Image();
+  image.src = 'buggy.svg';
+}
+
 exports.Car = class Car {
   /**
    * @param {string} id
@@ -31,11 +37,11 @@ exports.Car = class Car {
     this.brake = false;
     this.shoot = false;
     this.wheelbase = 50;
-    this.track = 25;
-    this.mass = 2;
+    this.track = 30;
+    this.mass = 4;
     this.momentOfInertia = (this.mass / 12) * (this.wheelbase * this.wheelbase + this.track * this.track);
 
-    this.wheelWidth = 8;
+    this.wheelWidth = 6;
     this.wheelDiameter = 16;
 
     this.wheels = new Array(4);
@@ -285,15 +291,28 @@ exports.Car = class Car {
     context.save();
     context.translate(this.position[0], this.position[1]);
 
+    // draw the username
     context.save();
     context.fillStyle = 'white';
     context.textAlign = 'center';
-    context.scale(2, -2);
-    context.fillText(this.username, 0, 40);
+    context.scale(1, -1);
+    context.fillText(this.username, 0, 60);
     context.restore();
 
     context.rotate(this.angle);
+
+    // draw the body
+    context.strokeStyle = 'white';
+    // const body = new Path2D('M 36.566565,-5.8117406 -6.6404056,-11.6064 l -6.1608904,3.6133498 -25.814007,0.0335 -0.0719,15.6430501 25.392317,-0.10692 6.0098604,4.0268801 44.0524606,-6.1022601 1.92174,-1.2032005 -0.0361,-9.0526 z');
+    // context.stroke(body);
+    context.drawImage(image, -50, -50);
+
+    // draw the wheels
+    context.beginPath();
+    context.strokeStyle = 'white';
     this.wheels.forEach((wheel) => this.drawWheel(wheel, context));
+    context.stroke();
+
     context.restore();
 
     this.bullets.forEach((bullet) => Car.drawBullet(bullet, context));
@@ -303,14 +322,13 @@ exports.Car = class Car {
     context.save();
     context.translate(wheel.position[0], wheel.position[1]);
     context.rotate(wheel.angle);
-    context.fillStyle = 'white';
-    context.fillRect(-this.wheelDiameter / 2, -this.wheelWidth / 2, this.wheelDiameter, this.wheelWidth);
+    context.rect(-this.wheelDiameter / 2, -this.wheelWidth / 2, this.wheelDiameter, this.wheelWidth);
 
     context.restore();
   }
 
   static drawBullet(bullet, context) {
     context.fillStyle = 'white';
-    context.fillRect(bullet.position[0], bullet.position[1], 4, 4);
+    context.fillRect(bullet.position[0], bullet.position[1], 2, 2);
   }
 };

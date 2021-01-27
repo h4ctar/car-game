@@ -17,12 +17,12 @@ const infoCard = document.getElementById('info-card');
 const scoreSpan = /** @type { HTMLSpanElement } */ (document.getElementById('score-span'));
 const healthSpan = /** @type { HTMLSpanElement } */ (document.getElementById('health-span'));
 const scoreboardTableBody = /** @type { HTMLTableSectionElement } */ (document.getElementById('scoreboard-tbody'));
-[1, 2, 3, 4, 5].forEach((i) => {
+for (let i = 1; i <= 5; i += 1) {
   const row = scoreboardTableBody.insertRow();
   row.insertCell().textContent = String(i);
   row.insertCell();
   row.insertCell();
-});
+}
 
 const socket = io.connect({ query: `id=${myId}` });
 socket.on('disconnect', () => {
@@ -137,8 +137,8 @@ socket.on('scoreboard', (scoreboard) => {
     const row = scoreboardTableBody.rows[index];
     row.cells[1].textContent = entry.username;
     row.cells[2].textContent = entry.score;
-    // todo: hide remaining rows
   });
+  // todo: hide remaining rows
 });
 
 const checkInput = () => {
@@ -216,11 +216,11 @@ const draw = () => {
     const GRID_SIZE = 200;
     context.beginPath();
     context.strokeStyle = 'grey';
-    for (let x = -(camera[0] / 2 % GRID_SIZE); x < canvas.width; x += GRID_SIZE) {
+    for (let x = -(camera[0] % GRID_SIZE); x < canvas.width; x += GRID_SIZE) {
       context.moveTo(x, 0);
       context.lineTo(x, canvas.height);
     }
-    for (let y = camera[1] / 2 % GRID_SIZE; y < canvas.height; y += GRID_SIZE) {
+    for (let y = camera[1] % GRID_SIZE; y < canvas.height; y += GRID_SIZE) {
       context.moveTo(0, y);
       context.lineTo(canvas.width, y);
     }
@@ -228,7 +228,7 @@ const draw = () => {
 
     context.save();
     context.translate(canvas.width / 2, canvas.height - canvas.height / 2);
-    context.scale(0.5, -0.5);
+    context.scale(1, -1);
 
     context.translate(-camera[0], -camera[1]);
 
