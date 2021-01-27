@@ -1,4 +1,4 @@
-const io = require('socket.io-client');
+const { io } = require('socket.io-client');
 const { Car } = require('./car');
 const util = require('./util');
 
@@ -24,7 +24,7 @@ for (let i = 1; i <= 5; i += 1) {
   row.insertCell();
 }
 
-const socket = io.connect({ query: `id=${myId}` });
+const socket = io({ query: `id=${myId}` });
 socket.on('disconnect', () => {
   console.error('Socked disconnected');
   socket.close();

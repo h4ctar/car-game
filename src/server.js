@@ -1,13 +1,13 @@
 const express = require('express');
 const http = require('http');
-const io = require('socket.io');
+const { Server } = require('socket.io');
 const math = require('mathjs');
 const { Car } = require('./car');
 const { SIM_PERIOD } = require('./config');
 
 const app = express();
 const httpServer = http.createServer(app);
-const ioServer = io(httpServer, { serveClient: false });
+const ioServer = new Server(httpServer, { serveClient: false });
 
 const simStartTime = Date.now();
 let simStep = 0;
