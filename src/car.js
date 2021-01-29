@@ -17,12 +17,6 @@ const WHEEL_FR = 1;
 // const WHEEL_RL = 2;
 // const WHEEL_RR = 3;
 
-let image;
-if (typeof window !== 'undefined') {
-  image = new Image();
-  image.src = 'buggy.svg';
-}
-
 exports.Car = class Car {
   /**
    * @param {string} id
@@ -53,6 +47,7 @@ exports.Car = class Car {
 
     this.wheelWidth = 6;
     this.wheelDiameter = 16;
+    this.bodyPath = 'M 36.566565,-5.8117406 -6.6404056,-11.6064 l -6.1608904,3.6133498 -25.814007,0.0335 -0.0719,15.6430501 25.392317,-0.10692 6.0098604,4.0268801 44.0524606,-6.1022601 1.92174,-1.2032005 -0.0361,-9.0526 z';
 
     /** @type { Wheel[] } */
     this.wheels = [
@@ -261,7 +256,7 @@ exports.Car = class Car {
 
     // todo: power curve
     // todo: reverse
-    const wheelForce = this.accelerate ? 100 : 0;
+    const wheelForce = this.accelerate ? 80 : 0;
 
     // calculate the acceleration
     let acceleration = { x: 0, y: 0 };
@@ -330,9 +325,7 @@ exports.Car = class Car {
 
     // draw the body
     context.strokeStyle = 'white';
-    // const body = new Path2D('M 36.566565,-5.8117406 -6.6404056,-11.6064 l -6.1608904,3.6133498 -25.814007,0.0335 -0.0719,15.6430501 25.392317,-0.10692 6.0098604,4.0268801 44.0524606,-6.1022601 1.92174,-1.2032005 -0.0361,-9.0526 z');
-    // context.stroke(body);
-    context.drawImage(image, -50, -50);
+    context.stroke(new Path2D(this.bodyPath));
 
     // draw the wheels
     context.beginPath();
