@@ -77,7 +77,6 @@ exports.Car = class Car {
     /** @type { Bullet[] } */
     this.bullets = [];
     this.lastShootSimStep = 0;
-
   }
 
   /**
