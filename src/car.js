@@ -26,20 +26,7 @@ exports.Car = class Car {
     this.id = id;
     this.username = username;
 
-    this.histories = [];
-    this.inputEvents = [];
-
-    this.score = 0;
-    this.health = 100;
-
-    this.position = { x: 0, y: 0 };
-    this.angle = 0;
-    this.velocity = { x: 1, y: 0 };
-    this.angularVelocity = 0;
-    this.steerDirection = 0;
-    this.accelerate = false;
-    this.brake = false;
-    this.shoot = false;
+    // static properties
     this.wheelbase = 50;
     this.track = 30;
     this.mass = 3;
@@ -49,6 +36,24 @@ exports.Car = class Car {
     this.wheelDiameter = 16;
     this.bodyPath = 'M 36.566565,-5.8117406 -6.6404056,-11.6064 l -6.1608904,3.6133498 -25.814007,0.0335 -0.0719,15.6430501 25.392317,-0.10692 6.0098604,4.0268801 44.0524606,-6.1022601 1.92174,-1.2032005 -0.0361,-9.0526 z';
 
+    this.reloadDuration = 5;
+
+    // other properties
+    this.histories = [];
+    this.inputEvents = [];
+
+    this.score = 0;
+    this.health = 100;
+
+    // dynamic properties
+    this.position = { x: 0, y: 0 };
+    this.angle = 0;
+    this.velocity = { x: 1, y: 0 };
+    this.angularVelocity = 0;
+    this.steerDirection = 0;
+    this.accelerate = false;
+    this.brake = false;
+    this.shoot = false;
     /** @type { Wheel[] } */
     this.wheels = [
       {
@@ -71,6 +76,8 @@ exports.Car = class Car {
 
     /** @type { Bullet[] } */
     this.bullets = [];
+    this.lastShootSimStep = 0;
+
   }
 
   /**
@@ -295,11 +302,13 @@ exports.Car = class Car {
     this.angle += this.angularVelocity * DT;
 
     if (this.shoot) {
-      // todo: reload timer
-      const bulletSpeed = 1000;
-      const bulletVelocity = add(this.velocity, rotate({ x: bulletSpeed, y: 0 }, this.angle));
-      const bullet = { position: this.position, velocity: bulletVelocity, startSimStep: simStep };
-      this.bullets.push(bullet);
+      if (simStep >= this.lastShootSimStep + this.reloadDuration) {
+        const bulletSpeed = 1000;
+        const bulletVelocity = add(this.velocity, rotate({ x: bulletSpeed, y: 0 }, this.angle));
+        const bullet = { position: this.position, velocity: bulletVelocity, startSimStep: simStep };
+        this.bullets.push(bullet);
+        this.lastShootSimStep = simStep;
+      }
     }
 
     this.bullets = this.bullets.filter((bullet) => simStep - bullet.startSimStep < 50);
