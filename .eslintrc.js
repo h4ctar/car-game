@@ -8,7 +8,7 @@ module.exports = {
   extends: [
     'airbnb-base',
   ],
-  ignorePatterns: ['static/main.js'],
+  ignorePatterns: ['static/*'],
   parserOptions: {
     ecmaVersion: 12,
   },
