@@ -39,7 +39,10 @@ exports.Car = class Car {
     this.reloadDuration = 5;
 
     // other properties
+    // todo: history type
     this.histories = [];
+
+    /** @type {InputEvent[]} */
     this.inputEvents = [];
 
     this.score = 0;
@@ -54,6 +57,7 @@ exports.Car = class Car {
     this.accelerate = false;
     this.brake = false;
     this.shoot = false;
+
     /** @type { Wheel[] } */
     this.wheels = [
       {

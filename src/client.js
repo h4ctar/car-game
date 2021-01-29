@@ -15,6 +15,11 @@ console.info(`id ${myId}`);
 const canvas = /** @type { HTMLCanvasElement } */ (document.getElementById('canvas'));
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
 const context = canvas.getContext('2d');
 
 const startCard = document.getElementById('start-card');

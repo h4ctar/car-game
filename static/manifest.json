@@ -1,0 +1,17 @@
+{
+  "name": "IO Cool",
+  "short_name": "IOCool",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#5900b3",
+  "theme_color": "black",
+  "scope": ".",
+  "description": "It's a cool game.",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
