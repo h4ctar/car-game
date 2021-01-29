@@ -253,3 +253,12 @@ const draw = () => {
   window.requestAnimationFrame(draw);
 };
 draw();
+
+// register the service worker
+window.addEventListener('load', () => {
+  if ('serviceWorker' in navigator) {
+    navigator
+      .serviceWorker
+      .register('serviceworker.js');
+  }
+});
