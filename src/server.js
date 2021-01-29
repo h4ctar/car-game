@@ -1,9 +1,16 @@
+/**
+ * @typedef { import("./type").JoinEvent } JoinEvent
+ * @typedef { import("./type").InputEvent } InputEvent
+ * @typedef { import("./type").ScoreboardEvent } ScoreboardEvent
+ * @typedef { import("./type").ScoreEvent } ScoreEvent
+ * @typedef { import("./type").HealthEvent } HealthEvent
+ */
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const { Car } = require('./car');
 const { SIM_PERIOD } = require('./config');
-const { sub } = require('./vector');
+const { sub, length } = require('./vector');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -15,6 +22,9 @@ let simStep = 0;
 /** @type {Car[]} */
 const cars = [];
 
+/**
+ * @type {() => ScoreboardEvent}
+ */
 const createScoreboard = () => {
   const scoreboard = cars
     .map((car) => ({ username: car.username, score: car.score }))
@@ -45,6 +55,8 @@ ioServer.on('connection', (socket) => {
 
   // eslint-disable-next-line no-underscore-dangle
   const id = socket.request._query.id;
+
+  /** @type {Car} */
   let car;
 
   // send all cars to the new client
@@ -56,8 +68,8 @@ ioServer.on('connection', (socket) => {
   // send the initial scoreboard
   socket.emit('scoreboard', createScoreboard());
 
-  socket.on('start', (event) => {
-    console.info(`Client starting ${event.username}`);
+  socket.on('join', (/** @type {JoinEvent} */ event) => {
+    console.info(`Client joining ${event.username}`);
     car = new Car(id, event.username);
     car.position = { x: 200, y: 200 };
     cars.push(car);
@@ -68,7 +80,7 @@ ioServer.on('connection', (socket) => {
     ioServer.emit('update', car.serialize());
   });
 
-  socket.on('input', (event) => {
+  socket.on('input', (/** @type {InputEvent} */ event) => {
     if (car) {
       car.processInput(event, simStep);
 
@@ -101,17 +113,21 @@ const loop = () => {
     [...cars].forEach((thisCar) => {
       const otherCars = cars.filter((car) => car !== thisCar);
       thisCar.bullets.forEach((bullet) => otherCars.forEach((otherCar) => {
-        const distance = sub(bullet.position, otherCar.position);
-        // todo: better collision
-        if (Math.abs(distance[0]) < 20 && Math.abs(distance[1]) < 20) {
+        const distance = length(sub(bullet.position, otherCar.position));
+        if (distance < 30) {
           thisCar.score += 10;
-          ioServer.emit('score', { id: thisCar.id, score: thisCar.score });
+
+          /** @type {ScoreEvent} */
+          const scoreEvent = { id: thisCar.id, score: thisCar.score };
+          ioServer.emit('score', scoreEvent);
 
           ioServer.emit('scoreboard', createScoreboard());
 
           otherCar.health -= 10;
           if (otherCar.health > 0) {
-            ioServer.emit('health', { id: otherCar.id, health: otherCar.health });
+            /** @type {HealthEvent} */
+            const healthEvent = { id: otherCar.id, health: otherCar.health };
+            ioServer.emit('health', healthEvent);
           } else {
             deleteCar(otherCar);
           }

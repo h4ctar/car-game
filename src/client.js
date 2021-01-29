@@ -1,3 +1,10 @@
+/**
+ * @typedef { import('./type').InputEvent } InputEvent
+ * @typedef { import('./type').ScoreboardEvent } ScoreboardEvent
+ * @typedef { import('./type').ScoreEvent } ScoreEvent
+ * @typedef { import('./type').HealthEvent } HealthEvent
+ */
+
 const { io } = require('socket.io-client');
 const { Car } = require('./car');
 const util = require('./util');
@@ -40,7 +47,7 @@ socket.on('pong', () => console.info(`latency: ${Date.now() - pingTime}`));
 startForm.addEventListener('submit', (event) => {
   console.info('Starting');
   const username = usernameInput.value;
-  socket.emit('start', { username });
+  socket.emit('join', /** @type {JoinEvent} */ { username });
   event.preventDefault();
 });
 
@@ -88,7 +95,7 @@ socket.on('update', (event) => {
   car.deserialize(event, simStep);
 });
 
-socket.on('delete', (id) => {
+socket.on('delete', (/** @type {string} */ id) => {
   console.info(`Delete car ${id}`);
 
   const index = cars.findIndex((car) => car.id === id);
@@ -110,7 +117,7 @@ socket.on('input', (event) => {
   }
 });
 
-socket.on('score', (event) => {
+socket.on('score', (/** @type {ScoreEvent} */ event) => {
   const car = cars.find((c) => c.id === event.id);
   if (car) {
     car.score = event.score;
@@ -121,7 +128,7 @@ socket.on('score', (event) => {
   }
 });
 
-socket.on('health', (event) => {
+socket.on('health', (/** @type {HealthEvent} */ event) => {
   const car = cars.find((c) => c.id === event.id);
   if (car) {
     car.health = event.health;
@@ -132,11 +139,11 @@ socket.on('health', (event) => {
   }
 });
 
-socket.on('scoreboard', (scoreboard) => {
+socket.on('scoreboard', (/** @type {ScoreboardEvent} */ scoreboard) => {
   scoreboard.forEach((entry, index) => {
     const row = scoreboardTableBody.rows[index];
     row.cells[1].textContent = entry.username;
-    row.cells[2].textContent = entry.score;
+    row.cells[2].textContent = String(entry.score);
   });
   // todo: hide remaining rows
 });
@@ -144,6 +151,8 @@ socket.on('scoreboard', (scoreboard) => {
 const checkInput = () => {
   if (myCar) {
     let dirty = false;
+
+    /** @type {InputEvent} */
     const event = {
       id: myId,
       simStep,

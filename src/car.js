@@ -1,7 +1,9 @@
 /**
  * @typedef { import("./vector").Point2 } Point2
- * @typedef { { position: Point2, angle: number } } Wheel
- * @typedef { { position: Point2, velocity: Point2, startSimStep: number } } Bullet
+ * @typedef { import("./type").Wheel } Wheel
+ * @typedef { import("./type").Bullet } Bullet
+ * @typedef { import("./type").InputEvent } InputEvent
+ * @typedef { import("./type").UpdateEvent } UpdateEvent
  */
 
 const util = require('./util');
@@ -12,8 +14,8 @@ const {
 
 const WHEEL_FL = 0;
 const WHEEL_FR = 1;
-const WHEEL_RL = 2;
-const WHEEL_RR = 3;
+// const WHEEL_RL = 2;
+// const WHEEL_RR = 3;
 
 let image;
 if (typeof window !== 'undefined') {
@@ -46,35 +48,39 @@ exports.Car = class Car {
     this.shoot = false;
     this.wheelbase = 50;
     this.track = 30;
-    this.mass = 4;
+    this.mass = 3;
     this.momentOfInertia = (this.mass / 12) * (this.wheelbase * this.wheelbase + this.track * this.track);
 
     this.wheelWidth = 6;
     this.wheelDiameter = 16;
 
     /** @type { Wheel[] } */
-    this.wheels = new Array(4);
-    this.wheels[WHEEL_FL] = {
-      position: { x: this.wheelbase / 2, y: -this.track / 2 },
-      angle: 0,
-    };
-    this.wheels[WHEEL_FR] = {
-      position: { x: this.wheelbase / 2, y: this.track / 2 },
-      angle: 0,
-    };
-    this.wheels[WHEEL_RL] = {
-      position: { x: -this.wheelbase / 2, y: -this.track / 2 },
-      angle: 0,
-    };
-    this.wheels[WHEEL_RR] = {
-      position: { x: -this.wheelbase / 2, y: this.track / 2 },
-      angle: 0,
-    };
+    this.wheels = [
+      {
+        position: { x: this.wheelbase / 2, y: -this.track / 2 },
+        angle: 0,
+      },
+      {
+        position: { x: this.wheelbase / 2, y: this.track / 2 },
+        angle: 0,
+      },
+      {
+        position: { x: -this.wheelbase / 2, y: -this.track / 2 },
+        angle: 0,
+      },
+      {
+        position: { x: -this.wheelbase / 2, y: this.track / 2 },
+        angle: 0,
+      },
+    ];
 
     /** @type { Bullet[] } */
     this.bullets = [];
   }
 
+  /**
+   * @returns {UpdateEvent}
+   */
   serialize() {
     return {
       id: this.id,
@@ -98,6 +104,10 @@ exports.Car = class Car {
     };
   }
 
+  /**
+   * @param {UpdateEvent} event
+   * @param {number} currentSimStep
+   */
   deserialize(event, currentSimStep) {
     this.histories = event.histories;
     this.inputEvents = event.inputEvents;
@@ -135,6 +145,10 @@ exports.Car = class Car {
     // }
   }
 
+  /**
+   * @param {InputEvent} event
+   * @param {number} currentSimStep
+   */
   processInput(event, currentSimStep) {
     this.inputEvents.push(event);
     this.inputEvents.sort((a, b) => a.simStep - b.simStep);
@@ -193,6 +207,9 @@ exports.Car = class Car {
     }
   }
 
+  /**
+   * @param {InputEvent} event
+   */
   applyInput(event) {
     this.steerDirection = event.steerDirection === undefined ? this.steerDirection : event.steerDirection;
     this.accelerate = event.accelerate === undefined ? this.accelerate : event.accelerate;
@@ -201,7 +218,7 @@ exports.Car = class Car {
   }
 
   /**
-   * @param { number } simStep
+   * @param {number} simStep
    */
   update(simStep) {
     // process previously received inputs
@@ -244,7 +261,7 @@ exports.Car = class Car {
 
     // todo: power curve
     // todo: reverse
-    const wheelForce = this.accelerate ? 200 : 0;
+    const wheelForce = this.accelerate ? 100 : 0;
 
     // calculate the acceleration
     let acceleration = { x: 0, y: 0 };
@@ -295,7 +312,7 @@ exports.Car = class Car {
   }
 
   /**
-   * @param { CanvasRenderingContext2D } context
+   * @param {CanvasRenderingContext2D} context
    */
   draw(context) {
     context.save();
@@ -328,6 +345,10 @@ exports.Car = class Car {
     this.bullets.forEach((bullet) => Car.drawBullet(bullet, context));
   }
 
+  /**
+   * @param {Wheel} wheel
+   * @param {CanvasRenderingContext2D} context
+   */
   drawWheel(wheel, context) {
     context.save();
     context.translate(wheel.position.x, wheel.position.y);
@@ -337,6 +358,10 @@ exports.Car = class Car {
     context.restore();
   }
 
+  /**
+   * @param {Bullet} bullet
+   * @param {CanvasRenderingContext2D} context
+   */
   static drawBullet(bullet, context) {
     context.fillStyle = 'white';
     context.fillRect(bullet.position.x, bullet.position.y, 2, 2);
