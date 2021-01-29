@@ -28,8 +28,9 @@ const cars = [];
 const createScoreboard = () => {
   const scoreboard = cars
     .map((car) => ({ username: car.username, score: car.score }))
-    .sort((a, b) => b.score - a.score)
-    .splice(0, 5);
+    .sort((a, b) => b.score - a.score);
+  scoreboard.length = 5;
+  scoreboard.fill({ username: '', score: 0 }, cars.length, 5);
   return scoreboard;
 };
 
@@ -117,10 +118,6 @@ const loop = () => {
         if (distance < 30) {
           thisCar.score += 10;
 
-          /** @type {ScoreEvent} */
-          const scoreEvent = { id: thisCar.id, score: thisCar.score };
-          ioServer.emit('score', scoreEvent);
-
           ioServer.emit('scoreboard', createScoreboard());
 
           otherCar.health -= 10;
@@ -129,8 +126,13 @@ const loop = () => {
             const healthEvent = { id: otherCar.id, health: otherCar.health };
             ioServer.emit('health', healthEvent);
           } else {
+            thisCar.score += 100;
             deleteCar(otherCar);
           }
+
+          /** @type {ScoreEvent} */
+          const scoreEvent = { id: thisCar.id, score: thisCar.score };
+          ioServer.emit('score', scoreEvent);
         }
       }));
     });
