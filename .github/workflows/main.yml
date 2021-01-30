@@ -16,7 +16,7 @@ jobs:
       - run: npm install
       - run: npm run lint
       - run: npm run build
-      - run: zip -rq deploy.zip * -x node_modules
+      - run: zip -rq deploy.zip . -x node_modules
       - uses: actions/upload-artifact@v2
         with:
           name: deploy
