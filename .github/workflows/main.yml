@@ -16,7 +16,7 @@ jobs:
       - run: npm install
       - run: npm run lint
       - run: npm run build
-      - run: zip -r deploy.zip * .ebextensions -x node_modules
+      - run: zip -r deploy.zip package* src static webpack* .ebextensions
       - uses: actions/upload-artifact@v2
         with:
           name: deploy
