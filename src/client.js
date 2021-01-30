@@ -26,7 +26,7 @@ const context = canvas.getContext('2d');
 
 const startCard = document.getElementById('start-card');
 const startForm = document.getElementById('start-form');
-const startButton = /** @type { HTMLInputElement} */ (document.getElementsByTagName('button')[0]);
+const startButton = /** @type { HTMLInputElement} */ (Array.from(document.getElementsByTagName('button')).find((element) => element.textContent === 'Start'));
 const usernameInput = /** @type { HTMLInputElement} */ (document.getElementById('username-input'));
 const infoCard = document.getElementById('info-card');
 const scoreSpan = /** @type { HTMLSpanElement } */ (document.getElementById('score-span'));
@@ -62,7 +62,6 @@ startForm.addEventListener('submit', (event) => {
   event.preventDefault();
 });
 
-// todo: should this be on the canvas instead of window
 const keys = new Array(256).fill(false);
 window.onkeydown = (event) => { keys[event.which] = true; };
 window.onkeyup = (event) => { keys[event.which] = false; };
