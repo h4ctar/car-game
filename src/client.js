@@ -3,11 +3,13 @@
  * @typedef { import('./type').ScoreboardEvent } ScoreboardEvent
  * @typedef { import('./type').ScoreEvent } ScoreEvent
  * @typedef { import('./type').HealthEvent } HealthEvent
+ * @typedef { import('./vector').Point2 } Point2
  */
 
 const { io } = require('socket.io-client');
 const { Car } = require('./car');
 const util = require('./util');
+const { rotate, sub, add } = require('./vector');
 
 const myId = util.uuid();
 console.info(`id ${myId}`);
@@ -24,6 +26,7 @@ const context = canvas.getContext('2d');
 
 const startCard = document.getElementById('start-card');
 const startForm = document.getElementById('start-form');
+const startButton = /** @type { HTMLInputElement} */ (document.getElementsByTagName('button')[0]);
 const usernameInput = /** @type { HTMLInputElement} */ (document.getElementById('username-input'));
 const infoCard = document.getElementById('info-card');
 const scoreSpan = /** @type { HTMLSpanElement } */ (document.getElementById('score-span'));
@@ -49,6 +52,9 @@ setInterval(() => {
 }, 10000);
 socket.on('pong', () => console.info(`latency: ${Date.now() - pingTime}`));
 
+startButton.disabled = !usernameInput.value;
+usernameInput.addEventListener('input', () => { startButton.disabled = !usernameInput.value; });
+
 startForm.addEventListener('submit', (event) => {
   console.info('Starting');
   const username = usernameInput.value;
@@ -56,6 +62,7 @@ startForm.addEventListener('submit', (event) => {
   event.preventDefault();
 });
 
+// todo: should this be on the canvas instead of window
 const keys = new Array(256).fill(false);
 window.onkeydown = (event) => { keys[event.which] = true; };
 window.onkeyup = (event) => { keys[event.which] = false; };
@@ -220,25 +227,48 @@ const loop = () => {
 };
 setInterval(loop, SIM_PERIOD);
 
-// draw on animation frame
+/**
+ * @param {Point2} camera
+ */
+const drawMap = (camera) => {
+  const GRID_SIZE = 200;
+  context.beginPath();
+  context.strokeStyle = 'grey';
+  for (let x = -(camera.x % GRID_SIZE); x < canvas.width; x += GRID_SIZE) {
+    context.moveTo(x, 0);
+    context.lineTo(x, canvas.height);
+  }
+  for (let y = camera.y % GRID_SIZE; y < canvas.height; y += GRID_SIZE) {
+    context.moveTo(0, y);
+    context.lineTo(canvas.width, y);
+  }
+  context.stroke();
+};
+
+const drawRadar = () => {
+  if (myCar) {
+    const radarRadius = 100;
+    cars
+      .filter((car) => car !== myCar)
+      .forEach((car) => {
+        const v = sub(car.position, myCar.position);
+        const angle = Math.atan2(-v.y, v.x);
+        const blipPosition = add(rotate({ x: radarRadius, y: 0 }, angle), { x: canvas.width / 2, y: canvas.height / 2 });
+
+        context.fillStyle = 'white';
+        context.fillRect(blipPosition.x, blipPosition.y, 2, 2);
+      });
+  }
+};
+
 const draw = () => {
   if (simRunning) {
     const camera = myCar ? myCar.position : { x: 0, y: 0 };
+
     context.fillStyle = 'black';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    const GRID_SIZE = 200;
-    context.beginPath();
-    context.strokeStyle = 'grey';
-    for (let x = -(camera.x % GRID_SIZE); x < canvas.width; x += GRID_SIZE) {
-      context.moveTo(x, 0);
-      context.lineTo(x, canvas.height);
-    }
-    for (let y = camera.y % GRID_SIZE; y < canvas.height; y += GRID_SIZE) {
-      context.moveTo(0, y);
-      context.lineTo(canvas.width, y);
-    }
-    context.stroke();
+    drawMap(camera);
 
     context.save();
     context.translate(canvas.width / 2, canvas.height - canvas.height / 2);
@@ -248,6 +278,8 @@ const draw = () => {
 
     cars.forEach((car) => car.draw(context));
     context.restore();
+
+    drawRadar();
   }
 
   window.requestAnimationFrame(draw);
