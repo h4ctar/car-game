@@ -8,6 +8,7 @@
  * @typedef { import('./vector').Point2 } Point2
  */
 
+const { Toast } = require('bootstrap');
 const { io } = require('socket.io-client');
 const { Car } = require('./car');
 const util = require('./util');
@@ -40,11 +41,13 @@ for (let i = 1; i <= 5; i += 1) {
   row.insertCell();
   row.insertCell();
 }
+const disconnectedToast = new Toast(document.getElementById('disconnected-toast'));
 
 const socket = io({ query: `id=${myId}` });
 socket.on('disconnect', () => {
   console.error('Socked disconnected');
   socket.close();
+  disconnectedToast.show();
 });
 
 let pingTime;
@@ -302,11 +305,11 @@ const draw = () => {
 };
 draw();
 
-// // register the service worker
-// window.addEventListener('load', () => {
-//   if ('serviceWorker' in navigator) {
-//     navigator
-//       .serviceWorker
-//       .register('serviceworker.js');
-//   }
-// });
+// register the service worker
+window.addEventListener('load', () => {
+  if ('serviceWorker' in navigator) {
+    navigator
+      .serviceWorker
+      .register('service-worker.js');
+  }
+});

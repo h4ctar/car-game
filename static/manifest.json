@@ -3,7 +3,7 @@
   "short_name": "IOCool",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#5900b3",
+  "background_color": "black",
   "theme_color": "black",
   "scope": ".",
   "description": "It's a cool game.",

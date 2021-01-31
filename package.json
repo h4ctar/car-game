@@ -13,6 +13,7 @@
   "author": "Ben",
   "license": "ISC",
   "dependencies": {
+    "bootstrap": "^4.6.0",
     "express": "^4.17.1",
     "socket.io": "^3.0.5",
     "socket.io-client": "^3.1.0"
