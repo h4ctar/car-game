@@ -71,7 +71,7 @@ ioServer.on('connection', (socket) => {
 
   socket.on('join', (/** @type {JoinEvent} */ event) => {
     console.info(`Client joining ${event.username}`);
-    car = new Car(id, event.username);
+    car = new Car(id, event.username, event.color);
     car.position = { x: 200, y: 200 };
     cars.push(car);
 

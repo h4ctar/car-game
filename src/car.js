@@ -21,10 +21,12 @@ exports.Car = class Car {
   /**
    * @param {string} id
    * @param {string} username
+   * @param {string} color
    */
-  constructor(id, username) {
+  constructor(id, username, color) {
     this.id = id;
     this.username = username;
+    this.color = color;
 
     // static properties
     this.wheelbase = 50;
@@ -90,6 +92,7 @@ exports.Car = class Car {
     return {
       id: this.id,
       username: this.username,
+      color: this.color,
 
       histories: this.histories,
       inputEvents: this.inputEvents,
@@ -165,7 +168,7 @@ exports.Car = class Car {
     } else if (event.simStep === currentSimStep) {
       // it's this update, process it now
       this.applyInput(event);
-    } else {
+    } else if (this.histories.length > 0) {
       // it's in the past, wind back time
       this.windBackTime(event.simStep);
 
@@ -178,6 +181,8 @@ exports.Car = class Car {
         this.update(simStep);
         simStep += 1;
       }
+    } else {
+      // there is no history
     }
   }
 
@@ -327,7 +332,7 @@ exports.Car = class Car {
 
     // draw the username
     context.save();
-    context.fillStyle = 'white';
+    context.fillStyle = this.color;
     context.textAlign = 'center';
     context.scale(1, -1);
     context.fillText(this.username, 0, 60);
@@ -336,12 +341,12 @@ exports.Car = class Car {
     context.rotate(this.angle);
 
     // draw the body
-    context.strokeStyle = 'white';
+    context.strokeStyle = this.color;
     context.stroke(new Path2D(this.bodyPath));
 
     // draw the wheels
     context.beginPath();
-    context.strokeStyle = 'white';
+    context.strokeStyle = this.color;
     this.wheels.forEach((wheel) => this.drawWheel(wheel, context));
     context.stroke();
 

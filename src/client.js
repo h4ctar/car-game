@@ -3,6 +3,8 @@
  * @typedef { import('./type').ScoreboardEvent } ScoreboardEvent
  * @typedef { import('./type').ScoreEvent } ScoreEvent
  * @typedef { import('./type').HealthEvent } HealthEvent
+ * @typedef { import('./type').UpdateEvent } UpdateEvent
+ * @typedef { import('./type').JoinEvent } JoinEvent
  * @typedef { import('./vector').Point2 } Point2
  */
 
@@ -57,8 +59,23 @@ usernameInput.addEventListener('input', () => { startButton.disabled = !username
 
 startForm.addEventListener('submit', (event) => {
   console.info('Starting');
-  const username = usernameInput.value;
-  socket.emit('join', /** @type {JoinEvent} */ { username });
+
+  const colors = ['#0d6efd', '#198754', '#dc3545', '#ffc107', '#0dcaf0'];
+
+  let color;
+  for (let i = 0; i < 5; i += 1) {
+    const input = /** @type { HTMLInputElement} */ (document.getElementById(`color-${i + 1}-input`));
+    if (input.checked) {
+      color = colors[i];
+    }
+  }
+
+  /** @type {JoinEvent} */
+  const joinEvent = {
+    username: usernameInput.value,
+    color,
+  };
+  socket.emit('join', joinEvent);
   event.preventDefault();
 });
 
@@ -85,13 +102,13 @@ const cars = [];
 /** @type { Car } */
 let myCar;
 
-socket.on('update', (event) => {
+socket.on('update', (/** @type {UpdateEvent} */ event) => {
   console.log('Received update');
   let car = cars.find((c) => c.id === event.id);
   if (!car) {
     console.log('New car', event.id);
 
-    car = new Car(event.id, event.username);
+    car = new Car(event.id, event.username, event.color);
     cars.push(car);
 
     if (car.id === myId) {
@@ -254,7 +271,7 @@ const drawRadar = () => {
         const angle = Math.atan2(-v.y, v.x);
         const blipPosition = add(rotate({ x: radarRadius, y: 0 }, angle), { x: canvas.width / 2, y: canvas.height / 2 });
 
-        context.fillStyle = 'white';
+        context.fillStyle = car.color;
         context.fillRect(blipPosition.x, blipPosition.y, 4, 4);
       });
   }
@@ -285,11 +302,11 @@ const draw = () => {
 };
 draw();
 
-// register the service worker
-window.addEventListener('load', () => {
-  if ('serviceWorker' in navigator) {
-    navigator
-      .serviceWorker
-      .register('serviceworker.js');
-  }
-});
+// // register the service worker
+// window.addEventListener('load', () => {
+//   if ('serviceWorker' in navigator) {
+//     navigator
+//       .serviceWorker
+//       .register('serviceworker.js');
+//   }
+// });
