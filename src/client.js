@@ -255,7 +255,7 @@ const drawRadar = () => {
         const blipPosition = add(rotate({ x: radarRadius, y: 0 }, angle), { x: canvas.width / 2, y: canvas.height / 2 });
 
         context.fillStyle = 'white';
-        context.fillRect(blipPosition.x, blipPosition.y, 2, 2);
+        context.fillRect(blipPosition.x, blipPosition.y, 4, 4);
       });
   }
 };
