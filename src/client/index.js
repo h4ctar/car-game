@@ -13,6 +13,7 @@ const { checkInput } = require('./input');
 const { socket } = require('./socket');
 const { hideStartCard, showStartCard } = require('./start-card');
 require('./input');
+require('./scoreboard-card');
 
 const canvas = /** @type { HTMLCanvasElement } */ (document.getElementById('canvas'));
 canvas.width = window.innerWidth;

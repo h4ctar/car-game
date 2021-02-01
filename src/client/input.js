@@ -10,46 +10,51 @@ const keys = new Array(256).fill(false);
 window.onkeydown = (event) => { keys[event.which] = true; };
 window.onkeyup = (event) => { keys[event.which] = false; };
 
-const dpad = {
+const touchpad = {
   left: false,
   right: false,
   up: false,
   down: false,
+  shoot: false,
 };
 
-const dpadButton = /** @type { HTMLButtonElement } */ (document.getElementById('dpad-button'));
+const dpadButton = /** @type { HTMLDivElement } */ (document.getElementById('dpad-button'));
 dpadButton.addEventListener('touchmove', (/** @type {TouchEvent} */ event) => {
   const x = (event.touches[0].clientX - (dpadButton.offsetLeft + dpadButton.clientWidth / 2)) / dpadButton.clientWidth;
   const y = (event.touches[0].clientY - (dpadButton.offsetTop + dpadButton.clientHeight / 2)) / dpadButton.clientHeight;
 
   if (x < -0.25) {
-    dpad.left = true;
-    dpad.right = false;
+    touchpad.left = true;
+    touchpad.right = false;
   } else if (x > 0.25) {
-    dpad.left = false;
-    dpad.right = true;
+    touchpad.left = false;
+    touchpad.right = true;
   } else {
-    dpad.left = false;
-    dpad.right = false;
+    touchpad.left = false;
+    touchpad.right = false;
   }
 
   if (y < -0.25) {
-    dpad.up = true;
-    dpad.down = false;
+    touchpad.up = true;
+    touchpad.down = false;
   } else if (y > 0.25) {
-    dpad.up = false;
-    dpad.down = true;
+    touchpad.up = false;
+    touchpad.down = true;
   } else {
-    dpad.up = false;
-    dpad.down = false;
+    touchpad.up = false;
+    touchpad.down = false;
   }
 });
 dpadButton.addEventListener('touchend', () => {
-  dpad.left = false;
-  dpad.right = false;
-  dpad.up = false;
-  dpad.down = false;
+  touchpad.left = false;
+  touchpad.right = false;
+  touchpad.up = false;
+  touchpad.down = false;
 });
+
+const shootButton = /** @type { HTMLDivElement } */ (document.getElementById('shoot-button'));
+shootButton.addEventListener('touchstart', () => { touchpad.shoot = true; });
+shootButton.addEventListener('touchend', () => { touchpad.shoot = false; });
 
 /**
  * @param {Car} car
@@ -66,9 +71,9 @@ exports.checkInput = (car, simStep) => {
     };
 
     let steerDirection = 0;
-    if (keys[65] || dpad.left) {
+    if (keys[65] || touchpad.left) {
       steerDirection = 1;
-    } else if (keys[68] || dpad.right) {
+    } else if (keys[68] || touchpad.right) {
       steerDirection = -1;
     }
 
@@ -77,18 +82,18 @@ exports.checkInput = (car, simStep) => {
       dirty = true;
     }
 
-    if ((keys[87] || dpad.up) !== car.accelerate) {
-      event.accelerate = keys[87] || dpad.up;
+    if ((keys[87] || touchpad.up) !== car.accelerate) {
+      event.accelerate = keys[87] || touchpad.up;
       dirty = true;
     }
 
-    if ((keys[83] || dpad.down) !== car.brake) {
-      event.brake = keys[83] || dpad.down;
+    if ((keys[83] || touchpad.down) !== car.brake) {
+      event.brake = keys[83] || touchpad.down;
       dirty = true;
     }
 
-    if (keys[32] !== car.shoot) {
-      event.shoot = keys[32];
+    if (keys[32] || touchpad.shoot !== car.shoot) {
+      event.shoot = keys[32] || touchpad.shoot;
       dirty = true;
     }
 

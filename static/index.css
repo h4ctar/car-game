@@ -80,6 +80,17 @@ body {
   position: absolute;
   left: 10px;
   bottom: 10px;
-  width: 30mm;
-  height: 30mm;
+  width: 40mm;
+  height: 40mm;
+  opacity: 50%;
+}
+
+#shoot-button {
+  z-index: 2;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 20mm;
+  height: 20mm;
+  opacity: 50%;
 }
