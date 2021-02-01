@@ -75,19 +75,21 @@
   <div id="shoot-button" class="card">
   </div>
 
-  <!-- <div class="toast-container">
-    <div id="disconnected-toast" class="toast" role="alert" data-bs-autohide="false">
-      <div class="toast-header">
-        <strong class="me-auto">Disconnected</strong>
-      </div>
-      <div class="toast-body">
-        The connection to the server has dropped, please refresh
-        <div class="mt-2 pt-2 border-top">
-          <button type="button" class="btn btn-primary btn-sm" onClick="window.location.reload();">Refresh</button>
+  <div id="disconnected-modal" class="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Disconnected</h5>
+        </div>
+        <div class="modal-body">
+          <p>The connection to the server has dropped, please refresh</p>
+        </div>
+        <div class="modal-footer">
+          <a href="#" class="btn btn-primary" onClick="window.location.reload();">Refresh</a>
         </div>
       </div>
     </div>
-  </div> -->
+  </div>
 
   <script src="main.js" type="module"></script>
 </body>

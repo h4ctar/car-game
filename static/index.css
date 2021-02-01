@@ -69,13 +69,6 @@ body {
   right: 10px;
 }
 
-.toast-container {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  z-index: 2;
-}
-
 #dpad-button {
   z-index: 2;
   position: absolute;
@@ -83,7 +76,6 @@ body {
   bottom: 10px;
   width: 40mm;
   height: 40mm;
-  /* opacity: 50%; */
 }
 
 #shoot-button {
@@ -93,5 +85,4 @@ body {
   bottom: 10px;
   width: 20mm;
   height: 20mm;
-  /* opacity: 50%; */
 }

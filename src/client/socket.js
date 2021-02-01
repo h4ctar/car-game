@@ -1,4 +1,4 @@
-const { Toast } = require('bootstrap');
+const { Modal } = require('bootstrap');
 const { io } = require('socket.io-client');
 const { myId } = require('./id');
 
@@ -10,8 +10,8 @@ socket.on('disconnect', () => {
 
   socket.close();
 
-  const disconnectedToast = new Toast(document.getElementById('disconnected-toast'));
-  disconnectedToast.show();
+  const disconnectedModal = new Modal(document.getElementById('disconnected-modal'), { backdrop: 'static', keyboard: false });
+  disconnectedModal.show();
 });
 
 let pingTime;
