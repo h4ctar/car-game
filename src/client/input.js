@@ -44,7 +44,12 @@ dpadButton.addEventListener('touchmove', (/** @type {TouchEvent} */ event) => {
     dpad.down = false;
   }
 });
-dpadButton.addEventListener('touchend', () => console.log('touchend'));
+dpadButton.addEventListener('touchend', () => {
+  dpad.left = false;
+  dpad.right = false;
+  dpad.up = false;
+  dpad.down = false;
+});
 
 /**
  * @param {Car} car
