@@ -92,7 +92,7 @@ exports.checkInput = (car, simStep) => {
       dirty = true;
     }
 
-    if (keys[32] || touchpad.shoot !== car.shoot) {
+    if ((keys[32] || touchpad.shoot) !== car.shoot) {
       event.shoot = keys[32] || touchpad.shoot;
       dirty = true;
     }
