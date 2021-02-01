@@ -74,3 +74,12 @@ body {
   right: 10px;
   z-index: 2;
 }
+
+#dpad-button {
+  z-index: 2;
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  width: 30mm;
+  height: 30mm;
+}
