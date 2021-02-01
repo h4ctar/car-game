@@ -43,8 +43,6 @@ dpadButton.addEventListener('touchmove', (/** @type {TouchEvent} */ event) => {
     dpad.up = false;
     dpad.down = false;
   }
-
-  console.log(dpad)
 });
 dpadButton.addEventListener('touchend', () => console.log('touchend'));
 
