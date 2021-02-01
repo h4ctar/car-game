@@ -1,5 +1,6 @@
 body {
   margin: 0;
+  user-select: none;
 }
 
 #canvas {
@@ -82,7 +83,7 @@ body {
   bottom: 10px;
   width: 40mm;
   height: 40mm;
-  opacity: 50%;
+  /* opacity: 50%; */
 }
 
 #shoot-button {
@@ -92,5 +93,5 @@ body {
   bottom: 10px;
   width: 20mm;
   height: 20mm;
-  opacity: 50%;
+  /* opacity: 50%; */
 }
