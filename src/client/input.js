@@ -18,43 +18,51 @@ const touchpad = {
   shoot: false,
 };
 
+const isTouchCapable = 'ontouchstart' in window;
+
 const dpadButton = /** @type { HTMLDivElement } */ (document.getElementById('dpad-button'));
-dpadButton.addEventListener('touchmove', (/** @type {TouchEvent} */ event) => {
-  const x = (event.touches[0].clientX - (dpadButton.offsetLeft + dpadButton.clientWidth / 2)) / dpadButton.clientWidth;
-  const y = (event.touches[0].clientY - (dpadButton.offsetTop + dpadButton.clientHeight / 2)) / dpadButton.clientHeight;
-
-  if (x < -0.25) {
-    touchpad.left = true;
-    touchpad.right = false;
-  } else if (x > 0.25) {
-    touchpad.left = false;
-    touchpad.right = true;
-  } else {
-    touchpad.left = false;
-    touchpad.right = false;
-  }
-
-  if (y < -0.25) {
-    touchpad.up = true;
-    touchpad.down = false;
-  } else if (y > 0.25) {
-    touchpad.up = false;
-    touchpad.down = true;
-  } else {
-    touchpad.up = false;
-    touchpad.down = false;
-  }
-});
-dpadButton.addEventListener('touchend', () => {
-  touchpad.left = false;
-  touchpad.right = false;
-  touchpad.up = false;
-  touchpad.down = false;
-});
-
 const shootButton = /** @type { HTMLDivElement } */ (document.getElementById('shoot-button'));
-shootButton.addEventListener('touchstart', () => { touchpad.shoot = true; });
-shootButton.addEventListener('touchend', () => { touchpad.shoot = false; });
+
+if (isTouchCapable) {
+  dpadButton.addEventListener('touchmove', (/** @type {TouchEvent} */ event) => {
+    const x = (event.touches[0].clientX - (dpadButton.offsetLeft + dpadButton.clientWidth / 2)) / dpadButton.clientWidth;
+    const y = (event.touches[0].clientY - (dpadButton.offsetTop + dpadButton.clientHeight / 2)) / dpadButton.clientHeight;
+
+    if (x < -0.25) {
+      touchpad.left = true;
+      touchpad.right = false;
+    } else if (x > 0.25) {
+      touchpad.left = false;
+      touchpad.right = true;
+    } else {
+      touchpad.left = false;
+      touchpad.right = false;
+    }
+
+    if (y < -0.25) {
+      touchpad.up = true;
+      touchpad.down = false;
+    } else if (y > 0.25) {
+      touchpad.up = false;
+      touchpad.down = true;
+    } else {
+      touchpad.up = false;
+      touchpad.down = false;
+    }
+  });
+  dpadButton.addEventListener('touchend', () => {
+    touchpad.left = false;
+    touchpad.right = false;
+    touchpad.up = false;
+    touchpad.down = false;
+  });
+
+  shootButton.addEventListener('touchstart', () => { touchpad.shoot = true; });
+  shootButton.addEventListener('touchend', () => { touchpad.shoot = false; });
+} else {
+  dpadButton.style.display = 'none';
+  shootButton.style.display = 'none';
+}
 
 /**
  * @param {Car} car
