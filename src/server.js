@@ -52,22 +52,27 @@ const deleteCar = (car) => {
 ioServer.on('connection', (socket) => {
   console.log('New client connected');
 
-  socket.on('ping', () => socket.emit('pong'));
-
   // eslint-disable-next-line no-underscore-dangle
   const id = socket.request._query.id;
 
-  /** @type {Car} */
-  let car;
+  socket.on('start', (event) => {
+    console.info('Client starting simulation');
+    socket.emit('start', {
+      requestTime: event.requestTime,
+      serverSimStep: simStep,
+    });
+  });
+
+  socket.on('ping', () => socket.emit('pong'));
 
   // send all cars to the new client
   cars.forEach((c) => socket.emit('update', c.serialize()));
 
-  // tell them to start the simulation at the current simulation step
-  socket.emit('start', simStep);
-
   // send the initial scoreboard
   socket.emit('scoreboard', createScoreboard());
+
+  /** @type {Car} */
+  let car;
 
   socket.on('join', (/** @type {JoinEvent} */ event) => {
     console.info(`Client joining ${event.username}`);

@@ -5,6 +5,10 @@ const { myId } = require('./id');
 const socket = io({ query: `id=${myId}` });
 exports.socket = socket;
 
+socket.on('connect', () => {
+  socket.emit('start', { requestTime: Date.now() });
+});
+
 socket.on('disconnect', () => {
   console.error('Socked disconnected');
 

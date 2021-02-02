@@ -6,6 +6,7 @@
  */
 
 const { Car } = require('../car');
+const { SIM_PERIOD, DT } = require('../config');
 const { rotate, sub, add } = require('../vector');
 const { myId } = require('./id');
 const { updateInfoCard, hideInfoCard } = require('./info-card');
@@ -25,17 +26,21 @@ window.addEventListener('resize', () => {
 
 const context = canvas.getContext('2d');
 
-const SIM_PERIOD = 16;
 let simRunning;
 let simStep;
 let simStartStep;
 let simStartTime;
 socket.on('start', (event) => {
   console.info(`Start simulation ${event}`);
+  // https://distributedsystemsblog.com/docs/clock-synchronization-algorithms/#christians-algorithm
+  const rtt = Date.now() - event.requestTime;
+  const clientSimStep = event.serverSimStep + Math.round((rtt / 2) * DT);
+
+  console.error(Math.round((rtt / 2) * DT));
 
   simRunning = true;
-  simStep = event;
-  simStartStep = event;
+  simStep = clientSimStep;
+  simStartStep = clientSimStep;
   simStartTime = Date.now();
 });
 
