@@ -6,7 +6,7 @@
  */
 
 const { Car } = require('../car');
-const { SIM_PERIOD, DT } = require('../config');
+const { SIM_PERIOD } = require('../config');
 const { rotate, sub, add } = require('../vector');
 const { myId } = require('./id');
 const { updateInfoCard, hideInfoCard } = require('./info-card');
@@ -34,9 +34,10 @@ socket.on('start', (event) => {
   console.info(`Start simulation ${event}`);
   // https://distributedsystemsblog.com/docs/clock-synchronization-algorithms/#christians-algorithm
   const rtt = Date.now() - event.requestTime;
-  const clientSimStep = event.serverSimStep + Math.round((rtt / 2) * DT);
+  const clientSimStep = event.serverSimStep + Math.round((rtt / 2) / SIM_PERIOD);
 
-  console.error(Math.round((rtt / 2) * DT));
+  console.error('rtt', rtt);
+  console.error('skew', Math.round((rtt / 2) / SIM_PERIOD));
 
   simRunning = true;
   simStep = clientSimStep;
