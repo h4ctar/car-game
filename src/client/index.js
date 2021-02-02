@@ -36,9 +36,6 @@ socket.on('start', (event) => {
   const rtt = Date.now() - event.requestTime;
   const clientSimStep = event.serverSimStep + Math.round((rtt / 2) / SIM_PERIOD);
 
-  console.error('rtt', rtt);
-  console.error('skew', Math.round((rtt / 2) / SIM_PERIOD));
-
   simRunning = true;
   simStep = clientSimStep;
   simStartStep = clientSimStep;
