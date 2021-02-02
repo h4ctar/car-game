@@ -9,7 +9,7 @@
   "description": "It's a cool game.",
   "icons": [
     {
-      "src": "icon-192x192.png",
+      "src": "favicon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     }
