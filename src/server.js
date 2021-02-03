@@ -9,7 +9,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const { Car } = require('./car');
-const { SIM_PERIOD } = require('./config');
+const { SIM_PERIOD, SCOREBOARD_LENGTH } = require('./config');
 const { sub, length } = require('./vector');
 
 const app = express();
@@ -29,8 +29,8 @@ const createScoreboard = () => {
   const scoreboard = cars
     .map((car) => ({ username: car.username, score: car.score }))
     .sort((a, b) => b.score - a.score);
-  scoreboard.length = 5;
-  scoreboard.fill({ username: '', score: 0 }, cars.length, 5);
+  scoreboard.length = SCOREBOARD_LENGTH;
+  scoreboard.fill({ username: '', score: 0 }, cars.length, SCOREBOARD_LENGTH);
   return scoreboard;
 };
 

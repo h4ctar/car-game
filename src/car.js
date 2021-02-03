@@ -7,7 +7,7 @@
  */
 
 const util = require('./util');
-const { DT } = require('./config');
+const { DT, STEER_RESOLUTION } = require('./config');
 const {
   add, multiply, dot, rotate, length,
 } = require('./vector');
@@ -262,8 +262,8 @@ exports.Car = class Car {
       const speed = length(this.velocity);
       // bigger turn radius when going faster
       const turnRadius = util.clamp(speed, 0, 1500) / 1500 * 300 + 40;
-      targetLeftAngle = this.steerDirection * Math.atan(this.wheelbase / (turnRadius + this.steerDirection * this.track / 2));
-      targetRightAngle = this.steerDirection * Math.atan(this.wheelbase / (turnRadius - this.steerDirection * this.track / 2));
+      targetLeftAngle = this.steerDirection / STEER_RESOLUTION * Math.atan(this.wheelbase / (turnRadius + Math.sign(this.steerDirection) * this.track / 2));
+      targetRightAngle = this.steerDirection / STEER_RESOLUTION * Math.atan(this.wheelbase / (turnRadius - Math.sign(this.steerDirection) * this.track / 2));
     }
 
     this.wheels[WHEEL_FL].angle = util.tween(this.wheels[WHEEL_FL].angle, targetLeftAngle, 4 * DT);

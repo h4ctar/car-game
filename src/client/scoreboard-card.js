@@ -2,10 +2,11 @@
  * @typedef { import('../type').ScoreboardEvent } ScoreboardEvent
  */
 
+const { SCOREBOARD_LENGTH } = require('../config');
 const { socket } = require('./socket');
 
 const scoreboardTableBody = /** @type { HTMLTableSectionElement } */ (document.getElementById('scoreboard-tbody'));
-for (let i = 1; i <= 5; i += 1) {
+for (let i = 1; i <= SCOREBOARD_LENGTH; i += 1) {
   const row = scoreboardTableBody.insertRow();
   row.insertCell().textContent = String(i);
   row.insertCell();

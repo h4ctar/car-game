@@ -3,18 +3,17 @@
  * @typedef { import('../type').InputEvent } InputEvent
  */
 
+const { STEER_RESOLUTION } = require('../config');
+const { clamp } = require('../util');
 const { myId } = require('./id');
 const { socket } = require('./socket');
 
 const keys = new Array(256).fill(false);
-window.onkeydown = (event) => { keys[event.which] = true; };
-window.onkeyup = (event) => { keys[event.which] = false; };
 
+/** @type {{xAxis: number, yAxis: number, shoot: boolean}} */
 const touchpad = {
-  left: false,
-  right: false,
-  up: false,
-  down: false,
+  xAxis: 0,
+  yAxis: 0,
   shoot: false,
 };
 
@@ -25,36 +24,12 @@ const shootButton = /** @type { HTMLDivElement } */ (document.getElementById('sh
 
 if (isTouchCapable) {
   dpadButton.addEventListener('touchmove', (/** @type {TouchEvent} */ event) => {
-    const x = (event.touches[0].clientX - (dpadButton.offsetLeft + dpadButton.clientWidth / 2)) / dpadButton.clientWidth;
-    const y = (event.touches[0].clientY - (dpadButton.offsetTop + dpadButton.clientHeight / 2)) / dpadButton.clientHeight;
-
-    if (x < -0.25) {
-      touchpad.left = true;
-      touchpad.right = false;
-    } else if (x > 0.25) {
-      touchpad.left = false;
-      touchpad.right = true;
-    } else {
-      touchpad.left = false;
-      touchpad.right = false;
-    }
-
-    if (y < -0.25) {
-      touchpad.up = true;
-      touchpad.down = false;
-    } else if (y > 0.25) {
-      touchpad.up = false;
-      touchpad.down = true;
-    } else {
-      touchpad.up = false;
-      touchpad.down = false;
-    }
+    touchpad.xAxis = clamp(-(event.touches[0].clientX - (dpadButton.offsetLeft + dpadButton.clientWidth / 2)) / (dpadButton.clientWidth / 2), -1, 1);
+    touchpad.yAxis = clamp(-(event.touches[0].clientY - (dpadButton.offsetTop + dpadButton.clientHeight / 2)) / (dpadButton.clientHeight / 2), -1, 1);
   });
   dpadButton.addEventListener('touchend', () => {
-    touchpad.left = false;
-    touchpad.right = false;
-    touchpad.up = false;
-    touchpad.down = false;
+    touchpad.xAxis = 0;
+    touchpad.yAxis = 0;
   });
 
   shootButton.addEventListener('touchstart', () => { touchpad.shoot = true; });
@@ -62,6 +37,9 @@ if (isTouchCapable) {
 } else {
   dpadButton.style.display = 'none';
   shootButton.style.display = 'none';
+
+  window.onkeydown = (event) => { keys[event.which] = true; };
+  window.onkeyup = (event) => { keys[event.which] = false; };
 }
 
 /**
@@ -78,11 +56,16 @@ exports.checkInput = (car, simStep) => {
       simStep,
     };
 
-    let steerDirection = 0;
-    if (keys[65] || touchpad.left) {
-      steerDirection = 1;
-    } else if (keys[68] || touchpad.right) {
-      steerDirection = -1;
+    let steerDirection;
+
+    if (isTouchCapable) {
+      steerDirection = Math.round(touchpad.xAxis * STEER_RESOLUTION);
+    } else if (keys[65]) {
+      steerDirection = STEER_RESOLUTION;
+    } else if (keys[68]) {
+      steerDirection = -STEER_RESOLUTION;
+    } else {
+      steerDirection = 0;
     }
 
     if (steerDirection !== car.steerDirection) {
@@ -90,13 +73,13 @@ exports.checkInput = (car, simStep) => {
       dirty = true;
     }
 
-    if ((keys[87] || touchpad.up) !== car.accelerate) {
-      event.accelerate = keys[87] || touchpad.up;
+    if ((keys[87] || (touchpad.yAxis > 0.5)) !== car.accelerate) {
+      event.accelerate = keys[87] || touchpad.yAxis > 0.5;
       dirty = true;
     }
 
-    if ((keys[83] || touchpad.down) !== car.brake) {
-      event.brake = keys[83] || touchpad.down;
+    if ((keys[83] || touchpad.yAxis < -0.5) !== car.brake) {
+      event.brake = keys[83] || (touchpad.yAxis < -0.5);
       dirty = true;
     }
 

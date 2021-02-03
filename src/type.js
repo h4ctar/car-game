@@ -4,7 +4,14 @@
  * @typedef {{ position: Point2, velocity: Point2, startSimStep: number }} Bullet
  *
  * @typedef {{ username: string, color: string }} JoinEvent
- * @typedef {{ id: string, simStep: number, steerDirection?: number, accelerate?: boolean, brake?: boolean, shoot?: boolean }} InputEvent
+ * @typedef {{
+ *      id: string,
+ *      simStep: number,
+ *      steerDirection?: number,
+ *      accelerate?: boolean,
+ *      brake?: boolean,
+ *      shoot?: boolean
+ * }} InputEvent
  * @typedef {{ username: string; score: number; }[]} ScoreboardEvent
  * @typedef {{ id: string; score: number; }} ScoreEvent
  * @typedef {{ id: string; health: number; }} HealthEvent
