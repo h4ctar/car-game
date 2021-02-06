@@ -38,7 +38,7 @@ exports.Car = class Car {
     this.wheelDiameter = 16;
     this.bodyPath = 'M 36.566565,-5.8117406 -6.6404056,-11.6064 l -6.1608904,3.6133498 -25.814007,0.0335 -0.0719,15.6430501 25.392317,-0.10692 6.0098604,4.0268801 44.0524606,-6.1022601 1.92174,-1.2032005 -0.0361,-9.0526 z';
 
-    this.reloadDuration = 5;
+    this.reloadDuration = 10;
 
     // other properties
     // todo: history type
@@ -48,7 +48,7 @@ exports.Car = class Car {
     this.inputEvents = [];
 
     this.score = 0;
-    this.health = 100;
+    this.health = 1000;
 
     // dynamic properties
     this.position = { x: 0, y: 0 };

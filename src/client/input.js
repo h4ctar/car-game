@@ -90,6 +90,7 @@ exports.checkInput = (car, simStep) => {
 
     if (dirty) {
       car.processInput(event, simStep);
+      // let buffer = new ArrayBuffer();
       socket.emit('input', event);
     }
   }
