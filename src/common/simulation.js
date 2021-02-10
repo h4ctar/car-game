@@ -15,22 +15,29 @@ exports.Simulation = class Simulation {
 
     /** @type {Point2[]} */
     this.trees = [];
-    for (let i = 0; i < 1000; i += 1) {
-      this.trees.push({
-        x: Math.random() * 20000 - 10000,
-        y: Math.random() * 20000 - 10000,
-      });
-    }
+  }
+
+  getCar(id) {
+    return this.cars.find((car) => car.id === id);
+  }
+
+  addCar(id, username, color) {
+    const car = new Car(id, username, color);
+    this.cars.push(car);
+    return car;
   }
 
   /**
    * Delete a car.
-   * @param {Car} car the car to delete
    */
-  deleteCar(car) {
-    const index = this.cars.indexOf(car);
+  deleteCar(id) {
+    const index = this.cars.findIndex((car) => car.id === id);
     if (index !== -1) {
       this.cars.splice(index, 1);
     }
+  }
+
+  update() {
+    this.cars.forEach((car) => car.update(this.simStep));
   }
 };

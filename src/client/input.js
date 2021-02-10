@@ -1,11 +1,11 @@
 /**
- * @typedef { import('../car').Car } Car
- * @typedef { import('../type').InputEvent } InputEvent
+ * @typedef { import('../common/car').Car } Car
+ * @typedef { import('../common/type').InputEvent } InputEvent
  */
 
-const { STEER_RESOLUTION } = require('../config');
-const { serializeInputEvent } = require('../type');
-const { clamp } = require('../util');
+const { STEER_RESOLUTION } = require('../common/config');
+const { serializeInputEvent } = require('../common/type');
+const { clamp } = require('../common/util');
 const { myId } = require('./id');
 const { socket } = require('./socket');
 
@@ -20,8 +20,8 @@ const touchpad = {
 
 const isTouchCapable = 'ontouchstart' in window;
 
-const dpadButton = /** @type { HTMLDivElement } */ (document.getElementById('dpad-button'));
-const shootButton = /** @type { HTMLDivElement } */ (document.getElementById('shoot-button'));
+const dpadButton = /** @type {HTMLDivElement} */ (document.getElementById('dpad-button'));
+const shootButton = /** @type {HTMLDivElement} */ (document.getElementById('shoot-button'));
 
 if (isTouchCapable) {
   dpadButton.addEventListener('touchmove', (/** @type {TouchEvent} */ event) => {

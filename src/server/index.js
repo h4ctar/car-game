@@ -1,25 +1,32 @@
 /**
- * @typedef { import("./type").JoinEvent } JoinEvent
- * @typedef { import("./type").InputEvent } InputEvent
- * @typedef { import("./type").ScoreboardEvent } ScoreboardEvent
- * @typedef { import("./type").ScoreEvent } ScoreEvent
- * @typedef { import("./type").HealthEvent } HealthEvent
- * @typedef { import("./vector").Point2 } Point2
+ * @typedef { import("../common/type").JoinEvent } JoinEvent
+ * @typedef { import("../common/type").InputEvent } InputEvent
+ * @typedef { import("../common/type").ScoreboardEvent } ScoreboardEvent
+ * @typedef { import("../common/type").ScoreEvent } ScoreEvent
+ * @typedef { import("../common/type").HealthEvent } HealthEvent
+ * @typedef { import("../common/vector").Point2 } Point2
+ * @typedef { import("../common/car").Car } Car
  */
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const { Car } = require('./car');
-const { SIM_PERIOD, SCOREBOARD_LENGTH } = require('./config');
-const { Simulation } = require('./simulation');
-const { deserializeInputEvent } = require('./type');
-const { sub, length } = require('./vector');
+const { SIM_PERIOD, SCOREBOARD_LENGTH } = require('../common/config');
+const { Simulation } = require('../common/simulation');
+const { deserializeInputEvent } = require('../common/type');
+const { sub, length } = require('../common/vector');
 
 const app = express();
 const httpServer = http.createServer(app);
 const ioServer = new Server(httpServer, { serveClient: false });
 
 const sim = new Simulation();
+
+for (let i = 0; i < 1000; i += 1) {
+  sim.trees.push({
+    x: Math.random() * 20000 - 10000,
+    y: Math.random() * 20000 - 10000,
+  });
+}
 
 /**
  * @type {() => ScoreboardEvent}
@@ -39,6 +46,7 @@ ioServer.on('connection', (socket) => {
   // eslint-disable-next-line no-underscore-dangle
   const id = socket.request._query.id;
 
+  // todo: type here
   socket.on('start', (event) => {
     console.info('Client starting simulation');
     socket.emit('start', {
@@ -63,9 +71,10 @@ ioServer.on('connection', (socket) => {
 
   socket.on('join', (/** @type {JoinEvent} */ event) => {
     console.info(`Client joining ${event.username}`);
-    car = new Car(id, event.username, event.color);
+    car = sim.addCar(id, event.username, event.color);
+
+    // todo: fix position initiation
     car.position = { x: 200, y: 200 };
-    sim.cars.push(car);
 
     // send an updated scoreboard including the new car
     ioServer.emit('scoreboard', createScoreboard());
@@ -93,10 +102,6 @@ ioServer.on('connection', (socket) => {
   });
 });
 
-const update = () => {
-  sim.cars.forEach((car) => car.update(sim.simStep));
-};
-
 const loop = () => {
   const desiredSimStep = Math.floor((Date.now() - sim.simStartTime) / SIM_PERIOD);
   if (desiredSimStep - sim.simStep > 100) {
@@ -104,7 +109,7 @@ const loop = () => {
   }
 
   while (sim.simStep < desiredSimStep) {
-    update();
+    sim.update();
 
     // check if bullet hits car
     [...sim.cars].forEach((thisCar) => {

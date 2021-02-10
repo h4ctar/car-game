@@ -1,5 +1,5 @@
 /**
- * @typedef { import('../car').Car } Car
+ * @typedef { import('../common/car').Car } Car
  */
 
 const infoCard = document.getElementById('info-card');

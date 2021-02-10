@@ -1,15 +1,15 @@
 /**
- * @typedef { import('../type').ScoreEvent } ScoreEvent
- * @typedef { import('../type').HealthEvent } HealthEvent
- * @typedef { import('../type').UpdateEvent } UpdateEvent
- * @typedef { import('../vector').Point2 } Point2
+ * @typedef { import('../common/type').ScoreEvent } ScoreEvent
+ * @typedef { import('../common/type').HealthEvent } HealthEvent
+ * @typedef { import('../common/type').UpdateEvent } UpdateEvent
+ * @typedef { import('../common/vector').Point2 } Point2
+ * @typedef { import("../common/car").Car } Car
  */
 
-const { Car } = require('../car');
-const { SIM_PERIOD } = require('../config');
-const { Simulation } = require('../simulation');
-const { deserializeInputEvent } = require('../type');
-const { rotate, sub, add } = require('../vector');
+const { SIM_PERIOD } = require('../common/config');
+const { Simulation } = require('../common/simulation');
+const { deserializeInputEvent } = require('../common/type');
+const { rotate, sub, add } = require('../common/vector');
 const { myId } = require('./id');
 const { updateInfoCard, hideInfoCard } = require('./info-card');
 const { checkInput } = require('./input');
@@ -50,17 +50,13 @@ socket.on('start', (event) => {
 /** @type {Car} */
 let myCar;
 
-/** @type {Point2[]} */
-const trees = [];
-
 socket.on('update', (/** @type {UpdateEvent} */ event) => {
   console.log('Received update');
-  let car = sim.cars.find((c) => c.id === event.id);
+  let car = sim.getCar(event.id);
   if (!car) {
     console.log('New car', event.id);
 
-    car = new Car(event.id, event.username, event.color);
-    sim.cars.push(car);
+    car = sim.addCar(event.id, event.username, event.color);
 
     if (car.id === myId) {
       myCar = car;
@@ -75,10 +71,7 @@ socket.on('update', (/** @type {UpdateEvent} */ event) => {
 socket.on('delete', (/** @type {string} */ id) => {
   console.info(`Delete car ${id}`);
 
-  const index = sim.cars.findIndex((car) => car.id === id);
-  if (index !== -1) {
-    sim.cars.splice(index, 1);
-  }
+  sim.deleteCar(id);
 
   if (id === myCar?.id) {
     myCar = undefined;
@@ -89,14 +82,14 @@ socket.on('delete', (/** @type {string} */ id) => {
 
 socket.on('input', (/** @type {ArrayBuffer} */ buffer) => {
   const event = deserializeInputEvent(buffer);
-  const car = sim.cars.find((c) => c.id === event.id);
+  const car = sim.getCar(event.id);
   if (car) {
     car.processInput(event, sim.simStep);
   }
 });
 
 socket.on('score', (/** @type {ScoreEvent} */ event) => {
-  const car = sim.cars.find((c) => c.id === event.id);
+  const car = sim.getCar(event.id);
   if (car) {
     car.score = event.score;
 
@@ -107,7 +100,7 @@ socket.on('score', (/** @type {ScoreEvent} */ event) => {
 });
 
 socket.on('health', (/** @type {HealthEvent} */ event) => {
-  const car = sim.cars.find((c) => c.id === event.id);
+  const car = sim.getCar(event.id);
   if (car) {
     car.health = event.health;
 
@@ -118,13 +111,9 @@ socket.on('health', (/** @type {HealthEvent} */ event) => {
 });
 
 socket.on('trees', (/** @type {Point2[]} */ event) => {
-  trees.length = 0;
-  trees.push(...event);
+  sim.trees.length = 0;
+  sim.trees.push(...event);
 });
-
-const update = () => {
-  sim.cars.forEach((car) => car.update(sim.simStep));
-};
 
 // simulation loop with fixed step
 const loop = () => {
@@ -137,7 +126,7 @@ const loop = () => {
     }
 
     while (sim.simStep < desiredSimStep) {
-      update();
+      sim.update();
       sim.simStep += 1;
     }
 
@@ -197,7 +186,7 @@ const draw = () => {
 
     sim.cars.forEach((car) => car.draw(context));
 
-    trees.forEach((tree) => context.drawImage(treeImage, tree.x, tree.y));
+    sim.trees.forEach((tree) => context.drawImage(treeImage, tree.x, tree.y));
 
     context.restore();
 

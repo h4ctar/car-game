@@ -69,13 +69,13 @@ exports.serializeInputEvent = (inputEvent) => {
  * @returns {InputEvent}
  */
 exports.deserializeInputEvent = (buffer) => {
-  const idView = new Uint8Array(buffer, 0, 36);
+  const idView = new Uint8Array(buffer, 0, 45);
   const id = String.fromCodePoint(...idView);
 
   const simStepView = new Uint32Array(buffer, 36, 1);
   const simStep = simStepView[0];
 
-  const booleanView = new Uint8Array(buffer, 36, 1);
+  const booleanView = new Uint8Array(buffer, 44, 1);
   const accelerate = !!(booleanView[0] & 0b00000001);
   const brake = !!(booleanView[0] & 0b00000010);
   const shoot = !!(booleanView[0] & 0b00000100);

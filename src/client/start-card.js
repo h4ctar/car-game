@@ -1,5 +1,5 @@
 /**
- * @typedef { import('../type').JoinEvent } JoinEvent
+ * @typedef { import('../common/type').JoinEvent } JoinEvent
  */
 
 const { socket } = require('./socket');

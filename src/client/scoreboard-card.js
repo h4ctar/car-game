@@ -1,8 +1,8 @@
 /**
- * @typedef { import('../type').ScoreboardEvent } ScoreboardEvent
+ * @typedef { import('../common/type').ScoreboardEvent } ScoreboardEvent
  */
 
-const { SCOREBOARD_LENGTH } = require('../config');
+const { SCOREBOARD_LENGTH } = require('../common/config');
 const { socket } = require('./socket');
 
 const scoreboardTableBody = /** @type { HTMLTableSectionElement } */ (document.getElementById('scoreboard-tbody'));

@@ -6,6 +6,7 @@ const socket = io({ query: `id=${myId}` });
 exports.socket = socket;
 
 socket.on('connect', () => {
+  // todo: type here
   socket.emit('start', { requestTime: Date.now() });
 });
 
