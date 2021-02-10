@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise */
 /**
  * @typedef { import("./vector").Point2 } Point2
  * @typedef {{ position: Point2, angle: number }} Wheel
@@ -44,31 +45,46 @@
  * @returns {ArrayBuffer}
  */
 exports.serializeInputEvent = (inputEvent) => {
-  const buffer = new ArrayBuffer(37);
-  const idView = new Uint8Array(buffer, 0, 36);
-  const simStepView = new Uint32Array(buffer, 36, 1);
+  const buffer = new ArrayBuffer(45);
 
+  const idView = new Uint8Array(buffer, 0, 36);
   for (let i = 0; i < 36; i += 1) {
     idView[i] = inputEvent.id.charCodeAt(i);
   }
 
+  const simStepView = new Uint32Array(buffer, 36, 1);
   simStepView[0] = inputEvent.simStep;
+
+  const steerDirectionView = new Uint32Array(buffer, 40, 1);
+  steerDirectionView[0] = inputEvent.steerDirection;
+
+  const booleanView = new Uint8Array(buffer, 44, 1);
+  booleanView[0] = (inputEvent.accelerate && 0b00000001) & (inputEvent.brake && 0b00000010) & (inputEvent.shoot && 0b00000100);
 
   return buffer;
 };
 
-// /**
-//  * @param {ArrayBuffer} buffer
-//  * @returns {InputEvent}
-//  */
-// exports.deserializeInputEvent = (buffer) => {
-//   const idView = new Uint8Array(buffer, 0, 36);
-//   const simStepView = new Uint32Array(buffer, 36, 1);
+/**
+ * @param {ArrayBuffer} buffer
+ * @returns {InputEvent}
+ */
+exports.deserializeInputEvent = (buffer) => {
+  const idView = new Uint8Array(buffer, 0, 36);
+  const id = String.fromCodePoint(...idView);
 
-//   const id = String.fromCharCode(idView.to);
-//   // for (let i = 0; i < 36; i += 1) {
-//     // id[i] = String.fromCharCode(idView);
-//   // }
+  const simStepView = new Uint32Array(buffer, 36, 1);
+  const simStep = simStepView[0];
 
-//   return {};
-// };
+  const booleanView = new Uint8Array(buffer, 36, 1);
+  const accelerate = !!(booleanView[0] & 0b00000001);
+  const brake = !!(booleanView[0] & 0b00000010);
+  const shoot = !!(booleanView[0] & 0b00000100);
+
+  return {
+    id,
+    simStep,
+    accelerate,
+    brake,
+    shoot,
+  };
+};

@@ -4,12 +4,14 @@
  * @typedef { import("./type").ScoreboardEvent } ScoreboardEvent
  * @typedef { import("./type").ScoreEvent } ScoreEvent
  * @typedef { import("./type").HealthEvent } HealthEvent
+ * @typedef { import("./vector").Point2 } Point2
  */
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const { Car } = require('./car');
 const { SIM_PERIOD, SCOREBOARD_LENGTH } = require('./config');
+const { deserializeInputEvent } = require('./type');
 const { sub, length } = require('./vector');
 
 const app = express();
@@ -21,6 +23,15 @@ let simStep = 0;
 
 /** @type {Car[]} */
 const cars = [];
+
+/** @type {Point2[]} */
+const trees = [];
+for (let i = 0; i < 1000; i += 1) {
+  trees.push({
+    x: Math.random() * 20000 - 10000,
+    y: Math.random() * 20000 - 10000,
+  });
+}
 
 /**
  * @type {() => ScoreboardEvent}
@@ -68,6 +79,9 @@ ioServer.on('connection', (socket) => {
   // send all cars to the new client
   cars.forEach((c) => socket.emit('update', c.serialize()));
 
+  // send the trees
+  socket.emit('trees', trees);
+
   // send the initial scoreboard
   socket.emit('scoreboard', createScoreboard());
 
@@ -86,12 +100,13 @@ ioServer.on('connection', (socket) => {
     ioServer.emit('update', car.serialize());
   });
 
-  socket.on('input', (/** @type {InputEvent} */ event) => {
+  socket.on('input', (/** @type {ArrayBuffer} */ buffer) => {
     if (car) {
+      const event = deserializeInputEvent(buffer);
       car.processInput(event, simStep);
 
       // send the input to everyone except the sender because they have already processed it
-      socket.broadcast.emit('input', event);
+      socket.broadcast.emit('input', buffer);
     }
   });
 

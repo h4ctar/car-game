@@ -7,6 +7,7 @@
 
 const { Car } = require('../car');
 const { SIM_PERIOD } = require('../config');
+const { deserializeInputEvent } = require('../type');
 const { rotate, sub, add } = require('../vector');
 const { myId } = require('./id');
 const { updateInfoCard, hideInfoCard } = require('./info-card');
@@ -26,6 +27,9 @@ window.addEventListener('resize', () => {
 
 const context = canvas.getContext('2d');
 
+const treeImage = new Image();
+treeImage.src = 'tree.svg';
+
 let simRunning;
 let simStep;
 let simStartStep;
@@ -42,11 +46,14 @@ socket.on('start', (event) => {
   simStartTime = Date.now();
 });
 
-/** @type { Car[] } */
+/** @type {Car[]} */
 const cars = [];
 
-/** @type { Car } */
+/** @type {Car} */
 let myCar;
+
+/** @type {Point2[]} */
+const trees = [];
 
 socket.on('update', (/** @type {UpdateEvent} */ event) => {
   console.log('Received update');
@@ -82,7 +89,8 @@ socket.on('delete', (/** @type {string} */ id) => {
   }
 });
 
-socket.on('input', (event) => {
+socket.on('input', (/** @type {ArrayBuffer} */ buffer) => {
+  const event = deserializeInputEvent(buffer);
   const car = cars.find((c) => c.id === event.id);
   if (car) {
     car.processInput(event, simStep);
@@ -109,6 +117,11 @@ socket.on('health', (/** @type {HealthEvent} */ event) => {
       updateInfoCard(myCar);
     }
   }
+});
+
+socket.on('trees', (/** @type {Point2[]} */ event) => {
+  trees.length = 0;
+  trees.push(...event);
 });
 
 const update = () => {
@@ -185,6 +198,9 @@ const draw = () => {
     context.translate(-camera.x, -camera.y);
 
     cars.forEach((car) => car.draw(context));
+
+    trees.forEach((tree) => context.drawImage(treeImage, tree.x, tree.y));
+
     context.restore();
 
     drawRadar();
