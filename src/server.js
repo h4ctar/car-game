@@ -11,6 +11,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const { Car } = require('./car');
 const { SIM_PERIOD, SCOREBOARD_LENGTH } = require('./config');
+const { Simulation } = require('./simulation');
 const { deserializeInputEvent } = require('./type');
 const { sub, length } = require('./vector');
 
@@ -18,46 +19,18 @@ const app = express();
 const httpServer = http.createServer(app);
 const ioServer = new Server(httpServer, { serveClient: false });
 
-const simStartTime = Date.now();
-let simStep = 0;
-
-/** @type {Car[]} */
-const cars = [];
-
-/** @type {Point2[]} */
-const trees = [];
-for (let i = 0; i < 1000; i += 1) {
-  trees.push({
-    x: Math.random() * 20000 - 10000,
-    y: Math.random() * 20000 - 10000,
-  });
-}
+const sim = new Simulation();
 
 /**
  * @type {() => ScoreboardEvent}
  */
 const createScoreboard = () => {
-  const scoreboard = cars
+  const scoreboard = sim.cars
     .map((car) => ({ username: car.username, score: car.score }))
     .sort((a, b) => b.score - a.score);
   scoreboard.length = SCOREBOARD_LENGTH;
-  scoreboard.fill({ username: '', score: 0 }, cars.length, SCOREBOARD_LENGTH);
+  scoreboard.fill({ username: '', score: 0 }, sim.cars.length, SCOREBOARD_LENGTH);
   return scoreboard;
-};
-
-/**
- * Delete a car.
- * @param {Car} car the car to delete
- */
-const deleteCar = (car) => {
-  const index = cars.indexOf(car);
-  if (index !== -1) {
-    cars.splice(index, 1);
-  }
-  ioServer.emit('delete', car.id);
-
-  // send an updated scoreboard without the deleted
-  ioServer.emit('scoreboard', createScoreboard());
 };
 
 ioServer.on('connection', (socket) => {
@@ -70,17 +43,17 @@ ioServer.on('connection', (socket) => {
     console.info('Client starting simulation');
     socket.emit('start', {
       requestTime: event.requestTime,
-      serverSimStep: simStep,
+      serverSimStep: sim.simStep,
     });
   });
 
   socket.on('ping', () => socket.emit('pong'));
 
   // send all cars to the new client
-  cars.forEach((c) => socket.emit('update', c.serialize()));
+  sim.cars.forEach((c) => socket.emit('update', c.serialize()));
 
   // send the trees
-  socket.emit('trees', trees);
+  socket.emit('trees', sim.trees);
 
   // send the initial scoreboard
   socket.emit('scoreboard', createScoreboard());
@@ -92,7 +65,7 @@ ioServer.on('connection', (socket) => {
     console.info(`Client joining ${event.username}`);
     car = new Car(id, event.username, event.color);
     car.position = { x: 200, y: 200 };
-    cars.push(car);
+    sim.cars.push(car);
 
     // send an updated scoreboard including the new car
     ioServer.emit('scoreboard', createScoreboard());
@@ -103,7 +76,7 @@ ioServer.on('connection', (socket) => {
   socket.on('input', (/** @type {ArrayBuffer} */ buffer) => {
     if (car) {
       const event = deserializeInputEvent(buffer);
-      car.processInput(event, simStep);
+      car.processInput(event, sim.simStep);
 
       // send the input to everyone except the sender because they have already processed it
       socket.broadcast.emit('input', buffer);
@@ -112,27 +85,31 @@ ioServer.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     if (car) {
-      deleteCar(car);
+      sim.deleteCar(car);
+      // todo: this could be event listener on the simulation
+      ioServer.emit('delete', car.id);
+      ioServer.emit('scoreboard', createScoreboard());
     }
   });
 });
 
 const update = () => {
-  cars.forEach((car) => car.update(simStep));
+  sim.cars.forEach((car) => car.update(sim.simStep));
 };
 
 const loop = () => {
-  const desiredSimStep = Math.floor((Date.now() - simStartTime) / SIM_PERIOD);
-  if (desiredSimStep - simStep > 100) {
+  const desiredSimStep = Math.floor((Date.now() - sim.simStartTime) / SIM_PERIOD);
+  if (desiredSimStep - sim.simStep > 100) {
     throw new Error('Too many simulation steps missed');
   }
 
-  while (simStep < desiredSimStep) {
+  while (sim.simStep < desiredSimStep) {
     update();
 
     // check if bullet hits car
-    [...cars].forEach((thisCar) => {
-      const otherCars = cars.filter((car) => car !== thisCar);
+    [...sim.cars].forEach((thisCar) => {
+      const otherCars = sim.cars.filter((car) => car !== thisCar);
+
       thisCar.bullets.forEach((bullet) => otherCars.forEach((otherCar) => {
         const distance = length(sub(bullet.position, otherCar.position));
         if (distance < 30) {
@@ -147,7 +124,9 @@ const loop = () => {
             ioServer.emit('health', healthEvent);
           } else {
             thisCar.score += 100;
-            deleteCar(otherCar);
+            sim.deleteCar(otherCar);
+            ioServer.emit('delete', otherCar.id);
+            ioServer.emit('scoreboard', createScoreboard());
           }
 
           /** @type {ScoreEvent} */
@@ -157,7 +136,7 @@ const loop = () => {
       }));
     });
 
-    simStep += 1;
+    sim.simStep += 1;
   }
 };
 setInterval(loop, SIM_PERIOD);

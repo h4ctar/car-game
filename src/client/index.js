@@ -7,6 +7,7 @@
 
 const { Car } = require('../car');
 const { SIM_PERIOD } = require('../config');
+const { Simulation } = require('../simulation');
 const { deserializeInputEvent } = require('../type');
 const { rotate, sub, add } = require('../vector');
 const { myId } = require('./id');
@@ -30,10 +31,10 @@ const context = canvas.getContext('2d');
 const treeImage = new Image();
 treeImage.src = 'tree.svg';
 
+const sim = new Simulation();
+
 let simRunning;
-let simStep;
 let simStartStep;
-let simStartTime;
 socket.on('start', (event) => {
   console.info(`Start simulation ${event}`);
   // https://distributedsystemsblog.com/docs/clock-synchronization-algorithms/#christians-algorithm
@@ -41,13 +42,10 @@ socket.on('start', (event) => {
   const clientSimStep = event.serverSimStep + Math.round((rtt / 2) / SIM_PERIOD);
 
   simRunning = true;
-  simStep = clientSimStep;
+  sim.simStep = clientSimStep;
   simStartStep = clientSimStep;
-  simStartTime = Date.now();
+  sim.simStartTime = Date.now();
 });
-
-/** @type {Car[]} */
-const cars = [];
 
 /** @type {Car} */
 let myCar;
@@ -57,12 +55,12 @@ const trees = [];
 
 socket.on('update', (/** @type {UpdateEvent} */ event) => {
   console.log('Received update');
-  let car = cars.find((c) => c.id === event.id);
+  let car = sim.cars.find((c) => c.id === event.id);
   if (!car) {
     console.log('New car', event.id);
 
     car = new Car(event.id, event.username, event.color);
-    cars.push(car);
+    sim.cars.push(car);
 
     if (car.id === myId) {
       myCar = car;
@@ -71,15 +69,15 @@ socket.on('update', (/** @type {UpdateEvent} */ event) => {
     }
   }
 
-  car.deserialize(event, simStep);
+  car.deserialize(event, sim.simStep);
 });
 
 socket.on('delete', (/** @type {string} */ id) => {
   console.info(`Delete car ${id}`);
 
-  const index = cars.findIndex((car) => car.id === id);
+  const index = sim.cars.findIndex((car) => car.id === id);
   if (index !== -1) {
-    cars.splice(index, 1);
+    sim.cars.splice(index, 1);
   }
 
   if (id === myCar?.id) {
@@ -91,14 +89,14 @@ socket.on('delete', (/** @type {string} */ id) => {
 
 socket.on('input', (/** @type {ArrayBuffer} */ buffer) => {
   const event = deserializeInputEvent(buffer);
-  const car = cars.find((c) => c.id === event.id);
+  const car = sim.cars.find((c) => c.id === event.id);
   if (car) {
-    car.processInput(event, simStep);
+    car.processInput(event, sim.simStep);
   }
 });
 
 socket.on('score', (/** @type {ScoreEvent} */ event) => {
-  const car = cars.find((c) => c.id === event.id);
+  const car = sim.cars.find((c) => c.id === event.id);
   if (car) {
     car.score = event.score;
 
@@ -109,7 +107,7 @@ socket.on('score', (/** @type {ScoreEvent} */ event) => {
 });
 
 socket.on('health', (/** @type {HealthEvent} */ event) => {
-  const car = cars.find((c) => c.id === event.id);
+  const car = sim.cars.find((c) => c.id === event.id);
   if (car) {
     car.health = event.health;
 
@@ -125,25 +123,25 @@ socket.on('trees', (/** @type {Point2[]} */ event) => {
 });
 
 const update = () => {
-  cars.forEach((car) => car.update(simStep));
+  sim.cars.forEach((car) => car.update(sim.simStep));
 };
 
 // simulation loop with fixed step
 const loop = () => {
   if (simRunning) {
-    const desiredSimStep = Math.floor(simStartStep + (Date.now() - simStartTime) / SIM_PERIOD);
-    if (desiredSimStep - simStep > 100) {
+    const desiredSimStep = Math.floor(simStartStep + (Date.now() - sim.simStartTime) / SIM_PERIOD);
+    if (desiredSimStep - sim.simStep > 100) {
       console.error('Missed too many simulation steps');
       simRunning = false;
       socket.close();
     }
 
-    while (simStep < desiredSimStep) {
+    while (sim.simStep < desiredSimStep) {
       update();
-      simStep += 1;
+      sim.simStep += 1;
     }
 
-    checkInput(myCar, simStep);
+    checkInput(myCar, sim.simStep);
   }
 };
 setInterval(loop, SIM_PERIOD);
@@ -169,7 +167,7 @@ const drawMap = (camera) => {
 const drawRadar = () => {
   if (myCar) {
     const radarRadius = 100;
-    cars
+    sim.cars
       .filter((car) => car !== myCar)
       .forEach((car) => {
         const v = sub(car.position, myCar.position);
@@ -197,7 +195,7 @@ const draw = () => {
 
     context.translate(-camera.x, -camera.y);
 
-    cars.forEach((car) => car.draw(context));
+    sim.cars.forEach((car) => car.draw(context));
 
     trees.forEach((tree) => context.drawImage(treeImage, tree.x, tree.y));
 
