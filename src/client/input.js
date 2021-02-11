@@ -65,6 +65,10 @@ exports.checkInput = (car, simStep) => {
       event.steer = 0;
     }
 
+    event.accelerate = keys[87] || touchpad.yAxis > 0.5;
+    event.brake = keys[83] || (touchpad.yAxis < -0.5);
+    event.shoot = keys[32] || touchpad.shoot;
+
     const dirty = event.steer !== car.steer || event.accelerate !== car.accelerate || event.brake !== car.brake || event.shoot !== car.shoot;
 
     if (dirty) {

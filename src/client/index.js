@@ -31,20 +31,15 @@ const context = canvas.getContext('2d');
 const treeImage = new Image();
 treeImage.src = 'tree.svg';
 
-const sim = new Simulation();
+const sim = new Simulation(false);
 
-let simRunning;
-let simStartStep;
 socket.on('start', (event) => {
   console.info(`Start simulation ${event}`);
   // https://distributedsystemsblog.com/docs/clock-synchronization-algorithms/#christians-algorithm
   const rtt = Date.now() - event.requestTime;
   const clientSimStep = event.serverSimStep + Math.round((rtt / 2) / SIM_PERIOD);
 
-  simRunning = true;
-  sim.simStep = clientSimStep;
-  simStartStep = clientSimStep;
-  sim.simStartTime = Date.now();
+  sim.start(clientSimStep);
 });
 
 /** @type {Car} */
@@ -115,25 +110,13 @@ socket.on('trees', (/** @type {Point2[]} */ event) => {
   sim.trees.push(...event);
 });
 
-// simulation loop with fixed step
-const loop = () => {
-  if (simRunning) {
-    const desiredSimStep = Math.floor(simStartStep + (Date.now() - sim.simStartTime) / SIM_PERIOD);
-    if (desiredSimStep - sim.simStep > 100) {
-      console.error('Missed too many simulation steps');
-      simRunning = false;
-      socket.close();
-    }
-
-    while (sim.simStep < desiredSimStep) {
-      sim.update();
-      sim.simStep += 1;
-    }
-
+const inputLoop = () => {
+  if (myCar) {
+    // console.log('input');
     checkInput(myCar, sim.simStep);
   }
 };
-setInterval(loop, SIM_PERIOD);
+setInterval(inputLoop, SIM_PERIOD);
 
 /**
  * @param {Point2} camera
@@ -170,7 +153,7 @@ const drawRadar = () => {
 };
 
 const draw = () => {
-  if (simRunning) {
+  if (sim.simRunning) {
     const camera = myCar ? myCar.position : { x: 0, y: 0 };
 
     context.fillStyle = 'black';

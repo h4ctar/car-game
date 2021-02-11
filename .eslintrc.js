@@ -18,5 +18,6 @@ module.exports = {
     'no-mixed-operators': 'off',
     'no-param-reassign': 'off',
     'prefer-destructuring': 'off',
+    'no-underscore-dangle': 'off',
   },
 };

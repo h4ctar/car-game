@@ -10,16 +10,16 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const { SIM_PERIOD, SCOREBOARD_LENGTH } = require('../common/config');
+const { SCOREBOARD_LENGTH } = require('../common/config');
 const { Simulation } = require('../common/simulation');
 const { deserializeInputEvent } = require('../common/type');
-const { sub, length } = require('../common/vector');
 
 const app = express();
 const httpServer = http.createServer(app);
 const ioServer = new Server(httpServer, { serveClient: false });
 
-const sim = new Simulation();
+const sim = new Simulation(true);
+sim.start(0);
 
 for (let i = 0; i < 1000; i += 1) {
   sim.trees.push({
@@ -73,7 +73,26 @@ ioServer.on('connection', (socket) => {
     console.info(`Client joining ${event.username}`);
     car = sim.addCar(id, event.username, event.color);
 
-    // todo: fix position initiation
+    car.addEventListener('health', () => {
+      /** @type {import("../common/type").HealthEvent} */
+      const healthEvent = { id, health: car.health };
+      ioServer.emit('health', healthEvent);
+    });
+
+    car.addEventListener('score', () => {
+      /** @type {import("../common/type").ScoreEvent} */
+      const scoreEvent = { id, score: car.score };
+      ioServer.emit('score', scoreEvent);
+
+      ioServer.emit('scoreboard', createScoreboard());
+    });
+
+    car.addEventListener('dead', (deadEvent) => {
+      // @ts-ignore
+      ioServer.emit('delete', deadEvent.id);
+    });
+
+    // todo: random position initiation
     car.position = { x: 200, y: 200 };
 
     // send an updated scoreboard including the new car
@@ -101,50 +120,6 @@ ioServer.on('connection', (socket) => {
     }
   });
 });
-
-const loop = () => {
-  const desiredSimStep = Math.floor((Date.now() - sim.simStartTime) / SIM_PERIOD);
-  if (desiredSimStep - sim.simStep > 100) {
-    throw new Error('Too many simulation steps missed');
-  }
-
-  while (sim.simStep < desiredSimStep) {
-    sim.update();
-
-    // check if bullet hits car
-    [...sim.cars].forEach((thisCar) => {
-      const otherCars = sim.cars.filter((car) => car !== thisCar);
-
-      thisCar.bullets.forEach((bullet) => otherCars.forEach((otherCar) => {
-        const distance = length(sub(bullet.position, otherCar.position));
-        if (distance < 30) {
-          thisCar.score += 10;
-
-          ioServer.emit('scoreboard', createScoreboard());
-
-          otherCar.health -= 10;
-          if (otherCar.health > 0) {
-            /** @type {HealthEvent} */
-            const healthEvent = { id: otherCar.id, health: otherCar.health };
-            ioServer.emit('health', healthEvent);
-          } else {
-            thisCar.score += 100;
-            sim.deleteCar(otherCar.id);
-            ioServer.emit('delete', otherCar.id);
-            ioServer.emit('scoreboard', createScoreboard());
-          }
-
-          /** @type {ScoreEvent} */
-          const scoreEvent = { id: thisCar.id, score: thisCar.score };
-          ioServer.emit('score', scoreEvent);
-        }
-      }));
-    });
-
-    sim.simStep += 1;
-  }
-};
-setInterval(loop, SIM_PERIOD);
 
 app.use(express.static('static'));
 

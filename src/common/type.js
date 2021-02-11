@@ -1,13 +1,23 @@
 /* eslint-disable no-bitwise */
 /**
  * @typedef { import("./vector").Point2 } Point2
- * @typedef {{ position: Point2, angle: number }} Wheel
- * @typedef {{ position: Point2, velocity: Point2, startSimStep: number }} Bullet
+ *
+ * @typedef {{
+ *      position: Point2,
+ *      angle: number
+ * }} Wheel
+ *
+ * @typedef {{
+ *      position: Point2,
+ *      velocity: Point2,
+ *      startSimStep: number
+ * }} Bullet
  *
  * @typedef {{ username: string, color: string }} JoinEvent
  * @typedef {{ username: string; score: number; }[]} ScoreboardEvent
  * @typedef {{ id: string; score: number; }} ScoreEvent
  * @typedef {{ id: string; health: number; }} HealthEvent
+ *
  * @typedef {{
  *      id: string;
  *      username: string,
@@ -27,9 +37,7 @@
  *      wheels: Wheel[],
  *      bullets: Bullet[],
  * }} UpdateEvent
- */
-
-/**
+ *
  * @typedef {{
  *      id: string,
  *      simStep: number,
@@ -47,7 +55,6 @@
 exports.serializeInputEvent = (inputEvent) => {
   const buffer = new ArrayBuffer(45);
 
-  console.log(inputEvent.id.length);
   const idView = new Uint8Array(buffer, 0, 36);
   for (let i = 0; i < 36; i += 1) {
     idView[i] = inputEvent.id.charCodeAt(i);
