@@ -55,7 +55,7 @@ exports.Car = class Car {
     this.angle = 0;
     this.velocity = { x: 1, y: 0 };
     this.angularVelocity = 0;
-    this.steerDirection = 0;
+    this.steer = 0;
     this.accelerate = false;
     this.brake = false;
     this.shoot = false;
@@ -103,7 +103,7 @@ exports.Car = class Car {
       angle: this.angle,
       velocity: this.velocity,
       angularVelocity: this.angularVelocity,
-      steerDirection: this.steerDirection,
+      steer: this.steer,
       accelerate: this.accelerate,
       brake: this.brake,
       shoot: this.shoot,
@@ -126,7 +126,7 @@ exports.Car = class Car {
     this.angle = event.angle;
     this.velocity = event.velocity;
     this.angularVelocity = event.angularVelocity;
-    this.steerDirection = event.steerDirection;
+    this.steer = event.steer;
     this.accelerate = event.accelerate;
     this.brake = event.brake;
     this.shoot = event.shoot;
@@ -206,7 +206,7 @@ exports.Car = class Car {
       this.angle = history.angle;
       this.velocity = history.velocity;
       this.angularVelocity = history.angularVelocity;
-      this.steerDirection = history.steerDirection;
+      this.steer = history.steer;
       this.accelerate = history.accelerate;
       this.brake = history.brake;
       this.shoot = history.shoot;
@@ -221,10 +221,10 @@ exports.Car = class Car {
    * @param {InputEvent} event
    */
   applyInput(event) {
-    this.steerDirection = event.steerDirection === undefined ? this.steerDirection : event.steerDirection;
-    this.accelerate = event.accelerate === undefined ? this.accelerate : event.accelerate;
-    this.brake = event.brake === undefined ? this.brake : event.brake;
-    this.shoot = event.shoot === undefined ? this.shoot : event.shoot;
+    this.steer = event.steer;
+    this.accelerate = event.accelerate;
+    this.brake = event.brake;
+    this.shoot = event.shoot;
   }
 
   /**
@@ -243,7 +243,7 @@ exports.Car = class Car {
       angle: this.angle,
       velocity: this.velocity,
       angularVelocity: this.angularVelocity,
-      steerDirection: this.steerDirection,
+      steer: this.steer,
       accelerate: this.accelerate,
       brake: this.brake,
       shoot: this.shoot,
@@ -258,12 +258,12 @@ exports.Car = class Car {
     // ackerman https://datagenetics.com/blog/december12016/index.html
     let targetLeftAngle = 0;
     let targetRightAngle = 0;
-    if (this.steerDirection !== 0) {
+    if (this.steer !== 0) {
       const speed = length(this.velocity);
       // bigger turn radius when going faster
       const turnRadius = util.clamp(speed, 0, 1500) / 1500 * 300 + 40;
-      targetLeftAngle = this.steerDirection / STEER_RESOLUTION * Math.atan(this.wheelbase / (turnRadius + Math.sign(this.steerDirection) * this.track / 2));
-      targetRightAngle = this.steerDirection / STEER_RESOLUTION * Math.atan(this.wheelbase / (turnRadius - Math.sign(this.steerDirection) * this.track / 2));
+      targetLeftAngle = this.steer / STEER_RESOLUTION * Math.atan(this.wheelbase / (turnRadius + Math.sign(this.steer) * this.track / 2));
+      targetRightAngle = this.steer / STEER_RESOLUTION * Math.atan(this.wheelbase / (turnRadius - Math.sign(this.steer) * this.track / 2));
     }
 
     this.wheels[WHEEL_FL].angle = util.tween(this.wheels[WHEEL_FL].angle, targetLeftAngle, 4 * DT);

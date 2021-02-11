@@ -20,7 +20,7 @@
  *      angle: number,
  *      velocity: Point2,
  *      angularVelocity: number,
- *      steerDirection: number,
+ *      steer: number,
  *      accelerate: boolean,
  *      brake: boolean,
  *      shoot: boolean,
@@ -33,7 +33,7 @@
  * @typedef {{
  *      id: string,
  *      simStep: number,
- *      steerDirection?: number,
+ *      steer?: number,
  *      accelerate?: boolean,
  *      brake?: boolean,
  *      shoot?: boolean
@@ -47,6 +47,7 @@
 exports.serializeInputEvent = (inputEvent) => {
   const buffer = new ArrayBuffer(45);
 
+  console.log(inputEvent.id.length);
   const idView = new Uint8Array(buffer, 0, 36);
   for (let i = 0; i < 36; i += 1) {
     idView[i] = inputEvent.id.charCodeAt(i);
@@ -55,11 +56,11 @@ exports.serializeInputEvent = (inputEvent) => {
   const simStepView = new Uint32Array(buffer, 36, 1);
   simStepView[0] = inputEvent.simStep;
 
-  const steerDirectionView = new Uint32Array(buffer, 40, 1);
-  steerDirectionView[0] = inputEvent.steerDirection;
+  const steerView = new Int32Array(buffer, 40, 1);
+  steerView[0] = inputEvent.steer;
 
   const booleanView = new Uint8Array(buffer, 44, 1);
-  booleanView[0] = (inputEvent.accelerate && 0b00000001) & (inputEvent.brake && 0b00000010) & (inputEvent.shoot && 0b00000100);
+  booleanView[0] = (inputEvent.accelerate && 0b00000001) | (inputEvent.brake && 0b00000010) | (inputEvent.shoot && 0b00000100);
 
   return buffer;
 };
@@ -69,11 +70,14 @@ exports.serializeInputEvent = (inputEvent) => {
  * @returns {InputEvent}
  */
 exports.deserializeInputEvent = (buffer) => {
-  const idView = new Uint8Array(buffer, 0, 45);
+  const idView = new Uint8Array(buffer, 0, 36);
   const id = String.fromCodePoint(...idView);
 
   const simStepView = new Uint32Array(buffer, 36, 1);
   const simStep = simStepView[0];
+
+  const steerView = new Int32Array(buffer, 40, 1);
+  const steer = steerView[0];
 
   const booleanView = new Uint8Array(buffer, 44, 1);
   const accelerate = !!(booleanView[0] & 0b00000001);
@@ -83,6 +87,7 @@ exports.deserializeInputEvent = (buffer) => {
   return {
     id,
     simStep,
+    steer,
     accelerate,
     brake,
     shoot,

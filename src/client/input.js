@@ -49,45 +49,23 @@ if (isTouchCapable) {
  */
 exports.checkInput = (car, simStep) => {
   if (car) {
-    let dirty = false;
-
     /** @type {InputEvent} */
     const event = {
       id: myId,
       simStep,
     };
 
-    let steerDirection;
-
     if (isTouchCapable) {
-      steerDirection = Math.round(touchpad.xAxis * STEER_RESOLUTION);
+      event.steer = Math.round(touchpad.xAxis * STEER_RESOLUTION);
     } else if (keys[65]) {
-      steerDirection = STEER_RESOLUTION;
+      event.steer = STEER_RESOLUTION;
     } else if (keys[68]) {
-      steerDirection = -STEER_RESOLUTION;
+      event.steer = -STEER_RESOLUTION;
     } else {
-      steerDirection = 0;
+      event.steer = 0;
     }
 
-    if (steerDirection !== car.steerDirection) {
-      event.steerDirection = steerDirection;
-      dirty = true;
-    }
-
-    if ((keys[87] || (touchpad.yAxis > 0.5)) !== car.accelerate) {
-      event.accelerate = keys[87] || touchpad.yAxis > 0.5;
-      dirty = true;
-    }
-
-    if ((keys[83] || touchpad.yAxis < -0.5) !== car.brake) {
-      event.brake = keys[83] || (touchpad.yAxis < -0.5);
-      dirty = true;
-    }
-
-    if ((keys[32] || touchpad.shoot) !== car.shoot) {
-      event.shoot = keys[32] || touchpad.shoot;
-      dirty = true;
-    }
+    const dirty = event.steer !== car.steer || event.accelerate !== car.accelerate || event.brake !== car.brake || event.shoot !== car.shoot;
 
     if (dirty) {
       car.processInput(event, simStep);

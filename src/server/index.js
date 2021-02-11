@@ -94,9 +94,9 @@ ioServer.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     if (car) {
-      sim.deleteCar(car);
+      sim.deleteCar(id);
       // todo: this could be event listener on the simulation
-      ioServer.emit('delete', car.id);
+      ioServer.emit('delete', id);
       ioServer.emit('scoreboard', createScoreboard());
     }
   });
@@ -129,7 +129,7 @@ const loop = () => {
             ioServer.emit('health', healthEvent);
           } else {
             thisCar.score += 100;
-            sim.deleteCar(otherCar);
+            sim.deleteCar(otherCar.id);
             ioServer.emit('delete', otherCar.id);
             ioServer.emit('scoreboard', createScoreboard());
           }
