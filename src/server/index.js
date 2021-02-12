@@ -11,14 +11,14 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const { SCOREBOARD_LENGTH } = require('../common/config');
-const { Simulation } = require('../common/simulation');
 const { deserializeInputEvent } = require('../common/type');
+const { ServerSimulation } = require('./simulation');
 
 const app = express();
 const httpServer = http.createServer(app);
 const ioServer = new Server(httpServer, { serveClient: false });
 
-const sim = new Simulation(true);
+const sim = new ServerSimulation();
 sim.start(0);
 
 for (let i = 0; i < 1000; i += 1) {
@@ -114,9 +114,6 @@ ioServer.on('connection', (socket) => {
   socket.on('disconnect', () => {
     if (car) {
       sim.deleteCar(id);
-      // todo: this could be event listener on the simulation
-      ioServer.emit('delete', id);
-      ioServer.emit('scoreboard', createScoreboard());
     }
   });
 });

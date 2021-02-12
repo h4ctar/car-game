@@ -31,13 +31,16 @@ const context = canvas.getContext('2d');
 const treeImage = new Image();
 treeImage.src = 'tree.svg';
 
-const sim = new Simulation(false);
+const sim = new Simulation();
 
 socket.on('start', (event) => {
-  console.info(`Start simulation ${event}`);
+  console.info('Received start event');
   // https://distributedsystemsblog.com/docs/clock-synchronization-algorithms/#christians-algorithm
   const rtt = Date.now() - event.requestTime;
-  const clientSimStep = event.serverSimStep + Math.round((rtt / 2) / SIM_PERIOD);
+  const skew = Math.round((rtt / 2) / SIM_PERIOD);
+  console.info(`RTT: ${rtt}`);
+  console.info(`Skew: ${skew}`);
+  const clientSimStep = event.serverSimStep + skew;
 
   sim.start(clientSimStep);
 });
