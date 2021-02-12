@@ -17,8 +17,6 @@ socket.on('disconnect', () => {
 
   const disconnectedModal = new Modal(document.getElementById('disconnected-modal'), { backdrop: 'static', keyboard: false });
   disconnectedModal.show();
-
-  // todo: stop sim on disconnect
 });
 
 let pingTime;

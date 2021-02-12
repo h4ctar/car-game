@@ -6,8 +6,10 @@
 const { Car } = require('./car');
 const { SIM_PERIOD } = require('./config');
 
-exports.Simulation = class Simulation {
+exports.Simulation = class Simulation extends EventTarget {
   constructor() {
+    super();
+
     this.simRunning = false;
 
     /** @type {Car[]} */
@@ -42,9 +44,15 @@ exports.Simulation = class Simulation {
    * @param {string} id
    */
   deleteCar(id) {
+    console.info(`Deleting car ${id}`);
     const index = this.cars.findIndex((car) => car.id === id);
     if (index !== -1) {
       this.cars.splice(index, 1);
+
+      const event = new Event('delete-car');
+      // @ts-ignore
+      event.data = id;
+      this.dispatchEvent(event);
     }
   }
 
@@ -59,7 +67,20 @@ exports.Simulation = class Simulation {
     this.simStartStep = startSimStep;
     this.simStartTime = Date.now();
 
-    setInterval(() => this.loop(), SIM_PERIOD);
+    if (!this.loopInterval) {
+      this.loopInterval = setInterval(() => this.loop(), SIM_PERIOD);
+    }
+  }
+
+  stop() {
+    console.log('Stop simulation');
+
+    this.simRunning = false;
+
+    if (this.loopInterval) {
+      clearInterval(this.loopInterval);
+      delete this.loopInterval;
+    }
   }
 
   loop() {

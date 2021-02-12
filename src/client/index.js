@@ -8,7 +8,7 @@
 
 const { SIM_PERIOD } = require('../common/config');
 const { Simulation } = require('../common/simulation');
-const { deserializeInputEvent } = require('../common/type');
+// const { deserializeInputEvent } = require('../common/type');
 const { rotate, sub, add } = require('../common/vector');
 const { myId } = require('./id');
 const { updateInfoCard, hideInfoCard } = require('./info-card');
@@ -45,6 +45,8 @@ socket.on('start', (event) => {
   sim.start(clientSimStep);
 });
 
+socket.on('disconnect', () => sim.stop());
+
 /** @type {Car} */
 let myCar;
 
@@ -78,8 +80,9 @@ socket.on('delete', (/** @type {string} */ id) => {
   }
 });
 
-socket.on('input', (/** @type {ArrayBuffer} */ buffer) => {
-  const event = deserializeInputEvent(buffer);
+// socket.on('input', (/** @type {ArrayBuffer} */ buffer) => {
+//   const event = deserializeInputEvent(buffer);
+socket.on('input', (/** @type {import('../common/type').InputEvent} */ event) => {
   const car = sim.getCar(event.id);
   if (car) {
     car.processInput(event, sim.simStep);

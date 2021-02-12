@@ -11,7 +11,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const { SCOREBOARD_LENGTH } = require('../common/config');
-const { deserializeInputEvent } = require('../common/type');
+// const { deserializeInputEvent } = require('../common/type');
 const { ServerSimulation } = require('./simulation');
 
 const app = express();
@@ -20,6 +20,11 @@ const ioServer = new Server(httpServer, { serveClient: false });
 
 const sim = new ServerSimulation();
 sim.start(0);
+
+sim.addEventListener('delete-car', (event) => {
+  // @ts-ignore
+  ioServer.emit('delete', event.data);
+});
 
 for (let i = 0; i < 1000; i += 1) {
   sim.trees.push({
@@ -41,10 +46,10 @@ const createScoreboard = () => {
 };
 
 ioServer.on('connection', (socket) => {
-  console.log('New client connected');
-
   // eslint-disable-next-line no-underscore-dangle
   const id = socket.request._query.id;
+
+  console.log(`New client connected ${id}`);
 
   // todo: type here
   socket.on('start', (event) => {
@@ -87,11 +92,6 @@ ioServer.on('connection', (socket) => {
       ioServer.emit('scoreboard', createScoreboard());
     });
 
-    car.addEventListener('dead', (deadEvent) => {
-      // @ts-ignore
-      ioServer.emit('delete', deadEvent.id);
-    });
-
     // todo: random position initiation
     car.position = { x: 200, y: 200 };
 
@@ -101,17 +101,19 @@ ioServer.on('connection', (socket) => {
     ioServer.emit('update', car.serialize());
   });
 
-  socket.on('input', (/** @type {ArrayBuffer} */ buffer) => {
+  socket.on('input', (/** @type {InputEvent} */ event) => {
+    // socket.on('input', (/** @type {ArrayBuffer} */ buffer) => {
     if (car) {
-      const event = deserializeInputEvent(buffer);
+      // const event = deserializeInputEvent(buffer);
       car.processInput(event, sim.simStep);
 
       // send the input to everyone except the sender because they have already processed it
-      socket.broadcast.emit('input', buffer);
+      socket.broadcast.emit('input', event);
     }
   });
 
   socket.on('disconnect', () => {
+    console.info(`Client disconnected ${id}`);
     if (car) {
       sim.deleteCar(id);
     }

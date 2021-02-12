@@ -4,7 +4,7 @@
  */
 
 const { STEER_RESOLUTION } = require('../common/config');
-const { serializeInputEvent } = require('../common/type');
+// const { serializeInputEvent } = require('../common/type');
 const { clamp } = require('../common/util');
 const { myId } = require('./id');
 const { socket } = require('./socket');
@@ -73,7 +73,8 @@ exports.checkInput = (car, simStep) => {
 
     if (dirty) {
       car.processInput(event, simStep);
-      socket.emit('input', serializeInputEvent(event));
+      // socket.emit('input', serializeInputEvent(event));
+      socket.emit('input', event);
     }
   }
 };

@@ -94,12 +94,6 @@ exports.Car = class Car extends EventTarget {
   set health(value) {
     this._health = value;
     this.dispatchEvent(new Event('health'));
-    if (this._health <= 0) {
-      const event = new Event('dead');
-      // @ts-ignore
-      event.data = this.id;
-      this.dispatchEvent(event);
-    }
   }
 
   get health() {
