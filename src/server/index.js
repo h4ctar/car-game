@@ -11,7 +11,6 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const { SCOREBOARD_LENGTH, WORLD_WIDTH, WORLD_HEIGHT } = require('../common/config');
-// const { deserializeInputEvent } = require('../common/type');
 const { ServerSimulation } = require('./simulation');
 
 const app = express();
@@ -82,13 +81,13 @@ ioServer.on('connection', (socket) => {
     car = sim.addCar(id, event.username, event.color);
 
     car.addEventListener('health', () => {
-      /** @type {import("../common/type").HealthEvent} */
+      /** @type {HealthEvent} */
       const healthEvent = { id, health: car.health };
       ioServer.emit('health', healthEvent);
     });
 
     car.addEventListener('score', () => {
-      /** @type {import("../common/type").ScoreEvent} */
+      /** @type {ScoreEvent} */
       const scoreEvent = { id, score: car.score };
       ioServer.emit('score', scoreEvent);
 
@@ -107,9 +106,7 @@ ioServer.on('connection', (socket) => {
   });
 
   socket.on('input', (/** @type {InputEvent} */ event) => {
-    // socket.on('input', (/** @type {ArrayBuffer} */ buffer) => {
     if (car) {
-      // const event = deserializeInputEvent(buffer);
       car.processInput(event, sim.simStep);
 
       // send the input to everyone except the sender because they have already processed it

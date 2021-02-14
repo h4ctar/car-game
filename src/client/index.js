@@ -2,6 +2,7 @@
  * @typedef { import('../common/type').ScoreEvent } ScoreEvent
  * @typedef { import('../common/type').HealthEvent } HealthEvent
  * @typedef { import('../common/type').UpdateEvent } UpdateEvent
+ * @typedef { import('../common/type').InputEvent } InputEvent
  * @typedef { import('../common/vector').Point2 } Point2
  * @typedef { import("../common/car").Car } Car
  */
@@ -79,7 +80,7 @@ socket.on('delete', (/** @type {string} */ id) => {
   }
 });
 
-socket.on('input', (/** @type {import('../common/type').InputEvent} */ event) => {
+socket.on('input', (/** @type {InputEvent} */ event) => {
   const car = sim.getCar(event.id);
   if (car) {
     car.processInput(event, sim.simStep);
@@ -114,7 +115,6 @@ socket.on('trees', (/** @type {Point2[]} */ trees) => {
 
 const inputLoop = () => {
   if (myCar) {
-    // console.log('input');
     checkInput(myCar, sim.simStep);
   }
 };
