@@ -6,6 +6,7 @@
  * @typedef { import("./type").UpdateEvent } UpdateEvent
  */
 
+const { EventEmitter } = require('events');
 const util = require('./util');
 const { DT, STEER_RESOLUTION } = require('./config');
 const {
@@ -17,7 +18,7 @@ const WHEEL_FR = 1;
 // const WHEEL_RL = 2;
 // const WHEEL_RR = 3;
 
-exports.Car = class Car extends EventTarget {
+exports.Car = class Car extends EventEmitter {
   /**
    * @param {string} id
    * @param {string} username
@@ -94,7 +95,7 @@ exports.Car = class Car extends EventTarget {
   set health(value) {
     if (this._health !== value) {
       this._health = value;
-      this.dispatchEvent(new Event('health'));
+      this.emit('health');
     }
   }
 
@@ -109,7 +110,7 @@ exports.Car = class Car extends EventTarget {
   set score(value) {
     if (this._score !== value) {
       this._score = value;
-      this.dispatchEvent(new Event('score'));
+      this.emit('score');
     }
   }
 

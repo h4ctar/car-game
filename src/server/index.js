@@ -80,13 +80,13 @@ ioServer.on('connection', (socket) => {
     console.info(`Client joining ${event.username}`);
     car = sim.addCar(id, event.username, event.color);
 
-    car.addEventListener('health', () => {
+    car.on('health', () => {
       /** @type {HealthEvent} */
       const healthEvent = { id, health: car.health };
       ioServer.emit('health', healthEvent);
     });
 
-    car.addEventListener('score', () => {
+    car.on('score', () => {
       /** @type {ScoreEvent} */
       const scoreEvent = { id, score: car.score };
       ioServer.emit('score', scoreEvent);

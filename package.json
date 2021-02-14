@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "IO Cool",
   "engines": {
-    "node": ">=15"
+    "node": ">=12"
   },
   "main": "index.js",
   "scripts": {
