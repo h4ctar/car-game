@@ -49,8 +49,8 @@ exports.Car = class Car extends EventTarget {
     /** @type {InputEvent[]} */
     this.inputEvents = [];
 
-    this.score = 0;
-    this._health = 1000;
+    this._score = 0;
+    this._health = 100;
 
     // dynamic properties
     this.position = { x: 0, y: 0 };
@@ -92,8 +92,10 @@ exports.Car = class Car extends EventTarget {
    * @param {number} value
    */
   set health(value) {
-    this._health = value;
-    this.dispatchEvent(new Event('health'));
+    if (this._health !== value) {
+      this._health = value;
+      this.dispatchEvent(new Event('health'));
+    }
   }
 
   get health() {
@@ -105,8 +107,10 @@ exports.Car = class Car extends EventTarget {
    * @param {number} value
    */
   set score(value) {
-    this._score = value;
-    this.dispatchEvent(new Event('score'));
+    if (this._score !== value) {
+      this._score = value;
+      this.dispatchEvent(new Event('score'));
+    }
   }
 
   get score() {

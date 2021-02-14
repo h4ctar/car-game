@@ -8,7 +8,6 @@
 
 const { SIM_PERIOD } = require('../common/config');
 const { Simulation } = require('../common/simulation');
-// const { deserializeInputEvent } = require('../common/type');
 const { rotate, sub, add } = require('../common/vector');
 const { myId } = require('./id');
 const { updateInfoCard, hideInfoCard } = require('./info-card');
@@ -80,8 +79,6 @@ socket.on('delete', (/** @type {string} */ id) => {
   }
 });
 
-// socket.on('input', (/** @type {ArrayBuffer} */ buffer) => {
-//   const event = deserializeInputEvent(buffer);
 socket.on('input', (/** @type {import('../common/type').InputEvent} */ event) => {
   const car = sim.getCar(event.id);
   if (car) {
@@ -111,9 +108,8 @@ socket.on('health', (/** @type {HealthEvent} */ event) => {
   }
 });
 
-socket.on('trees', (/** @type {Point2[]} */ event) => {
-  sim.trees.length = 0;
-  sim.trees.push(...event);
+socket.on('trees', (/** @type {Point2[]} */ trees) => {
+  sim.setTrees(trees);
 });
 
 const inputLoop = () => {
@@ -161,6 +157,12 @@ const drawRadar = () => {
 const draw = () => {
   if (sim.simRunning) {
     const camera = myCar ? myCar.position : { x: 0, y: 0 };
+    const viewport = {
+      x: camera.x - canvas.width / 2,
+      y: camera.y - canvas.height / 2,
+      width: canvas.width,
+      height: canvas.height,
+    };
 
     context.fillStyle = 'black';
     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -175,7 +177,7 @@ const draw = () => {
 
     sim.cars.forEach((car) => car.draw(context));
 
-    sim.trees.forEach((tree) => context.drawImage(treeImage, tree.x, tree.y));
+    sim.getTrees(viewport).forEach((tree) => context.drawImage(treeImage, tree.point.x - treeImage.width / 2, tree.point.y - treeImage.height / 2));
 
     context.restore();
 

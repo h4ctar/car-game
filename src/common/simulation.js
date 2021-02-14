@@ -1,10 +1,13 @@
 /**
  * @typedef { import("./vector").Point2 } Point2
+ * @typedef {import("./vector").Box} Box
  */
 
-// eslint-disable-next-line no-unused-vars
+const { Quadtree } = require('./quadtree');
 const { Car } = require('./car');
-const { SIM_PERIOD } = require('./config');
+const { SIM_PERIOD, WORLD_WIDTH, WORLD_HEIGHT } = require('./config');
+
+const TREE = 0;
 
 exports.Simulation = class Simulation extends EventTarget {
   constructor() {
@@ -12,11 +15,29 @@ exports.Simulation = class Simulation extends EventTarget {
 
     this.simRunning = false;
 
+    this._quadtree = new Quadtree({
+      x: 0,
+      y: 0,
+      width: WORLD_WIDTH,
+      height: WORLD_HEIGHT,
+    });
+
     /** @type {Car[]} */
     this.cars = [];
+  }
 
-    /** @type {Point2[]} */
-    this.trees = [];
+  /**
+   * @param {Point2[]} trees
+   */
+  setTrees(trees) {
+    trees.forEach((tree) => this._quadtree.insert(TREE, tree));
+  }
+
+  /**
+   * @param {Box} range
+   */
+  getTrees(range) {
+    return this._quadtree.query(TREE, range);
   }
 
   /**

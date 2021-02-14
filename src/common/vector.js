@@ -1,5 +1,15 @@
 /**
- * @typedef {{ x: number, y: number }} Point2
+ * @typedef {{
+ *    x: number,
+ *    y: number,
+ * }} Point2
+ *
+ * @typedef {{
+ *    x: number,
+ *    y: number,
+ *    width: number,
+ *    height: number,
+ * }} Box
  */
 
 /**
@@ -54,3 +64,17 @@ exports.rotate = (v, a) => ({
  * @param {Point2} v the vector
  */
 exports.length = (v) => Math.sqrt(v.x * v.x + v.y * v.y);
+
+/**
+ * Check if a box contains a point.
+ * @param {Box} b the box
+ * @param {Point2} v the point
+ */
+exports.contains = (b, v) => v.x > b.x && v.x < b.x + b.width && v.y > b.y && v.y < b.y + b.height;
+
+/**
+ * Check if two boxes intersect
+ * @param {Box} a the first box
+ * @param {Box} b the second box
+ */
+exports.intersects = (a, b) => !(a.x + a.width < b.x || b.x + b.width < a.x || a.y + a.height < b.y || b.y + b.height < a.y);

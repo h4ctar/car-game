@@ -10,7 +10,7 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const { SCOREBOARD_LENGTH } = require('../common/config');
+const { SCOREBOARD_LENGTH, WORLD_WIDTH, WORLD_HEIGHT } = require('../common/config');
 // const { deserializeInputEvent } = require('../common/type');
 const { ServerSimulation } = require('./simulation');
 
@@ -26,12 +26,15 @@ sim.addEventListener('delete-car', (event) => {
   ioServer.emit('delete', event.data);
 });
 
+const trees = [];
 for (let i = 0; i < 1000; i += 1) {
-  sim.trees.push({
-    x: Math.random() * 20000 - 10000,
-    y: Math.random() * 20000 - 10000,
-  });
+  const tree = {
+    x: Math.random() * WORLD_WIDTH,
+    y: Math.random() * WORLD_HEIGHT,
+  };
+  trees.push(tree);
 }
+sim.setTrees(trees);
 
 /**
  * @type {() => ScoreboardEvent}
@@ -66,7 +69,7 @@ ioServer.on('connection', (socket) => {
   sim.cars.forEach((c) => socket.emit('update', c.serialize()));
 
   // send the trees
-  socket.emit('trees', sim.trees);
+  socket.emit('trees', trees);
 
   // send the initial scoreboard
   socket.emit('scoreboard', createScoreboard());
@@ -92,8 +95,10 @@ ioServer.on('connection', (socket) => {
       ioServer.emit('scoreboard', createScoreboard());
     });
 
-    // todo: random position initiation
-    car.position = { x: 200, y: 200 };
+    car.position = {
+      x: Math.random() * WORLD_WIDTH,
+      y: Math.random() * WORLD_HEIGHT,
+    };
 
     // send an updated scoreboard including the new car
     ioServer.emit('scoreboard', createScoreboard());

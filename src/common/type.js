@@ -3,14 +3,14 @@
  * @typedef { import("./vector").Point2 } Point2
  *
  * @typedef {{
- *      position: Point2,
- *      angle: number
+ *    position: Point2,
+ *    angle: number,
  * }} Wheel
  *
  * @typedef {{
- *      position: Point2,
- *      velocity: Point2,
- *      startSimStep: number
+ *    position: Point2,
+ *    velocity: Point2,
+ *    startSimStep: number,
  * }} Bullet
  *
  * @typedef {{ username: string, color: string }} JoinEvent
@@ -44,7 +44,7 @@
  *      steer?: number,
  *      accelerate?: boolean,
  *      brake?: boolean,
- *      shoot?: boolean
+ *      shoot?: boolean,
  * }} InputEvent
  */
 
