@@ -2,6 +2,9 @@
   "name": "io-cool",
   "version": "1.0.0",
   "description": "IO Cool",
+  "engines": {
+    "node": ">=15"
+  },
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.prod.js",
