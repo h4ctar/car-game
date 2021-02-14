@@ -3,13 +3,14 @@
  * @typedef {import("./vector").Box} Box
  */
 
+const { EventEmitter } = require('events');
 const { Quadtree } = require('./quadtree');
 const { Car } = require('./car');
 const { SIM_PERIOD, WORLD_WIDTH, WORLD_HEIGHT } = require('./config');
 
 const TREE = 0;
 
-exports.Simulation = class Simulation extends EventTarget {
+exports.Simulation = class Simulation extends EventEmitter {
   constructor() {
     super();
 
@@ -69,11 +70,7 @@ exports.Simulation = class Simulation extends EventTarget {
     const index = this.cars.findIndex((car) => car.id === id);
     if (index !== -1) {
       this.cars.splice(index, 1);
-
-      const event = new Event('delete-car');
-      // @ts-ignore
-      event.data = id;
-      this.dispatchEvent(event);
+      this.emit('delete-car', id);
     }
   }
 

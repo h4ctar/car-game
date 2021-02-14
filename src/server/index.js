@@ -20,9 +20,9 @@ const ioServer = new Server(httpServer, { serveClient: false });
 const sim = new ServerSimulation();
 sim.start(0);
 
-sim.addEventListener('delete-car', (event) => {
+sim.on('delete-car', (id) => {
   // @ts-ignore
-  ioServer.emit('delete', event.data);
+  ioServer.emit('delete', id);
 });
 
 const trees = [];
