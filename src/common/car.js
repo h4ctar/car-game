@@ -172,18 +172,12 @@ exports.Car = class Car extends EventEmitter {
         this.windBackTime(currentSimStep);
       } else if (lastHistory.simStep + 1 < currentSimStep) {
         let simStep = lastHistory.simStep;
-        while (simStep < currentSimStep) {
-          this.update(simStep);
+        while (simStep + 1 < currentSimStep) {
           simStep += 1;
+          this.update(simStep);
         }
       }
     }
-
-    // check that the history is good
-    // lastHistory = this.histories[this.histories.length - 1];
-    // if (lastHistory && lastHistory.simStep !== currentSimStep) {
-    //   console.log(lastHistory, ',', currentSimStep);
-    // }
   }
 
   /**

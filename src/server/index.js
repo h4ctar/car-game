@@ -19,11 +19,7 @@ const ioServer = new Server(httpServer, { serveClient: false });
 
 const sim = new ServerSimulation();
 sim.start(0);
-
-sim.on('delete-car', (id) => {
-  // @ts-ignore
-  ioServer.emit('delete', id);
-});
+sim.on('delete-car', (id) => ioServer.emit('delete', id));
 
 const trees = [];
 for (let i = 0; i < 1000; i += 1) {
@@ -60,12 +56,12 @@ ioServer.on('connection', (socket) => {
       requestTime: event.requestTime,
       serverSimStep: sim.simStep,
     });
+
+    // send all cars to the new client
+    sim.cars.forEach((c) => socket.emit('update', c.serialize()));
   });
 
   socket.on('ping', () => socket.emit('pong'));
-
-  // send all cars to the new client
-  sim.cars.forEach((c) => socket.emit('update', c.serialize()));
 
   // send the trees
   socket.emit('trees', trees);
