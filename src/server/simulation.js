@@ -3,6 +3,24 @@ const { Simulation } = require('../common/simulation');
 const { sub, length } = require('../common/vector');
 
 exports.ServerSimulation = class ServerSimulation extends Simulation {
+  /**
+   * Add a new car.
+   * @param {string} id
+   * @param {string} username
+   * @param {string} color
+   */
+  addCar(id, username, color) {
+    const car = super.addCar(id, username, color);
+
+    car.on('health', () => {
+      if (car.health <= 0) {
+        this.deleteCar(car.id);
+      }
+    });
+
+    return car;
+  }
+
   update() {
     super.update();
 
@@ -17,7 +35,6 @@ exports.ServerSimulation = class ServerSimulation extends Simulation {
           otherCar.health -= 10;
           if (otherCar.health <= 0) {
             thisCar.score += 100;
-            this.deleteCar(otherCar.id);
           }
         }
       }));

@@ -61,8 +61,10 @@ ioServer.on('connection', (socket) => {
     });
 
     syncInterval = setInterval(() => {
+      // todo: only cars near this car
+      // todo: delete cars far away
       sim.cars.forEach((c) => socket.emit('update', c.serialize()));
-    }, 5000);
+    }, 1000);
 
     // send the trees
     socket.emit('trees', trees);
