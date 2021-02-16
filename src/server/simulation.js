@@ -1,3 +1,4 @@
+const { CAR_RADIUS } = require('../common/config');
 const { Simulation } = require('../common/simulation');
 const { sub, length } = require('../common/vector');
 
@@ -11,7 +12,7 @@ exports.ServerSimulation = class ServerSimulation extends Simulation {
 
       thisCar.bullets.forEach((bullet) => otherCars.forEach((otherCar) => {
         const distance = length(sub(bullet.position, otherCar.position));
-        if (distance < 30) {
+        if (distance < CAR_RADIUS) {
           thisCar.score += 10;
           otherCar.health -= 10;
           if (otherCar.health <= 0) {

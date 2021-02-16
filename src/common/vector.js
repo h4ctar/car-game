@@ -43,6 +43,16 @@ exports.multiply = (v, s) => ({
 });
 
 /**
+ * Divide a vector by a scalar.
+ * @param {Point2} v the vector
+ * @param {number} s the scalar
+ */
+exports.divide = (v, s) => ({
+  x: v.x / s,
+  y: v.y / s,
+});
+
+/**
  * Calculate the dot product.
  * @param {Point2} a the first vector
  * @param {Point2} b the second vector
@@ -73,8 +83,20 @@ exports.length = (v) => Math.sqrt(v.x * v.x + v.y * v.y);
 exports.contains = (b, v) => v.x > b.x && v.x < b.x + b.width && v.y > b.y && v.y < b.y + b.height;
 
 /**
- * Check if two boxes intersect
+ * Check if two boxes intersect.
  * @param {Box} a the first box
  * @param {Box} b the second box
  */
 exports.intersects = (a, b) => !(a.x + a.width < b.x || b.x + b.width < a.x || a.y + a.height < b.y || b.y + b.height < a.y);
+
+/**
+ * Grow a box.
+ * @param {Box} b the box
+ * @param {number} s how much to grow it by
+ */
+exports.grow = (b, s) => ({
+  x: b.x - s,
+  y: b.y - s,
+  width: b.width + 2 * s,
+  height: b.height + 2 * s,
+});

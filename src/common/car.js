@@ -8,9 +8,11 @@
 
 const { EventEmitter } = require('events');
 const util = require('./util');
-const { DT, STEER_RESOLUTION } = require('./config');
 const {
-  add, multiply, dot, rotate, length,
+  DT, STEER_RESOLUTION, CAR_RADIUS, TREE_RADIUS,
+} = require('./config');
+const {
+  add, multiply, dot, rotate, length, sub, divide,
 } = require('./vector');
 
 const WHEEL_FL = 0;
@@ -351,6 +353,21 @@ exports.Car = class Car extends EventEmitter {
   }
 
   /**
+   * @param {Point2} point
+   */
+  collide(point) {
+    const vector = sub(point, this.position);
+    const distance = length(vector);
+    if (distance < CAR_RADIUS + TREE_RADIUS) {
+      const normal = divide(vector, distance);
+      const d = dot(this.velocity, normal);
+      this.velocity = sub(this.velocity, multiply(normal, 2 * d));
+
+      this.position = sub(point, multiply(vector, (CAR_RADIUS + TREE_RADIUS) / distance));
+    }
+  }
+
+  /**
    * @param {CanvasRenderingContext2D} context
    */
   draw(context) {
@@ -369,7 +386,14 @@ exports.Car = class Car extends EventEmitter {
 
     // draw the body
     context.strokeStyle = this.color;
+
+    // todo: car svg
     context.stroke(new Path2D(this.bodyPath));
+
+    // todo: draw debug circle
+    context.beginPath();
+    context.arc(0, 0, CAR_RADIUS, 0, 2 * Math.PI);
+    context.stroke();
 
     // draw the wheels
     context.beginPath();

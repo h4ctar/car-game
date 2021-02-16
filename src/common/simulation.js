@@ -115,6 +115,17 @@ exports.Simulation = class Simulation extends EventEmitter {
   }
 
   update() {
-    this.cars.forEach((car) => car.update(this.simStep));
+    this.cars.forEach((car) => {
+      car.update(this.simStep);
+
+      const range = {
+        x: car.position.x - 100,
+        y: car.position.y - 100,
+        width: 200,
+        height: 200,
+      };
+      const trees = this.getTrees(range);
+      trees.forEach((tree) => car.collide(tree.point));
+    });
   }
 };

@@ -7,9 +7,11 @@
  * @typedef { import("../common/car").Car } Car
  */
 
-const { SIM_PERIOD } = require('../common/config');
+const { SIM_PERIOD, TREE_RADIUS } = require('../common/config');
 const { Simulation } = require('../common/simulation');
-const { rotate, sub, add } = require('../common/vector');
+const {
+  rotate, sub, add, grow,
+} = require('../common/vector');
 const { myId } = require('./id');
 const { updateInfoCard, hideInfoCard } = require('./info-card');
 const { checkInput } = require('./input');
@@ -177,7 +179,15 @@ const draw = () => {
 
     sim.cars.forEach((car) => car.draw(context));
 
-    sim.getTrees(viewport).forEach((tree) => context.drawImage(treeImage, tree.point.x - treeImage.width / 2, tree.point.y - treeImage.height / 2));
+    const visibleTreeRange = grow(viewport, TREE_RADIUS);
+    sim.getTrees(visibleTreeRange).forEach((tree) => {
+      context.drawImage(treeImage, tree.point.x - treeImage.width / 2, tree.point.y - treeImage.height / 2);
+
+      // todo: draw debug circle
+      context.beginPath();
+      context.arc(tree.point.x, tree.point.y, TREE_RADIUS, 0, 2 * Math.PI);
+      context.stroke();
+    });
 
     context.restore();
 
