@@ -2,6 +2,7 @@
  * @typedef { import("./vector").Point2 } Point2
  * @typedef { import("./type").Wheel } Wheel
  * @typedef { import("./type").Bullet } Bullet
+ * @typedef { import("./quadtree").Quadtree } Quadtree
  * @typedef { import("./type").InputEvent } InputEvent
  * @typedef { import("./type").UpdateEvent } UpdateEvent
  */
@@ -14,6 +15,7 @@ const {
 const {
   add, multiply, dot, rotate, length, sub, divide,
 } = require('./vector');
+const { TREE } = require('./quadtree');
 
 const WHEEL_FL = 0;
 const WHEEL_FR = 1;
@@ -25,13 +27,15 @@ exports.Car = class Car extends EventEmitter {
    * @param {string} id
    * @param {string} username
    * @param {string} color
+   * @param {Quadtree} quadtree
    */
-  constructor(id, username, color) {
+  constructor(id, username, color, quadtree) {
     super();
 
     this.id = id;
     this.username = username;
     this.color = color;
+    this._quadtree = quadtree;
 
     // static properties
     this.wheelbase = 50;
@@ -350,6 +354,15 @@ exports.Car = class Car extends EventEmitter {
 
     this.bullets = this.bullets.filter((bullet) => simStep - bullet.startSimStep < 50);
     this.bullets.forEach((bullet) => { bullet.position = add(bullet.position, multiply(bullet.velocity, DT)); });
+
+    const range = {
+      x: this.position.x - 100,
+      y: this.position.y - 100,
+      width: 200,
+      height: 200,
+    };
+    const trees = this._quadtree.query(TREE, range);
+    trees.forEach((tree) => this.collide(tree.point));
   }
 
   /**

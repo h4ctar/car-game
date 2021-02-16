@@ -8,6 +8,8 @@ const { contains, intersects } = require('./vector');
 
 const MAX_POINTS = 8;
 
+exports.TREE = 0;
+
 exports.Quadtree = class Quadtree {
   /**
     * @typedef {{

@@ -4,11 +4,9 @@
  */
 
 const { EventEmitter } = require('events');
-const { Quadtree } = require('./quadtree');
+const { Quadtree, TREE } = require('./quadtree');
 const { Car } = require('./car');
 const { SIM_PERIOD, WORLD_WIDTH, WORLD_HEIGHT } = require('./config');
-
-const TREE = 0;
 
 exports.Simulation = class Simulation extends EventEmitter {
   constructor() {
@@ -34,6 +32,7 @@ exports.Simulation = class Simulation extends EventEmitter {
     trees.forEach((tree) => this._quadtree.insert(TREE, tree));
   }
 
+  // todo: simulation interface
   /**
    * @param {Box} range
    */
@@ -56,7 +55,7 @@ exports.Simulation = class Simulation extends EventEmitter {
    * @param {string} color
    */
   addCar(id, username, color) {
-    const car = new Car(id, username, color);
+    const car = new Car(id, username, color, this._quadtree);
     this.cars.push(car);
     return car;
   }
@@ -115,17 +114,6 @@ exports.Simulation = class Simulation extends EventEmitter {
   }
 
   update() {
-    this.cars.forEach((car) => {
-      car.update(this.simStep);
-
-      const range = {
-        x: car.position.x - 100,
-        y: car.position.y - 100,
-        width: 200,
-        height: 200,
-      };
-      const trees = this.getTrees(range);
-      trees.forEach((tree) => car.collide(tree.point));
-    });
+    this.cars.forEach((car) => car.update(this.simStep));
   }
 };
