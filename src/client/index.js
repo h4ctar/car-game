@@ -53,7 +53,6 @@ socket.on('disconnect', () => sim.stop());
 let myCar;
 
 socket.on('update', (/** @type {UpdateEvent} */ event) => {
-  console.log('Received update');
   let car = sim.getCar(event.id);
   if (!car) {
     console.log('New car', event.id);

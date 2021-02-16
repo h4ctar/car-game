@@ -49,6 +49,9 @@ ioServer.on('connection', (socket) => {
 
   console.log(`New client connected ${id}`);
 
+  /** @type {NodeJS.Timeout} */
+  let syncInterval;
+
   // todo: type here
   socket.on('start', (event) => {
     console.info('Client starting simulation');
@@ -57,17 +60,18 @@ ioServer.on('connection', (socket) => {
       serverSimStep: sim.simStep,
     });
 
-    // send all cars to the new client
-    sim.cars.forEach((c) => socket.emit('update', c.serialize()));
+    syncInterval = setInterval(() => {
+      sim.cars.forEach((c) => socket.emit('update', c.serialize()));
+    }, 5000);
+
+    // send the trees
+    socket.emit('trees', trees);
+
+    // send the initial scoreboard
+    socket.emit('scoreboard', createScoreboard());
   });
 
   socket.on('ping', () => socket.emit('pong'));
-
-  // send the trees
-  socket.emit('trees', trees);
-
-  // send the initial scoreboard
-  socket.emit('scoreboard', createScoreboard());
 
   /** @type {Car} */
   let car;
@@ -112,8 +116,13 @@ ioServer.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.info(`Client disconnected ${id}`);
+
     if (car) {
       sim.deleteCar(id);
+    }
+
+    if (syncInterval) {
+      clearInterval(syncInterval);
     }
   });
 });
