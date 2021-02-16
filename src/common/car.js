@@ -363,7 +363,7 @@ exports.Car = class Car extends EventEmitter {
       const d = dot(this.velocity, normal);
       this.velocity = sub(this.velocity, multiply(normal, 2 * d));
       this.position = sub(point, multiply(vector, (CAR_RADIUS + TREE_RADIUS) / distance));
-      this.health -= 20;
+      this.health -= 10;
     }
   }
 
