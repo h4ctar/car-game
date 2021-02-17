@@ -108,11 +108,13 @@ ioServer.on('connection', (socket) => {
   });
 
   socket.on('input', (/** @type {InputEvent} */ event) => {
+    console.log(`received input - ${event.simStep} ${sim.simStep}`);
     if (car) {
       car.processInput(event, sim.simStep);
 
       // send the input to everyone except the sender because they have already processed it
-      socket.broadcast.emit('input', event);
+      // socket.broadcast.emit('input', event);
+      ioServer.emit('input', event);
     }
   });
 

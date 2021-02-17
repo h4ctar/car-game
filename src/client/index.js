@@ -8,12 +8,13 @@
  */
 
 const { SIM_PERIOD, TREE_RADIUS } = require('../common/config');
+const { Simulation } = require('../common/simulation');
 const {
   rotate, sub, add, grow,
 } = require('../common/vector');
 const { myId } = require('./id');
 const { updateInfoCard, hideInfoCard } = require('./info-card');
-const { ClientSimulation } = require('./simulation');
+const { checkInput } = require('./input');
 const { socket } = require('./socket');
 const { hideStartCard, showStartCard } = require('./start-card');
 require('./input');
@@ -32,7 +33,7 @@ const context = canvas.getContext('2d');
 const treeImage = new Image();
 treeImage.src = 'tree.svg';
 
-const sim = new ClientSimulation();
+const sim = new Simulation();
 
 socket.on('start', (event) => {
   console.info('Received start event');
@@ -60,7 +61,6 @@ socket.on('update', (/** @type {UpdateEvent} */ event) => {
 
     if (car.id === myId) {
       myCar = car;
-      sim.myCar = car;
       hideStartCard();
       updateInfoCard(myCar);
     }
@@ -76,7 +76,6 @@ socket.on('delete', (/** @type {string} */ id) => {
 
   if (id === myCar?.id) {
     myCar = undefined;
-    sim.myCar = undefined;
     showStartCard();
     hideInfoCard();
   }
@@ -114,6 +113,13 @@ socket.on('health', (/** @type {HealthEvent} */ event) => {
 socket.on('trees', (/** @type {Point2[]} */ trees) => {
   sim.setTrees(trees);
 });
+
+const inputLoop = () => {
+  if (myCar) {
+    checkInput(myCar, sim.simStep);
+  }
+};
+setInterval(inputLoop, SIM_PERIOD);
 
 /**
  * @param {Point2} camera
