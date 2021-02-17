@@ -404,7 +404,7 @@ exports.Car = class Car extends EventEmitter {
     // draw the body
     context.strokeStyle = this.color;
 
-    // todo: car svg
+    // todo: car svg asf
     context.stroke(new Path2D(this.bodyPath));
 
     if (process.env.NODE_ENV !== 'production') {
