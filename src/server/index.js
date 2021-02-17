@@ -10,7 +10,10 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const { SCOREBOARD_LENGTH, WORLD_WIDTH, WORLD_HEIGHT } = require('../common/config');
+const {
+  SCOREBOARD_LENGTH, WORLD_WIDTH, WORLD_HEIGHT, TREE_TYPE, ROCK_TYPE,
+} = require('../common/config');
+const { randomPoint } = require('../common/util');
 const { ServerSimulation } = require('./simulation');
 
 const app = express();
@@ -21,15 +24,18 @@ const sim = new ServerSimulation();
 sim.start(0);
 sim.on('delete-car', (id) => ioServer.emit('delete', id));
 
-const trees = [];
+const staticEntities = [];
 for (let i = 0; i < 1000; i += 1) {
-  const tree = {
-    x: Math.random() * WORLD_WIDTH,
-    y: Math.random() * WORLD_HEIGHT,
-  };
-  trees.push(tree);
+  staticEntities.push({
+    type: TREE_TYPE,
+    point: randomPoint(),
+  });
+  staticEntities.push({
+    type: ROCK_TYPE,
+    point: randomPoint(),
+  });
 }
-sim.setTrees(trees);
+staticEntities.forEach((entity) => sim.quadtree.insert(entity.type, entity.point));
 
 /**
  * @type {() => ScoreboardEvent}
@@ -66,8 +72,7 @@ ioServer.on('connection', (socket) => {
       sim.cars.forEach((c) => socket.emit('update', c.serialize()));
     }, 1000);
 
-    // send the trees
-    socket.emit('trees', trees);
+    socket.emit('static-entities', staticEntities);
 
     // send the initial scoreboard
     socket.emit('scoreboard', createScoreboard());
@@ -108,7 +113,6 @@ ioServer.on('connection', (socket) => {
   });
 
   socket.on('input', (/** @type {InputEvent} */ event) => {
-    console.log(`received input - ${event.simStep} ${sim.simStep}`);
     if (car) {
       car.processInput(event, sim.simStep);
 

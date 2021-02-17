@@ -4,10 +4,13 @@
  * @typedef { import('../common/type').UpdateEvent } UpdateEvent
  * @typedef { import('../common/type').InputEvent } InputEvent
  * @typedef { import('../common/vector').Point2 } Point2
+ * @typedef { import('../common/vector').Box } Box
  * @typedef { import("../common/car").Car } Car
  */
 
-const { SIM_PERIOD, TREE_RADIUS } = require('../common/config');
+const {
+  SIM_PERIOD, TREE_RADIUS, TREE_TYPE: QT_TREE, ROCK_TYPE: QT_ROCK, ROCK_RADIUS,
+} = require('../common/config');
 const { Simulation } = require('../common/simulation');
 const {
   rotate, sub, add, grow,
@@ -32,6 +35,9 @@ const context = canvas.getContext('2d');
 
 const treeImage = new Image();
 treeImage.src = 'tree.svg';
+
+const rockImage = new Image();
+rockImage.src = 'rock.svg';
 
 const sim = new Simulation();
 
@@ -110,9 +116,7 @@ socket.on('health', (/** @type {HealthEvent} */ event) => {
   }
 });
 
-socket.on('trees', (/** @type {Point2[]} */ trees) => {
-  sim.setTrees(trees);
-});
+socket.on('static-entities', (staticEntities) => staticEntities.forEach((entity) => sim.quadtree.insert(entity.type, entity.point)));
 
 const inputLoop = () => {
   if (myCar) {
@@ -155,6 +159,27 @@ const drawRadar = () => {
   }
 };
 
+/**
+ * Draw all the objects of a single type.
+ * @param {Box} viewport the visible viewport
+ * @param {number} type the type of object to draw
+ * @param {number} radius the radius of the object
+ * @param {HTMLImageElement} image the image to draw
+ */
+const drawObjects = (viewport, type, radius, image) => {
+  const visibleRange = grow(viewport, radius);
+  const objects = sim.quadtree.query(type, visibleRange);
+  objects.forEach((object) => {
+    context.drawImage(image, object.point.x - image.width / 2, object.point.y - image.height / 2);
+
+    if (process.env.NODE_ENV !== 'production') {
+      context.beginPath();
+      context.arc(object.point.x, object.point.y, radius, 0, 2 * Math.PI);
+      context.stroke();
+    }
+  });
+};
+
 const draw = () => {
   if (sim.simRunning) {
     const camera = myCar ? myCar.position : { x: 0, y: 0 };
@@ -178,15 +203,8 @@ const draw = () => {
 
     sim.cars.forEach((car) => car.draw(context));
 
-    const visibleTreeRange = grow(viewport, TREE_RADIUS);
-    sim.getTrees(visibleTreeRange).forEach((tree) => {
-      context.drawImage(treeImage, tree.point.x - treeImage.width / 2, tree.point.y - treeImage.height / 2);
-
-      // todo: draw debug circle
-      context.beginPath();
-      context.arc(tree.point.x, tree.point.y, TREE_RADIUS, 0, 2 * Math.PI);
-      context.stroke();
-    });
+    drawObjects(viewport, QT_TREE, TREE_RADIUS, treeImage);
+    drawObjects(viewport, QT_ROCK, ROCK_RADIUS, rockImage);
 
     context.restore();
 

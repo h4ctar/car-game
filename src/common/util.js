@@ -1,3 +1,5 @@
+const { WORLD_WIDTH, WORLD_HEIGHT } = require('./config');
+
 exports.tween = (currentValue, targetValue, step) => {
   let newValue = currentValue;
   if (currentValue > targetValue) {
@@ -15,3 +17,8 @@ exports.tween = (currentValue, targetValue, step) => {
 };
 
 exports.clamp = (val, min, max) => Math.min(Math.max(val, min), max);
+
+exports.randomPoint = () => ({
+  x: Math.random() * WORLD_WIDTH,
+  y: Math.random() * WORLD_HEIGHT,
+});

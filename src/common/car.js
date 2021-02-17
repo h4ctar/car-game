@@ -10,17 +10,14 @@
 const { EventEmitter } = require('events');
 const util = require('./util');
 const {
-  DT, STEER_RESOLUTION, CAR_RADIUS, TREE_RADIUS,
+  DT, STEER_RESOLUTION, CAR_RADIUS, TREE_RADIUS, ROCK_TYPE: QT_ROCK, ROCK_RADIUS, TREE_TYPE: QT_TREE,
 } = require('./config');
 const {
   add, multiply, dot, rotate, length, sub, divide,
 } = require('./vector');
-const { TREE } = require('./quadtree');
 
 const WHEEL_FL = 0;
 const WHEEL_FR = 1;
-// const WHEEL_RL = 2;
-// const WHEEL_RR = 3;
 
 exports.Car = class Car extends EventEmitter {
   /**
@@ -193,14 +190,11 @@ exports.Car = class Car extends EventEmitter {
   processInput(event, currentSimStep) {
     this.inputEvents.push(event);
     this.inputEvents.sort((a, b) => a.simStep - b.simStep);
-    // only remember 10 input events
-    this.inputEvents.splice(0, this.inputEvents.length - 10);
+    // only remember 20 input events
+    this.inputEvents.splice(0, this.inputEvents.length - 20);
 
-    if (event.simStep > currentSimStep) {
+    if (event.simStep >= currentSimStep) {
       // it's in the future, process it later
-    } else if (event.simStep === currentSimStep) {
-      // it's this update, process it now
-      this.applyInput(event);
     } else if (this.histories.length > 0) {
       // it's in the past, wind back time
       this.windBackTime(event.simStep);
@@ -355,27 +349,37 @@ exports.Car = class Car extends EventEmitter {
     this.bullets = this.bullets.filter((bullet) => simStep - bullet.startSimStep < 50);
     this.bullets.forEach((bullet) => { bullet.position = add(bullet.position, multiply(bullet.velocity, DT)); });
 
+    this.collideAll(QT_TREE, TREE_RADIUS);
+    this.collideAll(QT_ROCK, ROCK_RADIUS);
+  }
+
+  /**
+   * @param {number} type
+   * @param {number} radius
+   */
+  collideAll(type, radius) {
     const range = {
-      x: this.position.x - 100,
-      y: this.position.y - 100,
+      x: this.position.x - (CAR_RADIUS + radius),
+      y: this.position.y - (CAR_RADIUS + radius),
       width: 200,
       height: 200,
     };
-    const trees = this._quadtree.query(TREE, range);
-    trees.forEach((tree) => this.collide(tree.point));
+    const trees = this._quadtree.query(type, range);
+    trees.forEach((tree) => this.collide(tree.point, radius));
   }
 
   /**
    * @param {Point2} point
+   * @param {number} radius
    */
-  collide(point) {
+  collide(point, radius) {
     const vector = sub(point, this.position);
     const distance = length(vector);
-    if (distance < CAR_RADIUS + TREE_RADIUS) {
+    if (distance < CAR_RADIUS + radius) {
       const normal = divide(vector, distance);
       const d = dot(this.velocity, normal);
       this.velocity = sub(this.velocity, multiply(normal, 2 * d));
-      this.position = sub(point, multiply(vector, (CAR_RADIUS + TREE_RADIUS) / distance));
+      this.position = sub(point, multiply(vector, (CAR_RADIUS + radius) / distance));
       this.health -= 10;
     }
   }
@@ -403,10 +407,11 @@ exports.Car = class Car extends EventEmitter {
     // todo: car svg
     context.stroke(new Path2D(this.bodyPath));
 
-    // todo: draw debug circle
-    context.beginPath();
-    context.arc(0, 0, CAR_RADIUS, 0, 2 * Math.PI);
-    context.stroke();
+    if (process.env.NODE_ENV !== 'production') {
+      context.beginPath();
+      context.arc(0, 0, CAR_RADIUS, 0, 2 * Math.PI);
+      context.stroke();
+    }
 
     // draw the wheels
     context.beginPath();
