@@ -16,7 +16,6 @@ const {
   rotate, sub, add, grow,
 } = require('../common/vector');
 const { myId } = require('./id');
-const { updateInfoCard, hideInfoCard } = require('./info-card');
 const { checkInput } = require('./input');
 const { socket } = require('./socket');
 const { hideStartCard, showStartCard } = require('./start-card');
@@ -69,7 +68,6 @@ socket.on('update', (/** @type {UpdateEvent} */ event) => {
     if (car.id === myId) {
       myCar = car;
       hideStartCard();
-      updateInfoCard(myCar);
     }
   }
 
@@ -84,7 +82,6 @@ socket.on('delete', (/** @type {string} */ id) => {
   if (id === myCar?.id) {
     myCar = undefined;
     showStartCard();
-    hideInfoCard();
   }
 });
 
@@ -99,10 +96,6 @@ socket.on('score', (/** @type {ScoreEvent} */ event) => {
   const car = sim.getCar(event.id);
   if (car) {
     car.score = event.score;
-
-    if (car.id === myId) {
-      updateInfoCard(myCar);
-    }
   }
 });
 
@@ -110,10 +103,6 @@ socket.on('health', (/** @type {HealthEvent} */ event) => {
   const car = sim.getCar(event.id);
   if (car) {
     car.health = event.health;
-
-    if (car.id === myId) {
-      updateInfoCard(myCar);
-    }
   }
 });
 
@@ -144,22 +133,6 @@ const drawMap = (camera) => {
   context.stroke();
 };
 
-const drawRadar = () => {
-  if (myCar) {
-    const radarRadius = 100;
-    sim.cars
-      .filter((car) => car !== myCar)
-      .forEach((car) => {
-        const v = sub(car.position, myCar.position);
-        const angle = Math.atan2(-v.y, v.x);
-        const blipPosition = add(rotate({ x: radarRadius, y: 0 }, angle), { x: canvas.width / 2, y: canvas.height / 2 });
-
-        context.fillStyle = car.color;
-        context.fillRect(blipPosition.x, blipPosition.y, 4, 4);
-      });
-  }
-};
-
 /**
  * Draw all the objects of a single type.
  * @param {Box} viewport the visible viewport
@@ -179,6 +152,32 @@ const drawObjects = (viewport, type, radius, image) => {
       context.stroke();
     }
   });
+};
+
+const drawRadar = () => {
+  if (myCar) {
+    const radarRadius = 100;
+    sim.cars
+      .filter((car) => car !== myCar)
+      .forEach((car) => {
+        const v = sub(car.position, myCar.position);
+        const angle = Math.atan2(-v.y, v.x);
+        const blipPosition = add(rotate({ x: radarRadius, y: 0 }, angle), { x: canvas.width / 2, y: canvas.height / 2 });
+
+        context.fillStyle = car.color;
+        context.fillRect(blipPosition.x, blipPosition.y, 4, 4);
+      });
+  }
+};
+
+const drawScore = () => {
+  if (myCar) {
+    context.save();
+    context.fillStyle = myCar.color;
+    context.font = '30px Arial';
+    context.fillText(String(myCar.score), 10, 30);
+    context.restore();
+  }
 };
 
 const draw = () => {
@@ -210,6 +209,7 @@ const draw = () => {
     context.restore();
 
     drawRadar();
+    drawScore();
   }
 
   window.requestAnimationFrame(draw);
