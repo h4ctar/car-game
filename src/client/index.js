@@ -60,6 +60,7 @@ let myCar;
 
 socket.on('update', (/** @type {UpdateEvent} */ event) => {
   let car = sim.getCar(event.id);
+
   if (!car) {
     console.log('New car', event.id);
 

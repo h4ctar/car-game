@@ -94,13 +94,17 @@ exports.Simulation = class Simulation extends EventEmitter {
     }
 
     while (this.simStep < desiredSimStep) {
-      this.update();
-
       this.simStep += 1;
+      this.update();
     }
   }
 
   update() {
-    this.cars.forEach((car) => car.update(this.simStep));
+    try {
+      this.cars.forEach((car) => car.update(this.simStep));
+    } catch (err) {
+      console.error(`[${this.simStep}] Error updating cars`, err);
+      this.stop();
+    }
   }
 };

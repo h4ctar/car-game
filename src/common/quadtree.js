@@ -1,7 +1,6 @@
 /**
  * @typedef {import("./vector").Point2} Point2
  * @typedef {import("./vector").Box} Box
- *
  */
 
 const { contains, intersects } = require('./vector');

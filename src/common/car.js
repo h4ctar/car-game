@@ -171,16 +171,22 @@ exports.Car = class Car extends EventEmitter {
 
     const lastHistory = this.histories[this.histories.length - 1];
     if (lastHistory) {
-      if (lastHistory.simStep + 1 > currentSimStep) {
+      if (lastHistory.simStep === currentSimStep) {
+        // all good
+      } else if (lastHistory.simStep > currentSimStep) {
+        // new history is in the future
         this.windBackTime(currentSimStep);
-      } else if (lastHistory.simStep + 1 < currentSimStep) {
+      } else if (lastHistory.simStep < currentSimStep) {
+        // new history is in the past
         let simStep = lastHistory.simStep;
-        while (simStep + 1 < currentSimStep) {
+        while (simStep < currentSimStep) {
           simStep += 1;
           this.update(simStep);
         }
       }
     }
+
+    this.checkHistory(currentSimStep);
   }
 
   /**
@@ -193,9 +199,15 @@ exports.Car = class Car extends EventEmitter {
     // only remember 20 input events
     this.inputEvents.splice(0, this.inputEvents.length - 20);
 
-    if (event.simStep >= currentSimStep) {
+    if (event.simStep > currentSimStep) {
+      // console.log(`[${currentSimStep}] ${this.username} The input event is in the future`);
       // it's in the future, process it later
-    } else if (this.histories.length > 0) {
+    } else if (event.simStep === currentSimStep) {
+      // process it now
+      // console.log(`[${currentSimStep}] ${this.username} Process input event now`);
+      this.applyInput(event);
+    } else {
+      // console.log(`[${currentSimStep}] ${this.username} The input event is in the past`);
       // it's in the past, wind back time
       this.windBackTime(event.simStep);
 
@@ -205,27 +217,23 @@ exports.Car = class Car extends EventEmitter {
       // and step forward until now
       let simStep = event.simStep;
       while (simStep < currentSimStep) {
-        this.update(simStep);
         simStep += 1;
+        this.update(simStep);
       }
-    } else {
-      // there is no history
     }
   }
 
   /**
-   * @param { number } desiredSimStep
+   * @param {number} desiredSimStep
    */
   windBackTime(desiredSimStep) {
     // find the point with desired simulation step
-    let historyIndex = desiredSimStep - this.histories[0].simStep;
-    if (historyIndex < 0) {
-      historyIndex = 0;
-    }
-    const history = this.histories[historyIndex];
+    const historyIndex = this.histories.findIndex((h) => h.simStep === desiredSimStep + 1);
 
-    if (history) {
-      // remove history after this history point (including this point)
+    if (historyIndex !== -1) {
+      const history = this.histories[historyIndex];
+
+      // remove history after this history point
       this.histories.splice(historyIndex);
 
       // reset this to the history point
@@ -242,6 +250,8 @@ exports.Car = class Car extends EventEmitter {
     } else {
       console.warn(`No history at ${desiredSimStep}`);
     }
+
+    this.checkHistory(desiredSimStep);
   }
 
   /**
@@ -258,11 +268,6 @@ exports.Car = class Car extends EventEmitter {
    * @param {number} simStep
    */
   update(simStep) {
-    // process previously received inputs
-    this.inputEvents
-      .filter((event) => event.simStep === simStep)
-      .forEach((event) => this.processInput(event, simStep));
-
     // add history to the end of histories queue
     this.histories.push({
       simStep,
@@ -280,6 +285,8 @@ exports.Car = class Car extends EventEmitter {
 
     // make sure it never gets too long
     this.histories.splice(0, this.histories.length - 100);
+
+    this.checkHistory(simStep);
 
     // steer the wheels
     // ackerman https://datagenetics.com/blog/december12016/index.html
@@ -351,6 +358,11 @@ exports.Car = class Car extends EventEmitter {
 
     this.collideAll(QT_TREE, TREE_RADIUS);
     this.collideAll(QT_ROCK, ROCK_RADIUS);
+
+    // process previously received inputs
+    this.inputEvents
+      .filter((event) => event.simStep === simStep)
+      .forEach((event) => this.processInput(event, simStep));
   }
 
   /**
@@ -444,5 +456,33 @@ exports.Car = class Car extends EventEmitter {
   static drawBullet(bullet, context) {
     context.fillStyle = 'white';
     context.fillRect(bullet.position.x, bullet.position.y, 2, 2);
+  }
+
+  /**
+   * @param {number} currentSimStep
+   */
+  checkHistory(currentSimStep) {
+    if (process.env.NODE_ENV !== 'production') {
+      if (this.histories.length > 0) {
+        const firstHistory = this.histories[0];
+        const lastHistory = this.histories[this.histories.length - 1];
+
+        // the histories must be in order and no steps should be skipped
+        let simStep = firstHistory.simStep;
+        for (let i = 1; i < this.histories.length; i += 1) {
+          simStep += 1;
+          if (this.histories[i].simStep !== simStep) {
+            console.error(`[${currentSimStep}] ${this.username} - ${this.histories.map((h) => h.simStep).join(', ')}`);
+            throw new Error(`[${currentSimStep}] ${this.username} - Histories are missing or out of order`);
+          }
+        }
+
+        // the last history simulation step should be the current simulation step
+        if (lastHistory.simStep !== currentSimStep) {
+          console.error(`[${currentSimStep}] ${this.username} - ${this.histories.map((h) => h.simStep).join(', ')}`);
+          throw new Error(`[${currentSimStep}] ${this.username} - The last history is incorrect`);
+        }
+      }
+    }
   }
 };
