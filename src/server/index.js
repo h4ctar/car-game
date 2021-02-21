@@ -70,7 +70,7 @@ ioServer.on('connection', (socket) => {
       // todo: only cars near this car
       // todo: delete cars far away
       sim.cars.forEach((c) => socket.emit('update', c.serialize()));
-    }, 1000);
+    }, 10000);
 
     socket.emit('static-entities', staticEntities);
 

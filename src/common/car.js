@@ -174,21 +174,20 @@ exports.Car = class Car extends EventEmitter {
     const lastHistory = this.histories[this.histories.length - 1];
     if (lastHistory) {
       if (lastHistory.simStep === currentSimStep) {
-        console.log('new history is current');
+        // console.log('new history is current');
         // all good
       } else if (lastHistory.simStep > currentSimStep) {
-        console.log('new history is in the future', lastHistory.simStep);
+        // console.log('new history is in the future', lastHistory.simStep);
         // new history is in the future
         this.windBackTime(currentSimStep);
       } else if (lastHistory.simStep < currentSimStep) {
-        console.log('new history is in the past', lastHistory.simStep, currentSimStep);
+        // console.log('new history is in the past', lastHistory.simStep, currentSimStep);
         // new history is in the past
         let simStep = lastHistory.simStep;
         while (simStep < currentSimStep) {
           simStep += 1;
           this.update(simStep);
         }
-        console.log(this.histories[this.histories.length - 1]);
       }
     }
 
@@ -234,28 +233,28 @@ exports.Car = class Car extends EventEmitter {
    */
   windBackTime(desiredSimStep) {
     // find the point with desired simulation step
-    const historyIndex = this.histories.findIndex((h) => h.simStep === desiredSimStep);
+    const historyIndex = this.histories.findIndex((h) => h.simStep === desiredSimStep + 1);
 
-    // if (historyIndex !== -1) {
-    const history = this.histories[historyIndex + 1];
+    if (historyIndex !== -1) {
+      const history = this.histories[historyIndex];
 
-    // remove history after this history point
-    this.histories.splice(historyIndex + 1);
+      // remove history after this history point
+      this.histories.splice(historyIndex);
 
-    // reset this to the history point
-    this.position = history.position;
-    this.angle = history.angle;
-    this.velocity = history.velocity;
-    this.angularVelocity = history.angularVelocity;
-    this.steer = history.steer;
-    this.accelerate = history.accelerate;
-    this.brake = history.brake;
-    this.shoot = history.shoot;
-    this.wheels = history.wheels.map((wheel) => ({ ...wheel }));
-    this.bullets = history.bullets.map((bullet) => ({ ...bullet }));
-    // } else {
-    //   console.warn(`No history at ${desiredSimStep}`);
-    // }
+      // reset this to the history point
+      this.position = history.position;
+      this.angle = history.angle;
+      this.velocity = history.velocity;
+      this.angularVelocity = history.angularVelocity;
+      this.steer = history.steer;
+      this.accelerate = history.accelerate;
+      this.brake = history.brake;
+      this.shoot = history.shoot;
+      this.wheels = history.wheels.map((wheel) => ({ ...wheel }));
+      this.bullets = history.bullets.map((bullet) => ({ ...bullet }));
+    } else {
+      console.warn(`No history at ${desiredSimStep}`);
+    }
 
     this.checkHistory(desiredSimStep);
   }
