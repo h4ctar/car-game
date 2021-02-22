@@ -90,6 +90,8 @@ ioServer.on('connection', (socket) => {
     console.info(`Client joining ${event.username}`);
     car = sim.addCar(id, event.username, event.color);
 
+    car.on('collide', () => { car.health -= 10; });
+
     car.on('health', () => {
       /** @type {HealthEvent} */
       const healthEvent = { id, health: car.health };

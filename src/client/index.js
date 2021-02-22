@@ -191,9 +191,11 @@ const drawScoreboard = () => {
   if (scoreboard) {
     context.save();
     context.font = '16px monospace';
-    scoreboard.forEach((score, index) => {
-      context.fillStyle = score.color;
-      context.fillText(`${score.username.substring(0, 14).padEnd(14)} ${String(score.score).padStart(5)}`, canvas.width - 200, 30 + index * 20);
+    scoreboard.forEach((entry, index) => {
+      const username = entry.username.substring(0, 14).padEnd(14);
+      const score = String(entry.score).padStart(5);
+      context.fillStyle = entry.color;
+      context.fillText(`${username} ${score}`, canvas.width - 200, 30 + index * 20);
     });
     context.restore();
   }

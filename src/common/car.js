@@ -97,6 +97,7 @@ exports.Car = class Car extends EventEmitter {
    */
   set health(value) {
     if (this._health !== value) {
+      console.log(`set health to ${value}`);
       this._health = value;
       this.emit('health');
     }
@@ -389,7 +390,8 @@ exports.Car = class Car extends EventEmitter {
       const d = dot(this.velocity, normal);
       this.velocity = sub(this.velocity, multiply(normal, 2 * d));
       this.position = sub(point, multiply(vector, (CAR_RADIUS + radius) / distance));
-      this.health -= 10;
+
+      this.emit('collide');
     }
   }
 
@@ -407,6 +409,9 @@ exports.Car = class Car extends EventEmitter {
     context.font = '16px monospace';
     context.scale(1, -1);
     context.fillText(this.username, 0, -42);
+
+    context.fillStyle = 'red';
+    context.fillRect(-40, 40, this.health * 0.8, 4);
     context.restore();
 
     context.rotate(this.angle);
