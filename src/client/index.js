@@ -1,5 +1,6 @@
 /**
  * @typedef { import('../common/type').ScoreEvent } ScoreEvent
+ * @typedef { import('../common/type').Scoreboard } Scoreboard
  * @typedef { import('../common/type').HealthEvent } HealthEvent
  * @typedef { import('../common/type').UpdateEvent } UpdateEvent
  * @typedef { import('../common/type').InputEvent } InputEvent
@@ -20,7 +21,6 @@ const { checkInput } = require('./input');
 const { socket } = require('./socket');
 const { hideStartCard, showStartCard } = require('./start-card');
 require('./input');
-require('./scoreboard-card');
 
 const canvas = /** @type { HTMLCanvasElement } */ (document.getElementById('canvas'));
 canvas.width = window.innerWidth;
@@ -39,6 +39,9 @@ const rockImage = new Image();
 rockImage.src = 'rock.svg';
 
 const sim = new Simulation();
+
+/** @type {Scoreboard} */
+let scoreboard = [];
 
 socket.on('start', (event) => {
   console.info('Received start event');
@@ -97,6 +100,10 @@ socket.on('score', (/** @type {ScoreEvent} */ event) => {
   if (car) {
     car.score = event.score;
   }
+});
+
+socket.on('scoreboard', (/** @type {Scoreboard} */ newScoreboard) => {
+  scoreboard = newScoreboard;
 });
 
 socket.on('health', (/** @type {HealthEvent} */ event) => {
@@ -174,8 +181,20 @@ const drawScore = () => {
   if (myCar) {
     context.save();
     context.fillStyle = myCar.color;
-    context.font = '30px Arial';
+    context.font = '30px monospace';
     context.fillText(String(myCar.score), 10, 30);
+    context.restore();
+  }
+};
+
+const drawScoreboard = () => {
+  if (scoreboard) {
+    context.save();
+    context.font = '16px monospace';
+    scoreboard.forEach((score, index) => {
+      context.fillStyle = score.color;
+      context.fillText(`${score.username.substring(0, 14).padEnd(14)} ${String(score.score).padStart(5)}`, canvas.width - 200, 30 + index * 20);
+    });
     context.restore();
   }
 };
@@ -210,6 +229,7 @@ const draw = () => {
 
     drawRadar();
     drawScore();
+    drawScoreboard();
   }
 
   window.requestAnimationFrame(draw);

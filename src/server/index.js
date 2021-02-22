@@ -1,7 +1,7 @@
 /**
  * @typedef { import("../common/type").JoinEvent } JoinEvent
  * @typedef { import("../common/type").InputEvent } InputEvent
- * @typedef { import("../common/type").ScoreboardEvent } ScoreboardEvent
+ * @typedef { import("../common/type").Scoreboard } Scoreboard
  * @typedef { import("../common/type").ScoreEvent } ScoreEvent
  * @typedef { import("../common/type").HealthEvent } HealthEvent
  * @typedef { import("../common/vector").Point2 } Point2
@@ -38,14 +38,17 @@ for (let i = 0; i < 1000; i += 1) {
 staticEntities.forEach((entity) => sim.quadtree.insert(entity.type, entity.point));
 
 /**
- * @type {() => ScoreboardEvent}
+ * @type {() => Scoreboard}
  */
 const createScoreboard = () => {
   const scoreboard = sim.cars
-    .map((car) => ({ username: car.username, score: car.score }))
+    .map((car) => ({ username: car.username, score: car.score, color: car.color }))
     .sort((a, b) => b.score - a.score);
-  scoreboard.length = SCOREBOARD_LENGTH;
-  scoreboard.fill({ username: '', score: 0 }, sim.cars.length, SCOREBOARD_LENGTH);
+
+  if (scoreboard.length > SCOREBOARD_LENGTH) {
+    scoreboard.length = SCOREBOARD_LENGTH;
+  }
+
   return scoreboard;
 };
 

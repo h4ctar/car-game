@@ -14,7 +14,7 @@
  * }} Bullet
  *
  * @typedef {{ username: string, color: string }} JoinEvent
- * @typedef {{ username: string; score: number; }[]} ScoreboardEvent
+ * @typedef {{ username: string; score: number; color: string }[]} Scoreboard
  * @typedef {{ id: string; score: number; }} ScoreEvent
  * @typedef {{ id: string; health: number; }} HealthEvent
  *

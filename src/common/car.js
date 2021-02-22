@@ -153,8 +153,6 @@ exports.Car = class Car extends EventEmitter {
    * @param {number} currentSimStep
    */
   deserialize(event, currentSimStep) {
-    console.log(`[${currentSimStep}] ${this.username} - Deserialize`);
-
     this.histories = event.histories;
     this.inputEvents = event.inputEvents;
 
@@ -174,14 +172,11 @@ exports.Car = class Car extends EventEmitter {
     const lastHistory = this.histories[this.histories.length - 1];
     if (lastHistory) {
       if (lastHistory.simStep === currentSimStep) {
-        // console.log('new history is current');
         // all good
       } else if (lastHistory.simStep > currentSimStep) {
-        // console.log('new history is in the future', lastHistory.simStep);
         // new history is in the future
         this.windBackTime(currentSimStep);
       } else if (lastHistory.simStep < currentSimStep) {
-        // console.log('new history is in the past', lastHistory.simStep, currentSimStep);
         // new history is in the past
         let simStep = lastHistory.simStep;
         while (simStep < currentSimStep) {
@@ -205,14 +200,11 @@ exports.Car = class Car extends EventEmitter {
     this.inputEvents.splice(0, this.inputEvents.length - 20);
 
     if (event.simStep > currentSimStep) {
-      // console.log(`[${currentSimStep}] ${this.username} The input event is in the future`);
       // it's in the future, process it later
     } else if (event.simStep === currentSimStep) {
       // process it now
-      // console.log(`[${currentSimStep}] ${this.username} Process input event now`);
       this.applyInput(event);
     } else {
-      // console.log(`[${currentSimStep}] ${this.username} The input event is in the past`);
       // it's in the past, wind back time
       this.windBackTime(event.simStep);
 
@@ -412,8 +404,9 @@ exports.Car = class Car extends EventEmitter {
     context.save();
     context.fillStyle = this.color;
     context.textAlign = 'center';
+    context.font = '16px monospace';
     context.scale(1, -1);
-    context.fillText(this.username, 0, 60);
+    context.fillText(this.username, 0, -42);
     context.restore();
 
     context.rotate(this.angle);
