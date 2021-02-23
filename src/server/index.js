@@ -107,8 +107,10 @@ ioServer.on('connection', (socket) => {
     });
 
     car.position = {
-      x: Math.random() * WORLD_WIDTH,
-      y: Math.random() * WORLD_HEIGHT,
+      // x: Math.random() * WORLD_WIDTH,
+      // y: Math.random() * WORLD_HEIGHT,
+      x: WORLD_WIDTH / 2,
+      y: WORLD_HEIGHT / 2,
     };
 
     // send an updated scoreboard including the new car
