@@ -91,7 +91,7 @@ exports.Simulation = class Simulation extends EventEmitter {
   }
 
   loop() {
-    const desiredSimStep = this.simStartStep + Math.floor((Date.now() + this.timeSkew - this.simStartTime) / SIM_PERIOD);
+    const desiredSimStep = this.simStartStep + Math.floor((Date.now() - this.timeSkew - this.simStartTime) / SIM_PERIOD);
     if (desiredSimStep - this.simStep > 100) {
       console.error('Too many simulation steps missed');
     }
