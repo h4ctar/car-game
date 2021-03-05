@@ -15,6 +15,7 @@ jobs:
       - uses: actions/setup-node@v2.1.4
       - run: npm install
       - run: npm run lint
+      - run: npm run typecheck
       - run: npm run build
       - run: zip -r deploy.zip package* src static webpack* .ebextensions
   #     - uses: actions/upload-artifact@v2

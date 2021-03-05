@@ -85,7 +85,11 @@ ioServer.on('connection', (socket) => {
     console.info(`Client joining ${event.username}`);
     car = sim.addCar(id, event.username, event.color);
 
-    car.on('collide', () => { car.health -= 10; });
+    car.on('collide', () => {
+      car.health -= 10;
+      // collisions make it go out of sync
+      ioServer.emit('update', car.serialize());
+    });
 
     car.on('health', () => {
       /** @type {HealthEvent} */
