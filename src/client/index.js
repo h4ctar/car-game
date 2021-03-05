@@ -52,13 +52,14 @@ socket.on('disconnect', () => sim.stop());
 
 // https://distributedsystemsblog.com/docs/clock-synchronization-algorithms/#christians-algorithm
 setInterval(() => socket.emit('ping', { pingTime: Date.now() }), 1000);
-
+let latency = 0;
 socket.on('pong', (event) => {
   const clientTime = Date.now();
   const rtt = clientTime - event.pingTime;
-  const serverTime = event.pongTime + rtt / 2;
+  latency = Math.round(rtt / 2);
+  const serverTime = event.pongTime + latency;
   const oldTimeSkew = sim.timeSkew;
-  sim.timeSkew = Math.round(clientTime - serverTime);
+  sim.timeSkew = clientTime - serverTime;
   if (oldTimeSkew !== sim.timeSkew) {
     console.log(`Time skew has changed from ${oldTimeSkew} to ${sim.timeSkew}`);
   }
@@ -208,6 +209,17 @@ const drawScoreboard = () => {
   }
 };
 
+const drawDebug = () => {
+  // if (process.env.NODE_ENV !== 'production') {
+  context.save();
+  context.fillStyle = 'white';
+  context.font = '16px monospace';
+  context.fillText(`Latency: ${latency}`, 10, 50);
+  context.fillText(`Time skew: ${sim.timeSkew}`, 10, 70);
+  context.restore();
+  // }
+};
+
 const draw = () => {
   if (sim.simRunning) {
     const camera = myCar ? myCar.position : { x: 0, y: 0 };
@@ -239,6 +251,7 @@ const draw = () => {
     drawRadar();
     drawScore();
     drawScoreboard();
+    drawDebug();
   }
 
   window.requestAnimationFrame(draw);
