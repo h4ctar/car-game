@@ -91,9 +91,11 @@ ioServer.on('connection', (socket) => {
     });
 
     car.on('health', () => {
+      if (car) {
       /** @type {HealthEvent} */
-      const healthEvent = { id, health: car.health };
-      ioServer.emit('health', healthEvent);
+        const healthEvent = { id, health: car.health };
+        ioServer.emit('health', healthEvent);
+      }
     });
 
     car.on('score', () => {
