@@ -97,7 +97,6 @@ exports.Car = class Car extends EventEmitter {
    */
   set health(value) {
     if (this._health !== value) {
-      console.log(`set health to ${value}`);
       this._health = value;
       this.emit('health');
     }

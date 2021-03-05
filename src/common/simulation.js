@@ -16,6 +16,8 @@ exports.Simulation = class Simulation extends EventEmitter {
 
     this.simRunning = false;
 
+    this.timeSkew = 0;
+
     this.quadtree = new Quadtree({
       x: 0,
       y: 0,
@@ -62,14 +64,15 @@ exports.Simulation = class Simulation extends EventEmitter {
 
   /**
    * @param {number} startSimStep
+   * @param {number} simStartTime
    */
-  start(startSimStep) {
+  start(startSimStep, simStartTime) {
     console.log(`Start simulation ${startSimStep}`);
 
     this.simRunning = true;
     this.simStep = startSimStep;
     this.simStartStep = startSimStep;
-    this.simStartTime = Date.now();
+    this.simStartTime = simStartTime;
 
     if (!this.loopInterval) {
       this.loopInterval = setInterval(() => this.loop(), SIM_PERIOD);
@@ -88,9 +91,9 @@ exports.Simulation = class Simulation extends EventEmitter {
   }
 
   loop() {
-    const desiredSimStep = this.simStartStep + Math.floor((Date.now() - this.simStartTime) / SIM_PERIOD);
+    const desiredSimStep = this.simStartStep + Math.floor((Date.now() + this.timeSkew - this.simStartTime) / SIM_PERIOD);
     if (desiredSimStep - this.simStep > 100) {
-      throw new Error('Too many simulation steps missed');
+      console.error('Too many simulation steps missed');
     }
 
     while (this.simStep < desiredSimStep) {

@@ -45,17 +45,24 @@ let scoreboard = [];
 
 socket.on('start', (event) => {
   console.info('Received start event');
-  // https://distributedsystemsblog.com/docs/clock-synchronization-algorithms/#christians-algorithm
-  const rtt = Date.now() - event.requestTime;
-  const skew = Math.round((rtt / 2) / SIM_PERIOD);
-  console.info(`RTT: ${rtt}`);
-  console.info(`Skew: ${skew}`);
-  const clientSimStep = event.serverSimStep + skew;
-
-  sim.start(clientSimStep);
+  sim.start(event.simStartStep, event.simStartTime);
 });
 
 socket.on('disconnect', () => sim.stop());
+
+// https://distributedsystemsblog.com/docs/clock-synchronization-algorithms/#christians-algorithm
+setInterval(() => socket.emit('ping', { pingTime: Date.now() }), 1000);
+
+socket.on('pong', (event) => {
+  const clientTime = Date.now();
+  const rtt = clientTime - event.pingTime;
+  const serverTime = event.pongTime + rtt / 2;
+  const oldTimeSkew = sim.timeSkew;
+  sim.timeSkew = Math.round(clientTime - serverTime);
+  if (oldTimeSkew !== sim.timeSkew) {
+    console.log(`Time skew has changed from ${oldTimeSkew} to ${sim.timeSkew}`);
+  }
+});
 
 /** @type {Car} */
 let myCar;

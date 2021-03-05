@@ -21,7 +21,7 @@ const httpServer = http.createServer(app);
 const ioServer = new Server(httpServer, { serveClient: false });
 
 const sim = new ServerSimulation();
-sim.start(0);
+sim.start(0, Date.now());
 sim.on('delete-car', (id) => ioServer.emit('delete', id));
 
 const staticEntities = [];
@@ -58,30 +58,25 @@ ioServer.on('connection', (socket) => {
 
   console.log(`New client connected ${id}`);
 
-  /** @type {NodeJS.Timeout} */
-  let syncInterval;
-
-  // todo: type here
-  socket.on('start', (event) => {
-    console.info('Client starting simulation');
-    socket.emit('start', {
-      requestTime: event.requestTime,
-      serverSimStep: sim.simStep,
-    });
-
-    syncInterval = setInterval(() => {
-      // todo: only cars near this car
-      // todo: delete cars far away
-      sim.cars.forEach((c) => socket.emit('update', c.serialize()));
-    }, 10000);
-
-    socket.emit('static-entities', staticEntities);
-
-    // send the initial scoreboard
-    socket.emit('scoreboard', createScoreboard());
+  socket.emit('start', {
+    simStartStep: sim.simStartStep,
+    simStartTime: sim.simStartTime,
   });
 
-  socket.on('ping', () => socket.emit('pong'));
+  sim.cars.forEach((c) => socket.emit('update', c.serialize()));
+  const syncInterval = setInterval(() => {
+    // todo: only cars near this car
+    // todo: delete cars far away
+    // todo: only if they've drifted
+    sim.cars.forEach((c) => socket.emit('update', c.serialize()));
+  }, 10000);
+
+  socket.emit('static-entities', staticEntities);
+
+  // send the initial scoreboard
+  socket.emit('scoreboard', createScoreboard());
+
+  socket.on('ping', (event) => socket.emit('pong', { ...event, pongTime: Date.now() }));
 
   /** @type {Car} */
   let car;
@@ -125,7 +120,6 @@ ioServer.on('connection', (socket) => {
 
       // send the input to everyone except the sender because they have already processed it
       socket.broadcast.emit('input', event);
-      // ioServer.emit('input', event);
     }
   });
 
