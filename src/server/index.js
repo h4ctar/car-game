@@ -21,7 +21,7 @@ const httpServer = http.createServer(app);
 const ioServer = new Server(httpServer, { serveClient: false });
 
 const sim = new ServerSimulation();
-sim.start(0, Date.now());
+sim.start(Date.now(), 0);
 sim.on('delete-car', (id) => ioServer.emit('delete', id));
 
 const staticEntities = [];
@@ -59,8 +59,8 @@ ioServer.on('connection', (socket) => {
   console.log(`New client connected ${id}`);
 
   socket.emit('start', {
-    simStartStep: sim.simStartStep,
-    simStartTime: sim.simStartTime,
+    startSimTime: sim.startSimTime,
+    currentSimStep: sim.simStep,
   });
 
   sim.cars.forEach((c) => socket.emit('update', c.serialize()));

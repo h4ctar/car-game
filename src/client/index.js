@@ -45,7 +45,7 @@ let scoreboard = [];
 
 socket.on('start', (event) => {
   console.info('Received start event');
-  sim.start(event.simStartStep, event.simStartTime);
+  sim.start(event.startSimTime, event.currentSimStep);
 });
 
 socket.on('disconnect', () => sim.stop());

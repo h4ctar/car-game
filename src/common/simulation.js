@@ -63,16 +63,15 @@ exports.Simulation = class Simulation extends EventEmitter {
   }
 
   /**
-   * @param {number} startSimStep
-   * @param {number} simStartTime
+   * @param {number} startSimTime
+   * @param {number} currentSimStep
    */
-  start(startSimStep, simStartTime) {
-    console.log(`Start simulation ${startSimStep}`);
+  start(startSimTime, currentSimStep) {
+    console.log(`Start simulation ${new Date(startSimTime)}, ${currentSimStep}`);
 
     this.simRunning = true;
-    this.simStep = startSimStep;
-    this.simStartStep = startSimStep;
-    this.simStartTime = simStartTime;
+    this.startSimTime = startSimTime;
+    this.simStep = currentSimStep;
 
     if (!this.loopInterval) {
       this.loopInterval = setInterval(() => this.loop(), SIM_PERIOD);
@@ -91,7 +90,7 @@ exports.Simulation = class Simulation extends EventEmitter {
   }
 
   loop() {
-    const desiredSimStep = this.simStartStep + Math.floor((Date.now() - this.timeSkew - this.simStartTime) / SIM_PERIOD);
+    const desiredSimStep = Math.floor((Date.now() - this.timeSkew - this.startSimTime) / SIM_PERIOD);
     if (desiredSimStep - this.simStep > 100) {
       console.error('Too many simulation steps missed');
     }
