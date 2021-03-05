@@ -51,18 +51,16 @@ socket.on('start', (event) => {
 socket.on('disconnect', () => sim.stop());
 
 // https://distributedsystemsblog.com/docs/clock-synchronization-algorithms/#christians-algorithm
-setInterval(() => socket.emit('ping', { pingTime: Date.now() }), 1000);
 let latency = 0;
+setInterval(() => socket.emit('ping', { pingTime: Date.now() }), 1000);
 socket.on('pong', (event) => {
   const clientTime = Date.now();
   const rtt = clientTime - event.pingTime;
-  latency = Math.round(rtt / 2);
+  latency = rtt / 2;
   const serverTime = event.pongTime + latency;
   const oldTimeSkew = sim.timeSkew;
-  sim.timeSkew = clientTime - serverTime;
-  if (oldTimeSkew !== sim.timeSkew) {
-    console.log(`Time skew has changed from ${oldTimeSkew} to ${sim.timeSkew}`);
-  }
+  const newTimeSkew = clientTime - serverTime;
+  sim.timeSkew = oldTimeSkew * 0.9 + newTimeSkew * 0.1;
 });
 
 /** @type {Car} */
@@ -210,14 +208,14 @@ const drawScoreboard = () => {
 };
 
 const drawDebug = () => {
-  // if (process.env.NODE_ENV !== 'production') {
-  context.save();
-  context.fillStyle = 'white';
-  context.font = '16px monospace';
-  context.fillText(`Latency: ${latency}`, 10, 50);
-  context.fillText(`Time skew: ${sim.timeSkew}`, 10, 70);
-  context.restore();
-  // }
+  if (process.env.NODE_ENV !== 'production') {
+    context.save();
+    context.fillStyle = 'white';
+    context.font = '16px monospace';
+    context.fillText(`Latency: ${Math.round(latency)}`, 10, 50);
+    context.fillText(`Time skew: ${Math.round(sim.timeSkew)}`, 10, 70);
+    context.restore();
+  }
 };
 
 const draw = () => {

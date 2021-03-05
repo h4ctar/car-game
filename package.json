@@ -8,7 +8,8 @@
     "build-dev": "webpack --config webpack.dev.js",
     "lint": "eslint .",
     "typecheck": "tsc -allowJs -checkJs -noEmit -moduleResolution node -module commonjs -target ES6 src/**/*.js",
-    "start": "node src/server/index.js"
+    "start": "NODE_ENV=production node src/server/index.js",
+    "start-dev": "node src/server/index.js"
   },
   "author": "Ben",
   "license": "ISC",
