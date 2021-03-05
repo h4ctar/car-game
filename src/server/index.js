@@ -22,7 +22,6 @@ const ioServer = new Server(httpServer, { serveClient: false });
 
 const sim = new ServerSimulation();
 sim.start(Date.now(), 0);
-sim.on('delete-car', (id) => ioServer.emit('delete', id));
 
 const staticEntities = [];
 for (let i = 0; i < 1000; i += 1) {
@@ -118,6 +117,14 @@ ioServer.on('connection', (socket) => {
     ioServer.emit('update', car.serialize());
   });
 
+  const deleteCarListener = (deletedCarId) => {
+    if (car && id === deletedCarId) {
+      car = undefined;
+    }
+    socket.emit('delete', deletedCarId);
+  };
+  sim.on('delete-car', deleteCarListener);
+
   socket.on('input', (/** @type {InputEvent} */ event) => {
     if (car) {
       car.processInput(event, sim.simStep);
@@ -137,6 +144,8 @@ ioServer.on('connection', (socket) => {
     if (syncInterval) {
       clearInterval(syncInterval);
     }
+
+    sim.off('delete-car', deleteCarListener);
   });
 });
 
