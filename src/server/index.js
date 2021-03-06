@@ -92,7 +92,7 @@ ioServer.on('connection', (socket) => {
 
     car.on('health', () => {
       if (car) {
-      /** @type {HealthEvent} */
+        /** @type {HealthEvent} */
         const healthEvent = { id, health: car.health };
         ioServer.emit('health', healthEvent);
       }
