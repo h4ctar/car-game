@@ -106,12 +106,17 @@ ioServer.on('connection', (socket) => {
       ioServer.emit('scoreboard', createScoreboard());
     });
 
-    car.position = {
-      // x: Math.random() * WORLD_WIDTH,
-      // y: Math.random() * WORLD_HEIGHT,
-      x: WORLD_WIDTH / 2,
-      y: WORLD_HEIGHT / 2,
-    };
+    if (process.env.NODE_ENV === 'production') {
+      car.position = {
+        x: Math.random() * WORLD_WIDTH,
+        y: Math.random() * WORLD_HEIGHT,
+      };
+    } else {
+      car.position = {
+        x: WORLD_WIDTH / 2,
+        y: WORLD_HEIGHT / 2,
+      };
+    }
 
     // send an updated scoreboard including the new car
     ioServer.emit('scoreboard', createScoreboard());
@@ -126,6 +131,13 @@ ioServer.on('connection', (socket) => {
     socket.emit('delete', deletedCarId);
   };
   sim.on('delete-car', deleteCarListener);
+
+  // health regen
+  const healthRegenInterval = setInterval(() => {
+    if (car && car.health < 100) {
+      car.health = Math.min(car.health + 5, 100);
+    }
+  }, 5000);
 
   socket.on('input', (/** @type {InputEvent} */ event) => {
     if (car) {
@@ -145,6 +157,10 @@ ioServer.on('connection', (socket) => {
 
     if (syncInterval) {
       clearInterval(syncInterval);
+    }
+
+    if (healthRegenInterval) {
+      clearInterval(healthRegenInterval);
     }
 
     sim.off('delete-car', deleteCarListener);
