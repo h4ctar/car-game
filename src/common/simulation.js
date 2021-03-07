@@ -31,7 +31,8 @@ exports.Simulation = class Simulation extends EventEmitter {
 
   /**
    * Get a car by ID.
-   * @param {string} id
+   * @param {string} id the id of the car
+   * @return {Car} the car or undefined if it could not be found
    */
   getCar(id) {
     return this.cars.find((car) => car.id === id);
@@ -39,9 +40,10 @@ exports.Simulation = class Simulation extends EventEmitter {
 
   /**
    * Add a new car.
-   * @param {string} id
-   * @param {string} username
-   * @param {string} color
+   * @param {string} id the ID of the car
+   * @param {string} username the username of the car
+   * @param {string} color the colour of the car
+   * @returns {Car} the newly added car
    */
   addCar(id, username, color) {
     const car = new Car(id, username, color, this.quadtree);
@@ -51,7 +53,8 @@ exports.Simulation = class Simulation extends EventEmitter {
 
   /**
    * Delete a car.
-   * @param {string} id
+   * @param {string} id the ID of the car to delete
+   * @returns {void}
    */
   deleteCar(id) {
     console.info(`Deleting car ${id}`);
@@ -63,11 +66,12 @@ exports.Simulation = class Simulation extends EventEmitter {
   }
 
   /**
-   * @param {number} startSimTime
-   * @param {number} currentSimStep
+   * @param {number} startSimTime the simulation start time
+   * @param {number} currentSimStep the current simulation step
+   * @returns {void}
    */
   start(startSimTime, currentSimStep) {
-    console.log(`Start simulation ${new Date(startSimTime)}, ${currentSimStep}`);
+    console.info(`Start simulation ${new Date(startSimTime)}, ${currentSimStep}`);
 
     this.simRunning = true;
     this.startSimTime = startSimTime;
@@ -79,7 +83,7 @@ exports.Simulation = class Simulation extends EventEmitter {
   }
 
   stop() {
-    console.log('Stop simulation');
+    console.info('Stop simulation');
 
     this.simRunning = false;
 

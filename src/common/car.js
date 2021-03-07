@@ -23,10 +23,10 @@ const WHEEL_RR = 3;
 
 exports.Car = class Car extends EventEmitter {
   /**
-   * @param {string} id
-   * @param {string} username
-   * @param {string} color
-   * @param {Quadtree} quadtree
+   * @param {string} id the ID of the car
+   * @param {string} username the username of the car
+   * @param {string} color the colour of the car
+   * @param {Quadtree} quadtree the quadtree that contains objects the car may collide with
    */
   constructor(id, username, color, quadtree) {
     super();
@@ -98,7 +98,7 @@ exports.Car = class Car extends EventEmitter {
 
   /**
    * Set the health.
-   * @param {number} value
+   * @param {number} value the new health value
    */
   set health(value) {
     if (this._health !== value) {
@@ -113,7 +113,7 @@ exports.Car = class Car extends EventEmitter {
 
   /**
    * Set the score.
-   * @param {number} value
+   * @param {number} value the new score
    */
   set score(value) {
     if (this._score !== value) {
@@ -127,7 +127,7 @@ exports.Car = class Car extends EventEmitter {
   }
 
   /**
-   * @returns {UpdateEvent}
+   * @returns {UpdateEvent} the update event
    */
   serialize() {
     return {
@@ -154,8 +154,9 @@ exports.Car = class Car extends EventEmitter {
   }
 
   /**
-   * @param {UpdateEvent} event
-   * @param {number} currentSimStep
+   * @param {UpdateEvent} event the update event to deserialize
+   * @param {number} currentSimStep the current simulation step
+   * @returns {void}
    */
   deserialize(event, currentSimStep) {
     this.histories = event.histories;
@@ -195,8 +196,9 @@ exports.Car = class Car extends EventEmitter {
   }
 
   /**
-   * @param {InputEvent} event
-   * @param {number} currentSimStep
+   * @param {InputEvent} event the input event
+   * @param {number} currentSimStep the current simulation step
+   * @returns {void}
    */
   processInput(event, currentSimStep) {
     this.inputEvents.push(event);
@@ -226,7 +228,8 @@ exports.Car = class Car extends EventEmitter {
   }
 
   /**
-   * @param {number} desiredSimStep
+   * @param {number} desiredSimStep the desired simulation step
+   * @returns {void}
    */
   windBackTime(desiredSimStep) {
     // find the point with desired simulation step
@@ -257,7 +260,8 @@ exports.Car = class Car extends EventEmitter {
   }
 
   /**
-   * @param {InputEvent} event
+   * @param {InputEvent} event the input event
+   * @returns {void}
    */
   applyInput(event) {
     this.steer = event.steer;
@@ -267,7 +271,8 @@ exports.Car = class Car extends EventEmitter {
   }
 
   /**
-   * @param {number} simStep
+   * @param {number} simStep the current simulation step
+   * @returns {void}
    */
   update(simStep) {
     // add history to the end of histories queue
@@ -340,7 +345,7 @@ exports.Car = class Car extends EventEmitter {
       force = add(force, longitudinalFrictionForce);
 
       // slide
-      const lateralFrictionConstant = 1;
+      const lateralFrictionConstant = 2;
       const lateralNormal = rotate({ x: 0, y: 1 }, this.angle + wheel.angle);
       const lateralVelocity = multiply(lateralNormal, dot(lateralNormal, wheelVelocity));
       const lateralFrictionForce = multiply(lateralVelocity, -lateralFrictionConstant);
@@ -381,23 +386,25 @@ exports.Car = class Car extends EventEmitter {
   }
 
   /**
-   * @param {number} type
-   * @param {number} radius
+   * @param {number} type the type of object to collide with
+   * @param {number} radius the radius of the objects
+   * @returns {void}
    */
   collideAll(type, radius) {
     const range = {
       x: this.position.x - (CAR_RADIUS + radius),
       y: this.position.y - (CAR_RADIUS + radius),
-      width: 200,
-      height: 200,
+      width: (CAR_RADIUS + radius) * 2,
+      height: (CAR_RADIUS + radius) * 2,
     };
     const trees = this._quadtree.query(type, range);
     trees.forEach((tree) => this.collide(tree.point, radius));
   }
 
   /**
-   * @param {Point2} point
-   * @param {number} radius
+   * @param {Point2} point the position of the object to collide with
+   * @param {number} radius the radius of the object
+   * @returns {void}
    */
   collide(point, radius) {
     const vector = sub(point, this.position);
@@ -413,7 +420,8 @@ exports.Car = class Car extends EventEmitter {
   }
 
   /**
-   * @param {CanvasRenderingContext2D} context
+   * @param {CanvasRenderingContext2D} context the canvas drawing context
+   * @returns {void}
    */
   draw(context) {
     context.save();
@@ -457,8 +465,9 @@ exports.Car = class Car extends EventEmitter {
   }
 
   /**
-   * @param {Wheel} wheel
-   * @param {CanvasRenderingContext2D} context
+   * @param {Wheel} wheel the wheel to draw
+   * @param {CanvasRenderingContext2D} context the canvas drawing context
+   * @returns {void}
    */
   drawWheel(wheel, context) {
     context.save();
@@ -470,8 +479,9 @@ exports.Car = class Car extends EventEmitter {
   }
 
   /**
-   * @param {Bullet} bullet
-   * @param {CanvasRenderingContext2D} context
+   * @param {Bullet} bullet the bullet to draw
+   * @param {CanvasRenderingContext2D} context the canvas drawing context
+   * @returns {void}
    */
   static drawBullet(bullet, context) {
     context.fillStyle = 'white';
@@ -479,7 +489,8 @@ exports.Car = class Car extends EventEmitter {
   }
 
   /**
-   * @param {number} currentSimStep
+   * @param {number} currentSimStep the current simulation step
+   * @returns {void}
    */
   checkHistory(currentSimStep) {
     if (process.env.NODE_ENV !== 'production') {

@@ -43,8 +43,9 @@ if (isTouchCapable) {
 }
 
 /**
- * @param {Car} car
- * @param {number} simStep
+ * @param {Car} car the car to process the input
+ * @param {number} simStep the current simulation step
+ * @returns {void}
  */
 exports.checkInput = (car, simStep) => {
   if (car) {

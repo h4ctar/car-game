@@ -4,6 +4,8 @@
  * @typedef { import("../common/type").Scoreboard } Scoreboard
  * @typedef { import("../common/type").ScoreEvent } ScoreEvent
  * @typedef { import("../common/type").HealthEvent } HealthEvent
+ * @typedef { import("../common/type").PingEvent } PingEvent
+ * @typedef { import("../common/type").PongEvent } PongEvent
  * @typedef { import("../common/vector").Point2 } Point2
  * @typedef { import("../common/car").Car } Car
  */
@@ -11,7 +13,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const {
-  SCOREBOARD_LENGTH, WORLD_WIDTH, WORLD_HEIGHT, TREE_TYPE, ROCK_TYPE,
+  SCOREBOARD_LENGTH, WORLD_WIDTH, WORLD_HEIGHT, TREE_TYPE, ROCK_TYPE, PICKUP_TYPE,
 } = require('../common/config');
 const { randomPoint } = require('../common/util');
 const { ServerSimulation } = require('./simulation');
@@ -23,23 +25,33 @@ const ioServer = new Server(httpServer, { serveClient: false });
 const sim = new ServerSimulation();
 sim.start(Date.now(), 0);
 
-const staticEntities = [];
+let nextId = 0;
+const entities = [];
 for (let i = 0; i < 1000; i += 1) {
-  staticEntities.push({
+  entities.push({
     type: TREE_TYPE,
     point: randomPoint(),
+    id: nextId++,
   });
-  staticEntities.push({
+  entities.push({
     type: ROCK_TYPE,
     point: randomPoint(),
+    id: nextId++,
   });
 }
-staticEntities.forEach((entity) => sim.quadtree.insert(entity.type, entity.point));
+for (let i = 0; i < 10000; i += 1) {
+  entities.push({
+    type: PICKUP_TYPE,
+    point: randomPoint(),
+    id: nextId++,
+  });
+}
+entities.forEach((entity) => sim.quadtree.insert(entity.type, entity.point, entity.id));
 
-/**
- * @type {() => Scoreboard}
- */
+sim.on('delete-entity', (/** @type {number} */ id) => ioServer.emit('delete-entity', id));
+
 const createScoreboard = () => {
+  /** @type {Scoreboard} */
   const scoreboard = sim.cars
     .map((car) => ({ username: car.username, score: car.score, color: car.color }))
     .sort((a, b) => b.score - a.score);
@@ -55,64 +67,71 @@ ioServer.on('connection', (socket) => {
   // eslint-disable-next-line no-underscore-dangle
   const id = socket.request._query.id;
 
-  console.log(`New client connected ${id}`);
+  console.info(`New client connected ${id}`);
 
   socket.emit('start', {
     startSimTime: sim.startSimTime,
     currentSimStep: sim.simStep,
   });
 
-  sim.cars.forEach((c) => socket.emit('update', c.serialize()));
+  sim.cars.forEach((car) => socket.emit('update-car', car.serialize()));
   const syncInterval = setInterval(() => {
     // todo: only cars near this car
     // todo: delete cars far away
     // todo: only if they've drifted
-    sim.cars.forEach((c) => socket.emit('update', c.serialize()));
+    sim.cars.forEach((car) => socket.emit('update-car', car.serialize()));
   }, 10000);
 
-  socket.emit('static-entities', staticEntities);
+  // todo: only entities around car
+  socket.emit('entities', entities);
 
   // send the initial scoreboard
   socket.emit('scoreboard', createScoreboard());
 
-  socket.on('ping', (event) => socket.emit('pong', { ...event, pongTime: Date.now() }));
+  socket.on('ping', (/** @type {PingEvent} */ pingEvent) => {
+    /** @type {PongEvent} */
+    const pongEvent = { ...pingEvent, pongTime: Date.now() };
+    socket.emit('pong', pongEvent);
+  });
 
   /** @type {Car} */
-  let car;
+  let socketCar;
 
   socket.on('join', (/** @type {JoinEvent} */ event) => {
     console.info(`Client joining ${event.username}`);
-    car = sim.addCar(id, event.username, event.color);
+    socketCar = sim.addCar(id, event.username, event.color);
 
-    car.on('collide', () => {
-      car.health -= 10;
-      // collisions make it go out of sync
-      ioServer.emit('update', car.serialize());
+    socketCar.on('collide', () => {
+      if (socketCar) {
+        socketCar.health -= 10;
+        // collisions often make the car go out of sync
+        ioServer.emit('update-car', socketCar.serialize());
+      }
     });
 
-    car.on('health', () => {
-      if (car) {
+    socketCar.on('health', () => {
+      if (socketCar) {
         /** @type {HealthEvent} */
-        const healthEvent = { id, health: car.health };
+        const healthEvent = { id, health: socketCar.health };
         ioServer.emit('health', healthEvent);
       }
     });
 
-    car.on('score', () => {
+    socketCar.on('score', () => {
       /** @type {ScoreEvent} */
-      const scoreEvent = { id, score: car.score };
+      const scoreEvent = { id, score: socketCar.score };
       ioServer.emit('score', scoreEvent);
 
       ioServer.emit('scoreboard', createScoreboard());
     });
 
     if (process.env.NODE_ENV === 'production') {
-      car.position = {
+      socketCar.position = {
         x: Math.random() * WORLD_WIDTH,
         y: Math.random() * WORLD_HEIGHT,
       };
     } else {
-      car.position = {
+      socketCar.position = {
         x: WORLD_WIDTH / 2,
         y: WORLD_HEIGHT / 2,
       };
@@ -121,12 +140,12 @@ ioServer.on('connection', (socket) => {
     // send an updated scoreboard including the new car
     ioServer.emit('scoreboard', createScoreboard());
 
-    ioServer.emit('update', car.serialize());
+    ioServer.emit('update-car', socketCar.serialize());
   });
 
   const deleteCarListener = (deletedCarId) => {
-    if (car && id === deletedCarId) {
-      car = undefined;
+    if (socketCar && id === deletedCarId) {
+      socketCar = undefined;
     }
     socket.emit('delete', deletedCarId);
   };
@@ -134,14 +153,14 @@ ioServer.on('connection', (socket) => {
 
   // health regen
   const healthRegenInterval = setInterval(() => {
-    if (car && car.health < 100) {
-      car.health = Math.min(car.health + 5, 100);
+    if (socketCar && socketCar.health < 100) {
+      socketCar.health = Math.min(socketCar.health + 5, 100);
     }
   }, 5000);
 
   socket.on('input', (/** @type {InputEvent} */ event) => {
-    if (car) {
-      car.processInput(event, sim.simStep);
+    if (socketCar) {
+      socketCar.processInput(event, sim.simStep);
 
       // send the input to everyone except the sender because they have already processed it
       socket.broadcast.emit('input', event);
@@ -151,7 +170,7 @@ ioServer.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.info(`Client disconnected ${id}`);
 
-    if (car) {
+    if (socketCar) {
       sim.deleteCar(id);
     }
 
@@ -170,4 +189,4 @@ ioServer.on('connection', (socket) => {
 app.use(express.static('static'));
 
 const port = process.env.PORT || 3000;
-httpServer.listen(port, () => console.log(`Listening at ${port}`));
+httpServer.listen(port, () => console.info(`Listening at ${port}`));

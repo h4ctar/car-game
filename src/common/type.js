@@ -17,6 +17,8 @@
  * @typedef {{ username: string; score: number; color: string }[]} Scoreboard
  * @typedef {{ id: string; score: number; }} ScoreEvent
  * @typedef {{ id: string; health: number; }} HealthEvent
+ * @typedef {{ pingTime: number; }} PingEvent
+ * @typedef {{ pongTime: number; } & PingEvent} PongEvent
  *
  * @typedef {{
  *      id: string;
@@ -49,8 +51,8 @@
  */
 
 /**
- * @param {InputEvent} inputEvent
- * @returns {ArrayBuffer}
+ * @param {InputEvent} inputEvent the input event object
+ * @returns {ArrayBuffer} the serialized input event
  */
 exports.serializeInputEvent = (inputEvent) => {
   const buffer = new ArrayBuffer(45);
@@ -73,8 +75,8 @@ exports.serializeInputEvent = (inputEvent) => {
 };
 
 /**
- * @param {ArrayBuffer} buffer
- * @returns {InputEvent}
+ * @param {ArrayBuffer} buffer the serialized input event
+ * @returns {InputEvent} the input event object
  */
 exports.deserializeInputEvent = (buffer) => {
   const idView = new Uint8Array(buffer, 0, 36);

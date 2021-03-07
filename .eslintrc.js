@@ -22,5 +22,6 @@ module.exports = {
     'no-restricted-syntax': 'off',
     'no-plusplus': 'off',
     'no-nested-ternary': 'off',
+    'valid-jsdoc': 'off',
   },
 };

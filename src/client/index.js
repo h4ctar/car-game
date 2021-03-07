@@ -4,13 +4,15 @@
  * @typedef { import('../common/type').HealthEvent } HealthEvent
  * @typedef { import('../common/type').UpdateEvent } UpdateEvent
  * @typedef { import('../common/type').InputEvent } InputEvent
+ * @typedef { import('../common/type').PingEvent } PingEvent
+ * @typedef { import('../common/type').PongEvent } PongEvent
  * @typedef { import('../common/vector').Point2 } Point2
  * @typedef { import('../common/vector').Box } Box
  * @typedef { import("../common/car").Car } Car
  */
 
 const {
-  SIM_PERIOD, TREE_RADIUS, TREE_TYPE: QT_TREE, ROCK_TYPE: QT_ROCK, ROCK_RADIUS,
+  SIM_PERIOD, TREE_RADIUS, TREE_TYPE, ROCK_TYPE, ROCK_RADIUS, PICKUP_TYPE, PICKUP_RADIUS,
 } = require('../common/config');
 const { Simulation } = require('../common/simulation');
 const {
@@ -38,6 +40,9 @@ treeImage.src = 'tree.svg';
 const rockImage = new Image();
 rockImage.src = 'rock.svg';
 
+const pickupImage = new Image();
+pickupImage.src = 'pickup.svg';
+
 const sim = new Simulation();
 
 /** @type {Scoreboard} */
@@ -51,9 +56,14 @@ socket.on('start', (event) => {
 socket.on('disconnect', () => sim.stop());
 
 // https://distributedsystemsblog.com/docs/clock-synchronization-algorithms/#christians-algorithm
+setInterval(() => {
+  /** @type {PingEvent} */
+  const event = { pingTime: Date.now() };
+  socket.emit('ping', event);
+}, 1000);
+
 let latency = 0;
-setInterval(() => socket.emit('ping', { pingTime: Date.now() }), 1000);
-socket.on('pong', (event) => {
+socket.on('pong', (/** @type {PongEvent} */ event) => {
   const clientTime = Date.now();
   const rtt = clientTime - event.pingTime;
   latency = rtt / 2;
@@ -66,11 +76,11 @@ socket.on('pong', (event) => {
 /** @type {Car} */
 let myCar;
 
-socket.on('update', (/** @type {UpdateEvent} */ event) => {
+socket.on('update-car', (/** @type {UpdateEvent} */ event) => {
   let car = sim.getCar(event.id);
 
   if (!car) {
-    console.log('New car', event.id);
+    console.info('New car', event.id);
 
     car = sim.addCar(event.id, event.username, event.color);
 
@@ -119,7 +129,8 @@ socket.on('health', (/** @type {HealthEvent} */ event) => {
   }
 });
 
-socket.on('static-entities', (staticEntities) => staticEntities.forEach((entity) => sim.quadtree.insert(entity.type, entity.point)));
+socket.on('entities', (entities) => entities.forEach((entity) => sim.quadtree.insert(entity.type, entity.point, entity.id)));
+socket.on('delete-entity', (/** @type {number} */ id) => sim.quadtree.remove(id));
 
 const inputLoop = () => {
   if (myCar) {
@@ -129,7 +140,8 @@ const inputLoop = () => {
 setInterval(inputLoop, SIM_PERIOD);
 
 /**
- * @param {Point2} camera
+ * @param {Point2} camera the position of the camera
+ * @returns {void}
  */
 const drawMap = (camera) => {
   const GRID_SIZE = 200;
@@ -152,6 +164,7 @@ const drawMap = (camera) => {
  * @param {number} type the type of object to draw
  * @param {number} radius the radius of the object
  * @param {HTMLImageElement} image the image to draw
+ * @returns {void}
  */
 const drawObjects = (viewport, type, radius, image) => {
   const visibleRange = grow(viewport, radius);
@@ -242,8 +255,9 @@ const draw = () => {
 
     sim.cars.forEach((car) => car.draw(context));
 
-    drawObjects(viewport, QT_TREE, TREE_RADIUS, treeImage);
-    drawObjects(viewport, QT_ROCK, ROCK_RADIUS, rockImage);
+    drawObjects(viewport, TREE_TYPE, TREE_RADIUS, treeImage);
+    drawObjects(viewport, ROCK_TYPE, ROCK_RADIUS, rockImage);
+    drawObjects(viewport, PICKUP_TYPE, PICKUP_RADIUS, pickupImage);
 
     context.restore();
 

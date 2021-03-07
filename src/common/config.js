@@ -11,6 +11,8 @@ exports.WORLD_HEIGHT = 20000;
 exports.CAR_RADIUS = 30;
 exports.TREE_RADIUS = 50;
 exports.ROCK_RADIUS = 20;
+exports.PICKUP_RADIUS = 10;
 
 exports.TREE_TYPE = 0;
 exports.ROCK_TYPE = 1;
+exports.PICKUP_TYPE = 2;

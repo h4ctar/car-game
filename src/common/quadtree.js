@@ -12,13 +12,14 @@ exports.Quadtree = class Quadtree {
     * @typedef {{
     *   type: number,
     *   point: Point2,
-    *   data: any,
+    *   id: number?,
+    *   data: any?,
     *   parent: Quadtree,
     * }} PointRef
     */
 
   /**
-   * @param {Box} boundary
+   * @param {Box} boundary the boundary of the quadtree
    */
   constructor(boundary) {
     /** @type {Quadtree[]} */
@@ -27,19 +28,22 @@ exports.Quadtree = class Quadtree {
     /** @type {PointRef[]} */
     this._pointRefs = [];
 
+    /** @type {{[key: number]: PointRef}} */
+    this._pointRefMap = {};
+
     /** @type {Box} */
     this._boundary = boundary;
   }
 
   /**
    * Insert a point.
-   * Returns the quadtree that the point was added to.
-   * @param {number} type
-   * @param {Point2} point
-   * @param {any} data
-   * @return {PointRef}
+   * @param {number} type the type of the point to add
+   * @param {Point2} point the points position
+   * @param {number} id the ID of the point
+   * @param {any} [data] any data
+   * @return {PointRef} the point ref of the newly added point, or undefined if it could not be added
    */
-  insert(type, point, data) {
+  insert(type, point, id, data) {
     if (!contains(this._boundary, point)) {
       return undefined;
     }
@@ -48,10 +52,12 @@ exports.Quadtree = class Quadtree {
       const pointRef = {
         type,
         point,
+        id,
         data,
         parent: this,
       };
       this._pointRefs.push(pointRef);
+      this._pointRefMap[id] = pointRef;
       return pointRef;
     }
 
@@ -60,8 +66,10 @@ exports.Quadtree = class Quadtree {
     }
 
     for (const child of this._children) {
-      const pointRef = child.insert(type, point, data);
+      const pointRef = child.insert(type, point, data, undefined);
       if (pointRef) {
+        pointRef.id = id;
+        this._pointRefMap[id] = pointRef;
         return pointRef;
       }
     }
@@ -70,9 +78,18 @@ exports.Quadtree = class Quadtree {
   }
 
   /**
-   * @param {PointRef} pointRef
+   * @param {PointRef | number} pointRef the point ref or ID of point to remove
+   * @returns {void}
    */
   remove(pointRef) {
+    if (typeof pointRef === 'number') {
+      pointRef = this._pointRefMap[pointRef];
+
+      if (!pointRef) {
+        return;
+      }
+    }
+
     if (pointRef.parent === this) {
       const index = this._pointRefs.indexOf(pointRef);
       this._pointRefs.splice(index, 1);
@@ -81,14 +98,11 @@ exports.Quadtree = class Quadtree {
     }
   }
 
-  // move(pointRef, ) {
-
-  // }
-
   /**
    * Query for all points in a range.
-   * @param {number} type
+   * @param {number} type the type of point to look for
    * @param {Box} range the range to check
+   * @returns {PointRef[]} the found points
    */
   query(type, range) {
     /** @type {PointRef[]} */
