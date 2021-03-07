@@ -208,11 +208,14 @@ exports.Car = class Car extends EventEmitter {
 
     if (event.simStep > currentSimStep) {
       // it's in the future, process it later
+      console.log('event is in the future', event.simStep, currentSimStep);
     } else if (event.simStep === currentSimStep) {
       // process it now
+      console.log('event is now', event.simStep, currentSimStep);
       this.applyInput(event);
     } else {
       // it's in the past, wind back time
+      console.log('event is in the past', event.simStep, currentSimStep);
       this.windBackTime(event.simStep);
 
       // apply the input

@@ -110,7 +110,6 @@ exports.Simulation = class Simulation extends EventEmitter {
       this.cars.forEach((car) => car.update(this.simStep));
     } catch (err) {
       console.error(`[${this.simStep}] Error updating cars`, err);
-      this.stop();
     }
   }
 };
