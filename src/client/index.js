@@ -214,6 +214,7 @@ const drawDebug = () => {
     context.font = '16px monospace';
     context.fillText(`Latency: ${Math.round(latency)}`, 10, 50);
     context.fillText(`Time skew: ${Math.round(sim.timeSkew)}`, 10, 70);
+    context.fillText(`Speed: ${myCar && Math.round(myCar.speed)}`, 10, 90);
     context.restore();
   }
 };

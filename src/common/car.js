@@ -18,6 +18,8 @@ const {
 
 const WHEEL_FL = 0;
 const WHEEL_FR = 1;
+const WHEEL_RL = 2;
+const WHEEL_RR = 3;
 
 exports.Car = class Car extends EventEmitter {
   /**
@@ -89,6 +91,9 @@ exports.Car = class Car extends EventEmitter {
     /** @type { Bullet[] } */
     this.bullets = [];
     this.lastShootSimStep = 0;
+
+    // devived stuff
+    this.speed = 0;
   }
 
   /**
@@ -300,22 +305,35 @@ exports.Car = class Car extends EventEmitter {
     this.wheels[WHEEL_FL].angle = util.tween(this.wheels[WHEEL_FL].angle, targetLeftAngle, 4 * DT);
     this.wheels[WHEEL_FR].angle = util.tween(this.wheels[WHEEL_FR].angle, targetRightAngle, 4 * DT);
 
+    const heading = rotate({ x: 1, y: 0 }, this.angle);
+    this.speed = dot(this.velocity, heading);
+
+    let brake = this.brake;
+    let reverse = false;
+    if (brake && this.speed < 1) {
+      brake = false;
+      reverse = true;
+    }
+
     // todo: power curve
-    // todo: reverse
-    const wheelForce = this.accelerate ? 80 : 0;
+    const wheelForce = this.accelerate ? 160 : reverse ? -80 : 0;
 
     // calculate the acceleration
     let acceleration = { x: 0, y: 0 };
     let angularAcceleration = 0;
-    this.wheels.forEach((wheel) => {
+    this.wheels.forEach((wheel, wheelIndex) => {
       const wheelPosition = rotate(wheel.position, this.angle);
       const wheelVelocity = add(this.velocity, multiply({ x: -wheelPosition.y, y: wheelPosition.x }, this.angularVelocity));
 
+      let force = { x: 0, y: 0 };
+
       // power
-      let force = rotate({ x: wheelForce, y: 0 }, this.angle + wheel.angle);
+      if (wheelIndex === WHEEL_RL || wheelIndex === WHEEL_RR) {
+        force = add(force, rotate({ x: wheelForce, y: 0 }, this.angle + wheel.angle));
+      }
 
       // brake
-      const longitudinalFrictionConstant = this.brake ? 0.9 : 0.1;
+      const longitudinalFrictionConstant = brake ? 0.9 : 0.1;
       const longitudinalNormal = rotate({ x: 1, y: 0 }, this.angle + wheel.angle);
       const longitudinalVelocity = multiply(longitudinalNormal, dot(longitudinalNormal, wheelVelocity));
       const longitudinalFrictionForce = multiply(longitudinalVelocity, -longitudinalFrictionConstant);
