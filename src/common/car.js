@@ -282,6 +282,7 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   applyInput(event) {
+    console.log('apply input', event.simStep, event.steer);
     this.steer = event.steer;
     this.accelerate = event.accelerate;
     this.brake = event.brake;
