@@ -158,6 +158,8 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   deserialize(event, currentSimStep) {
+    console.log(`deserialize ${currentSimStep}`);
+
     const oldPosition = this.position;
 
     this.histories = event.histories;
@@ -183,11 +185,7 @@ exports.Car = class Car extends EventEmitter {
         this.windBackTime(currentSimStep);
       } else if (lastHistory.simStep < currentSimStep) {
         // new history is in the past
-        let simStep = lastHistory.simStep;
-        while (simStep < currentSimStep) {
-          simStep += 1;
-          this.update(simStep);
-        }
+        this.windForwardTime(currentSimStep);
       }
     } else {
       console.error('No last history');
@@ -207,6 +205,8 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   processInput(event, currentSimStep) {
+    console.log(`process input ${event.simStep} ${currentSimStep}`);
+
     this.inputEvents.push(event);
     this.inputEvents.sort((a, b) => a.simStep - b.simStep);
     // only remember 20 input events
@@ -219,11 +219,7 @@ exports.Car = class Car extends EventEmitter {
       this.windBackTime(event.simStep - 1);
 
       // and step forward until now
-      let simStep = event.simStep - 1;
-      while (simStep < currentSimStep) {
-        simStep += 1;
-        this.update(simStep);
-      }
+      this.windForwardTime(currentSimStep);
     }
   }
 
@@ -232,11 +228,10 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   windBackTime(desiredSimStep) {
+    console.log(`wind back time to ${desiredSimStep}`);
+
     // find the history just after the desired simulation step
     const historyIndex = this.histories.findIndex((h) => h.simStep === desiredSimStep + 1);
-
-    // todo: why +1 ^
-    console.log(`wind back time to ${desiredSimStep}`);
 
     if (historyIndex !== -1) {
       const history = this.histories[historyIndex];
@@ -263,10 +258,31 @@ exports.Car = class Car extends EventEmitter {
   }
 
   /**
+   * @param {number} desiredSimStep the desired simulation step
+   * @returns {void}
+   */
+  windForwardTime(desiredSimStep) {
+    console.log(`wind forward time to ${desiredSimStep}`);
+    const lastHistory = this.histories[this.histories.length - 1];
+    let simStep = lastHistory.simStep;
+    while (simStep < desiredSimStep) {
+      simStep += 1;
+      this.update(simStep);
+    }
+
+    // let simStep = event.simStep - 1;
+    // while (simStep < currentSimStep) {
+    //   simStep += 1;
+    //   this.update(simStep);
+    // }
+  }
+
+  /**
    * @param {InputEvent} event the input event
    * @returns {void}
    */
   applyInput(event) {
+    console.log(`apply input ${event.simStep}`);
     this.steer = event.steer;
     this.accelerate = event.accelerate;
     this.brake = event.brake;
