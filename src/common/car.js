@@ -314,6 +314,11 @@ exports.Car = class Car extends EventEmitter {
 
     this.checkHistory(simStep);
 
+    // apply input
+    this.inputEvents
+      .filter((event) => event.simStep === simStep)
+      .forEach((event) => this.applyInput(event));
+
     // steer the wheels
     // ackerman https://datagenetics.com/blog/december12016/index.html
     let targetLeftAngle = 0;
@@ -397,11 +402,6 @@ exports.Car = class Car extends EventEmitter {
 
     this.collideAll(TREE_TYPE, TREE_RADIUS);
     this.collideAll(ROCK_TYPE, ROCK_RADIUS);
-
-    // process previously received inputs
-    this.inputEvents
-      .filter((event) => event.simStep === simStep)
-      .forEach((event) => this.applyInput(event));
   }
 
   /**
