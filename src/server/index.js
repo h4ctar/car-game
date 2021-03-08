@@ -82,7 +82,6 @@ ioServer.on('connection', (socket) => {
   const syncInterval = setInterval(() => {
     // todo: only cars near this car
     // todo: delete cars far away
-    // todo: only if they've drifted
     sim.cars.forEach((car) => socket.emit('update-car', car.serialize()));
   }, 5000);
 
@@ -110,11 +109,12 @@ ioServer.on('connection', (socket) => {
         socketCar.health -= 10;
       }
 
-      // if the car died it will no longer exist
-      if (socketCar) {
-        // collisions often make the car go out of sync so send a sync update
-        ioServer.emit('update-car', socketCar.serialize());
-      }
+      // todo: delete this
+      // // if the car died it will no longer exist
+      // if (socketCar) {
+      //   // collisions often make the car go out of sync so send a sync update
+      //   ioServer.emit('update-car', socketCar.serialize());
+      // }
     });
 
     socketCar.on('health', () => {

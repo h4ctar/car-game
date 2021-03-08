@@ -69,7 +69,8 @@ exports.checkInput = (car, simStep) => {
     event.brake = keys[83] || (touchpad.yAxis < -0.5);
     event.shoot = keys[32] || touchpad.shoot;
 
-    const dirty = event.steer !== car.steer || event.accelerate !== car.accelerate || event.brake !== car.brake || event.shoot !== car.shoot;
+    const currentInput = car.lastInput();
+    const dirty = event.steer !== currentInput.steer || event.accelerate !== currentInput.accelerate || event.brake !== currentInput.brake || event.shoot !== currentInput.shoot;
 
     if (dirty) {
       car.processInput(event, simStep);

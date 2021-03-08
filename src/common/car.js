@@ -21,6 +21,10 @@ const WHEEL_FR = 1;
 const WHEEL_RL = 2;
 const WHEEL_RR = 3;
 
+const DEFAULT_INPUT = {
+  steer: 0, accelerate: false, brake: false, shoot: false,
+};
+
 exports.Car = class Car extends EventEmitter {
   /**
    * @param {string} id the ID of the car
@@ -63,10 +67,6 @@ exports.Car = class Car extends EventEmitter {
     this.angle = 0;
     this.velocity = { x: 1, y: 0 };
     this.angularVelocity = 0;
-    this.steer = 0;
-    this.accelerate = false;
-    this.brake = false;
-    this.shoot = false;
 
     /** @type { Wheel[] } */
     this.wheels = [
@@ -145,10 +145,6 @@ exports.Car = class Car extends EventEmitter {
       angle: this.angle,
       velocity: this.velocity,
       angularVelocity: this.angularVelocity,
-      // steer: this.steer,
-      // accelerate: this.accelerate,
-      // brake: this.brake,
-      // shoot: this.shoot,
       wheels: this.wheels,
       bullets: this.bullets,
     };
@@ -171,10 +167,6 @@ exports.Car = class Car extends EventEmitter {
     this.angle = event.angle;
     this.velocity = event.velocity;
     this.angularVelocity = event.angularVelocity;
-    // this.steer = event.steer;
-    // this.accelerate = event.accelerate;
-    // this.brake = event.brake;
-    // this.shoot = event.shoot;
     this.wheels = event.wheels;
     this.bullets = event.bullets;
 
@@ -210,9 +202,8 @@ exports.Car = class Car extends EventEmitter {
     // console.log(`process input ${event.simStep} ${currentSimStep}`);
 
     this._inputEvents.push(event);
-    this._inputEvents.sort((a, b) => a.simStep - b.simStep);
-    // only remember 20 input events
-    this._inputEvents.splice(0, this._inputEvents.length - 20);
+    this._inputEvents.sort((a, b) => b.simStep - a.simStep);
+    // this._inputEvents.splice(this._inputEvents.length - 20, 20);
 
     if (event.simStep > currentSimStep) {
       // it's in the future, process it later
@@ -246,10 +237,6 @@ exports.Car = class Car extends EventEmitter {
       this.angle = history.angle;
       this.velocity = history.velocity;
       this.angularVelocity = history.angularVelocity;
-      this.steer = history.steer;
-      this.accelerate = history.accelerate;
-      this.brake = history.brake;
-      this.shoot = history.shoot;
       this.wheels = history.wheels.map((wheel) => ({ ...wheel }));
       this.bullets = history.bullets.map((bullet) => ({ ...bullet }));
     } else {
@@ -275,24 +262,6 @@ exports.Car = class Car extends EventEmitter {
     } else {
       console.warn(`No history at ${desiredSimStep}`);
     }
-
-    // let simStep = event.simStep - 1;
-    // while (simStep < currentSimStep) {
-    //   simStep += 1;
-    //   this.update(simStep);
-    // }
-  }
-
-  /**
-   * @param {InputEvent} event the input event
-   * @returns {void}
-   */
-  applyInput(event) {
-    // console.log(`apply input ${event.simStep}`);
-    this.steer = event.steer;
-    this.accelerate = event.accelerate;
-    this.brake = event.brake;
-    this.shoot = event.shoot;
   }
 
   /**
@@ -309,10 +278,6 @@ exports.Car = class Car extends EventEmitter {
       angle: this.angle,
       velocity: this.velocity,
       angularVelocity: this.angularVelocity,
-      steer: this.steer,
-      accelerate: this.accelerate,
-      brake: this.brake,
-      shoot: this.shoot,
       wheels: this.wheels.map((wheel) => ({ ...wheel })),
       bullets: this.bullets.map((bullet) => ({ ...bullet })),
     });
@@ -323,20 +288,18 @@ exports.Car = class Car extends EventEmitter {
     this.checkHistory(simStep);
 
     // apply input
-    this._inputEvents
-      .filter((event) => event.simStep === simStep)
-      .forEach((event) => this.applyInput(event));
+    const input = this.currentInput(simStep);
 
     // steer the wheels
     // ackerman https://datagenetics.com/blog/december12016/index.html
     let targetLeftAngle = 0;
     let targetRightAngle = 0;
-    if (this.steer !== 0) {
+    if (input.steer !== 0) {
       const speed = length(this.velocity);
       // bigger turn radius when going faster
       const turnRadius = util.clamp(speed, 0, 1500) / 1500 * 300 + 40;
-      targetLeftAngle = this.steer / STEER_RESOLUTION * Math.atan(this.wheelbase / (turnRadius + Math.sign(this.steer) * this.track / 2));
-      targetRightAngle = this.steer / STEER_RESOLUTION * Math.atan(this.wheelbase / (turnRadius - Math.sign(this.steer) * this.track / 2));
+      targetLeftAngle = input.steer / STEER_RESOLUTION * Math.atan(this.wheelbase / (turnRadius + Math.sign(input.steer) * this.track / 2));
+      targetRightAngle = input.steer / STEER_RESOLUTION * Math.atan(this.wheelbase / (turnRadius - Math.sign(input.steer) * this.track / 2));
     }
 
     this.wheels[WHEEL_FL].angle = util.tween(this.wheels[WHEEL_FL].angle, targetLeftAngle, 4 * DT);
@@ -345,7 +308,7 @@ exports.Car = class Car extends EventEmitter {
     const heading = rotate({ x: 1, y: 0 }, this.angle);
     this.speed = dot(this.velocity, heading);
 
-    let brake = this.brake;
+    let brake = input.brake;
     let reverse = false;
     if (brake && this.speed < 1) {
       brake = false;
@@ -353,7 +316,7 @@ exports.Car = class Car extends EventEmitter {
     }
 
     // todo: power curve
-    const wheelForce = this.accelerate ? 160 : reverse ? -80 : 0;
+    const wheelForce = input.accelerate ? 160 : reverse ? -80 : 0;
 
     // calculate the acceleration
     let acceleration = { x: 0, y: 0 };
@@ -395,7 +358,7 @@ exports.Car = class Car extends EventEmitter {
     this.position = add(this.position, multiply(this.velocity, DT));
     this.angle += this.angularVelocity * DT;
 
-    if (this.shoot) {
+    if (input.shoot) {
       if (simStep >= this.lastShootSimStep + this.reloadDuration) {
         const bulletSpeed = 1000;
         const bulletVelocity = add(this.velocity, rotate({ x: bulletSpeed, y: 0 }, this.angle));
@@ -410,6 +373,17 @@ exports.Car = class Car extends EventEmitter {
 
     this.collideAll(TREE_TYPE, TREE_RADIUS);
     this.collideAll(ROCK_TYPE, ROCK_RADIUS);
+  }
+
+  lastInput() {
+    return this._inputEvents[0] || DEFAULT_INPUT;
+  }
+
+  /**
+   * @param {number} simStep
+   */
+  currentInput(simStep) {
+    return this._inputEvents.find((event) => event.simStep < simStep) || DEFAULT_INPUT;
   }
 
   /**
@@ -544,18 +518,4 @@ exports.Car = class Car extends EventEmitter {
       }
     }
   }
-
-  // checkLastInput(currentSimStep) {
-  //   const pastInputEvents = this._inputEvents.filter((event) => event.simStep <= currentSimStep);
-  //   if (pastInputEvents.length > 0) {
-  //     const lastInputEvent = pastInputEvents[pastInputEvents.length - 1];
-  //     if (this.accelerate !== lastInputEvent.accelerate || this.brake !== lastInputEvent.brake || this.steer !== lastInputEvent.steer || this.shoot !== lastInputEvent.shoot) {
-  //       console.error('The last input event has not been applied');
-  //       this.accelerate = lastInputEvent.accelerate;
-  //       this.brake = lastInputEvent.brake;
-  //       this.steer = lastInputEvent.steer;
-  //       this.shoot = lastInputEvent.shoot;
-  //     }
-  //   }
-  // }
 };
