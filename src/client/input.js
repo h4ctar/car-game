@@ -72,7 +72,7 @@ exports.checkInput = (car, simStep) => {
     const dirty = event.steer !== car.steer || event.accelerate !== car.accelerate || event.brake !== car.brake || event.shoot !== car.shoot;
 
     if (dirty) {
-      car.processInput(event, simStep);
+      // car.processInput(event, simStep);
       socket.emit('input', event);
     }
   }

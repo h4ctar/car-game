@@ -171,7 +171,8 @@ ioServer.on('connection', (socket) => {
       socketCar.processInput(event, sim.simStep);
 
       // send the input to everyone except the sender because they have already processed it
-      socket.broadcast.emit('input', event);
+      // socket.broadcast.emit('input', event);
+      ioServer.emit('input', event);
     }
   });
 
