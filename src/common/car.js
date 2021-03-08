@@ -505,15 +505,13 @@ exports.Car = class Car extends EventEmitter {
         for (let i = 1; i < this.histories.length; i += 1) {
           simStep += 1;
           if (this.histories[i].simStep !== simStep) {
-            console.error(`[${currentSimStep}] ${this.username} - ${this.histories.map((h) => h.simStep).join(', ')}`);
-            throw new Error(`[${currentSimStep}] ${this.username} - Histories are missing or out of order`);
+            console.error(`[${currentSimStep}] ${this.username} - Histories are missing or out of order`);
           }
         }
 
         // the last history simulation step should be the current simulation step
         if (lastHistory.simStep !== currentSimStep) {
-          console.error(`[${currentSimStep}] ${this.username} - ${this.histories.map((h) => h.simStep).join(', ')}`);
-          throw new Error(`[${currentSimStep}] ${this.username} - The last history is incorrect`);
+          console.error(`[${currentSimStep}] ${this.username} - The last history is incorrect`);
         }
       }
     }
