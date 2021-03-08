@@ -236,7 +236,7 @@ exports.Car = class Car extends EventEmitter {
     const historyIndex = this.histories.findIndex((h) => h.simStep === desiredSimStep + 1);
 
     // todo: why +1 ^
-    console.log('wind back time');
+    console.log(`wind back time to ${desiredSimStep}`);
 
     if (historyIndex !== -1) {
       const history = this.histories[historyIndex];
@@ -278,7 +278,8 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   update(simStep) {
-    console.log(`update ${this.username} ${simStep} [${this.position.x} ${this.position.y}] ${this.inputEvents.filter((e) => e.simStep === simStep).length}`);
+    console.log(`${simStep} - update ${this.username} [${this.position.x}, ${this.position.y}] ${this.inputEvents.filter((e) => e.simStep === simStep).length}`);
+
     // add history to the end of histories queue
     this.histories.push({
       simStep,

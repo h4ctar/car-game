@@ -49,7 +49,7 @@ const sim = new Simulation();
 let scoreboard = [];
 
 socket.on('start', (event) => {
-  console.info('Received start event');
+  console.info('Received start event', event);
   sim.start(event.startSimTime, event.currentSimStep);
 });
 
