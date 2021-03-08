@@ -264,10 +264,14 @@ exports.Car = class Car extends EventEmitter {
   windForwardTime(desiredSimStep) {
     console.log(`wind forward time to ${desiredSimStep}`);
     const lastHistory = this.histories[this.histories.length - 1];
-    let simStep = lastHistory.simStep;
-    while (simStep < desiredSimStep) {
-      simStep += 1;
-      this.update(simStep);
+    if (lastHistory) {
+      let simStep = lastHistory.simStep;
+      while (simStep < desiredSimStep) {
+        simStep += 1;
+        this.update(simStep);
+      }
+    } else {
+      console.warn(`No history at ${desiredSimStep}`);
     }
 
     // let simStep = event.simStep - 1;
