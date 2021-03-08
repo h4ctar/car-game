@@ -48,7 +48,11 @@ for (let i = 0; i < 10000; i += 1) {
 }
 entities.forEach((entity) => sim.quadtree.insert(entity.type, entity.point, entity.id));
 
-sim.on('delete-entity', (/** @type {number} */ id) => ioServer.emit('delete-entity', id));
+sim.on('delete-entity', (/** @type {number} */ id) => {
+  const index = entities.findIndex((entity) => entity.id === id);
+  entities.splice(index, 1);
+  ioServer.emit('delete-entity', id);
+});
 
 const createScoreboard = () => {
   /** @type {Scoreboard} */
@@ -80,7 +84,7 @@ ioServer.on('connection', (socket) => {
     // todo: delete cars far away
     // todo: only if they've drifted
     sim.cars.forEach((car) => socket.emit('update-car', car.serialize()));
-  }, 10000);
+  }, 5000);
 
   // todo: only entities around car
   socket.emit('entities', entities);
