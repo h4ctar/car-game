@@ -159,6 +159,8 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   deserialize(event, currentSimStep) {
+    const oldPosition = this.position;
+
     this.histories = event.histories;
     this.inputEvents = event.inputEvents;
 
@@ -193,7 +195,11 @@ exports.Car = class Car extends EventEmitter {
           this.update(simStep);
         }
       }
+    } else {
+      console.error('no last history');
     }
+
+    console.log('sync error', length(sub(oldPosition, this.position)));
 
     this.checkHistory(currentSimStep);
   }
