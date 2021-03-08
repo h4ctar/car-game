@@ -231,19 +231,19 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   windBackTime(desiredSimStep) {
-    // find the point with desired simulation step
+    // find the history just after the desired simulation step
     const historyIndex = this.histories.findIndex((h) => h.simStep === desiredSimStep + 1);
 
-    // why +1 ^
+    // todo: why +1 ^
     console.log('wind back time');
 
     if (historyIndex !== -1) {
       const history = this.histories[historyIndex];
 
-      // remove history after this history point
+      // remove history after this history point (including this point)
       this.histories.splice(historyIndex);
 
-      // reset this to the history point
+      // reset this to the history point that we've removed
       this.position = history.position;
       this.angle = history.angle;
       this.velocity = history.velocity;
@@ -277,6 +277,7 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   update(simStep) {
+    console.log(`update ${this.username} ${simStep} [${this.position.x} ${this.position.y}] ${this.inputEvents.filter((e) => e.simStep === simStep).length}`);
     // add history to the end of histories queue
     this.histories.push({
       simStep,
@@ -412,6 +413,7 @@ exports.Car = class Car extends EventEmitter {
     const vector = sub(point, this.position);
     const distance = length(vector);
     if (distance < CAR_RADIUS + radius) {
+      console.log('collide');
       const normal = divide(vector, distance);
       const d = dot(this.velocity, normal);
       this.velocity = sub(this.velocity, multiply(normal, 2 * d));
