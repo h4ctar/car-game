@@ -13,7 +13,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const {
-  SCOREBOARD_LENGTH, WORLD_WIDTH, WORLD_HEIGHT, PICKUP_TYPE, TREE_TYPE, ROCK_TYPE,
+  SCOREBOARD_LENGTH, WORLD_WIDTH, WORLD_HEIGHT, PICKUP_TYPE,
 } = require('../common/config');
 const { randomPoint } = require('../common/util');
 const { ServerSimulation } = require('./simulation');
