@@ -13,6 +13,15 @@
  *    startSimStep: number,
  * }} Bullet
  *
+ * @typedef {{
+ *      simStep: number,
+ *      position: Point2,
+ *      angle: number,
+ *      velocity: Point2,
+ *      angularVelocity: number,
+ *      wheels: Wheel[],
+ * }} History
+ *
  * @typedef {{ username: string, color: string }} JoinEvent
  * @typedef {{ username: string; score: number; color: string }[]} Scoreboard
  * @typedef {{ id: string; score: number; }} ScoreEvent
@@ -24,7 +33,7 @@
  *      id: string;
  *      username: string,
  *      color: string,
- *      histories: any[],
+ *      histories: History[],
  *      score: number,
  *      health: number,
  *      position: Point2,
@@ -32,7 +41,6 @@
  *      velocity: Point2,
  *      angularVelocity: number,
  *      wheels: Wheel[],
- *      bullets: Bullet[],
  * }} UpdateEvent
  *
  * @typedef {{

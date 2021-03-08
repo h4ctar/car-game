@@ -5,6 +5,7 @@
  * @typedef { import("./quadtree").Quadtree } Quadtree
  * @typedef { import("./type").InputEvent } InputEvent
  * @typedef { import("./type").UpdateEvent } UpdateEvent
+ * @typedef { import("./type").History } History
  */
 
 const { EventEmitter } = require('events');
@@ -53,7 +54,7 @@ exports.Car = class Car extends EventEmitter {
     this.reloadDuration = 10;
 
     // other properties
-    // todo: history type
+    /** @type {History[]} */
     this.histories = [];
 
     /** @type {InputEvent[]} */
@@ -146,7 +147,6 @@ exports.Car = class Car extends EventEmitter {
       velocity: this.velocity,
       angularVelocity: this.angularVelocity,
       wheels: this.wheels,
-      bullets: this.bullets,
     };
   }
 
@@ -168,21 +168,16 @@ exports.Car = class Car extends EventEmitter {
     this.velocity = event.velocity;
     this.angularVelocity = event.angularVelocity;
     this.wheels = event.wheels;
-    this.bullets = event.bullets;
 
     const lastHistory = this.histories[this.histories.length - 1];
     if (lastHistory) {
-      if (lastHistory.simStep === currentSimStep) {
-        // all good
-      } else if (lastHistory.simStep > currentSimStep) {
+      if (lastHistory.simStep > currentSimStep) {
         // new history is in the future
         this.windBackTime(currentSimStep);
       } else if (lastHistory.simStep < currentSimStep) {
         // new history is in the past
         this.windForwardTime(currentSimStep);
       }
-    } else {
-      console.error('No last history');
     }
 
     this.syncError = length(sub(oldPosition, this.position));
@@ -238,7 +233,6 @@ exports.Car = class Car extends EventEmitter {
       this.velocity = history.velocity;
       this.angularVelocity = history.angularVelocity;
       this.wheels = history.wheels.map((wheel) => ({ ...wheel }));
-      this.bullets = history.bullets.map((bullet) => ({ ...bullet }));
     } else {
       console.warn(`No history at ${desiredSimStep}`);
     }
@@ -279,7 +273,6 @@ exports.Car = class Car extends EventEmitter {
       velocity: this.velocity,
       angularVelocity: this.angularVelocity,
       wheels: this.wheels.map((wheel) => ({ ...wheel })),
-      bullets: this.bullets.map((bullet) => ({ ...bullet })),
     });
 
     // make sure it never gets too long

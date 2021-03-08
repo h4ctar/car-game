@@ -55,20 +55,6 @@ body {
   background-color: #0dcaf0;
 }
 
-#info-card {
-  z-index: 2;
-  position: absolute;
-  top: 10px;
-  left: 10px;
-}
-
-#scoreboard-card {
-  z-index: 2;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
 #dpad-button {
   z-index: 2;
   position: absolute;
