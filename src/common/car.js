@@ -234,6 +234,9 @@ exports.Car = class Car extends EventEmitter {
     // find the point with desired simulation step
     const historyIndex = this.histories.findIndex((h) => h.simStep === desiredSimStep + 1);
 
+    // why +1 ^
+    console.log('wind back time');
+
     if (historyIndex !== -1) {
       const history = this.histories[historyIndex];
 

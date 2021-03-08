@@ -112,7 +112,7 @@ ioServer.on('connection', (socket) => {
 
       // if the car died it will no longer exist
       if (socketCar) {
-        // collisions often make the car go out of sync
+        // collisions often make the car go out of sync so send a sync update
         ioServer.emit('update-car', socketCar.serialize());
       }
     });
