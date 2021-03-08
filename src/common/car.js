@@ -131,6 +131,8 @@ exports.Car = class Car extends EventEmitter {
    * @returns {UpdateEvent} the update event
    */
   serialize() {
+    // console.log('serialize');
+
     return {
       id: this.id,
       username: this.username,
@@ -158,7 +160,7 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   deserialize(event, currentSimStep) {
-    console.log(`deserialize ${currentSimStep}`);
+    // console.log(`deserialize ${currentSimStep}`);
 
     const oldPosition = this.position;
 
@@ -205,7 +207,7 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   processInput(event, currentSimStep) {
-    console.log(`process input ${event.simStep} ${currentSimStep}`);
+    // console.log(`process input ${event.simStep} ${currentSimStep}`);
 
     this.inputEvents.push(event);
     this.inputEvents.sort((a, b) => a.simStep - b.simStep);
@@ -218,7 +220,7 @@ exports.Car = class Car extends EventEmitter {
       // it's in the past, wind back time
       this.windBackTime(event.simStep - 1);
 
-      // and step forward until now
+      // and step forward until now (this will process it)
       this.windForwardTime(currentSimStep);
     }
   }
@@ -228,7 +230,7 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   windBackTime(desiredSimStep) {
-    console.log(`wind back time to ${desiredSimStep}`);
+    // console.log(`wind back time to ${desiredSimStep}`);
 
     // find the history just after the desired simulation step
     const historyIndex = this.histories.findIndex((h) => h.simStep === desiredSimStep + 1);
@@ -262,7 +264,7 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   windForwardTime(desiredSimStep) {
-    console.log(`wind forward time to ${desiredSimStep}`);
+    // console.log(`wind forward time to ${desiredSimStep}`);
     const lastHistory = this.histories[this.histories.length - 1];
     if (lastHistory) {
       let simStep = lastHistory.simStep;
@@ -286,7 +288,7 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   applyInput(event) {
-    console.log(`apply input ${event.simStep}`);
+    // console.log(`apply input ${event.simStep}`);
     this.steer = event.steer;
     this.accelerate = event.accelerate;
     this.brake = event.brake;
@@ -298,7 +300,7 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   update(simStep) {
-    console.log(`${simStep} - update ${this.username} [${this.position.x}, ${this.position.y}] ${this.inputEvents.filter((e) => e.simStep === simStep).length}`);
+    // console.log(`${simStep} - update ${this.username} [${this.position.x}, ${this.position.y}] ${this.inputEvents.filter((e) => e.simStep === simStep).length}`);
 
     // add history to the end of histories queue
     this.histories.push({
@@ -435,7 +437,7 @@ exports.Car = class Car extends EventEmitter {
     const vector = sub(point, this.position);
     const distance = length(vector);
     if (distance < CAR_RADIUS + radius) {
-      console.log('collide');
+      // console.log('collide');
       const normal = divide(vector, distance);
       const d = dot(this.velocity, normal);
       this.velocity = sub(this.velocity, multiply(normal, 2 * d));
