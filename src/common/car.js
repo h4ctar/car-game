@@ -94,6 +94,7 @@ exports.Car = class Car extends EventEmitter {
 
     // devived stuff
     this.speed = 0;
+    this.syncError = 0;
   }
 
   /**
@@ -192,9 +193,9 @@ exports.Car = class Car extends EventEmitter {
       console.error('No last history');
     }
 
-    const syncError = length(sub(oldPosition, this.position));
-    if (syncError > 10) {
-      console.error(`Large sync error: ${syncError}`);
+    this.syncError = length(sub(oldPosition, this.position));
+    if (this.syncError > 10) {
+      console.error(`Large sync error: ${this.syncError}`);
     }
 
     this.checkHistory(currentSimStep);
