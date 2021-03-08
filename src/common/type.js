@@ -25,7 +25,6 @@
  *      username: string,
  *      color: string,
  *      histories: any[],
- *      inputEvents: InputEvent[],
  *      score: number,
  *      health: number,
  *      position: Point2,

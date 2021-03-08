@@ -136,7 +136,7 @@ exports.Car = class Car extends EventEmitter {
       color: this.color,
 
       histories: this.histories,
-      inputEvents: this.inputEvents,
+      // inputEvents: this.inputEvents,
 
       score: this.score,
       health: this.health,
@@ -162,7 +162,7 @@ exports.Car = class Car extends EventEmitter {
     const oldPosition = this.position;
 
     this.histories = event.histories;
-    this.inputEvents = event.inputEvents;
+    // this.inputEvents = event.inputEvents;
 
     this.score = event.score;
     this.health = event.health;
