@@ -218,20 +218,26 @@ exports.Car = class Car extends EventEmitter {
     if (event.simStep > currentSimStep) {
       // it's in the future, process it later
       console.log('event is in the future', event.simStep, currentSimStep);
-    } else if (event.simStep === currentSimStep) {
-      // process it now
-      console.log('event is now', event.simStep, currentSimStep);
-      this.applyInput(event);
+    // } else if (event.simStep === currentSimStep) {
+    //   // process it now
+    //   console.log('event is now', event.simStep, currentSimStep);
+    //   this.applyInput(event);
     } else {
       // it's in the past, wind back time
       console.log('event is in the past', event.simStep, currentSimStep);
-      this.windBackTime(event.simStep);
+      this.windBackTime(event.simStep - 1);
+
+      // todo: does it need to wind back one more step?
+      // todo: does it need to wind back one more step?
+      // todo: does it need to wind back one more step?
+      // todo: does it need to wind back one more step?
+      // todo: does it need to wind back one more step?
 
       // apply the input
-      this.applyInput(event);
+      // this.applyInput(event);
 
       // and step forward until now
-      let simStep = event.simStep;
+      let simStep = event.simStep - 1;
       while (simStep < currentSimStep) {
         simStep += 1;
         this.update(simStep);
@@ -394,7 +400,7 @@ exports.Car = class Car extends EventEmitter {
     // process previously received inputs
     this.inputEvents
       .filter((event) => event.simStep === simStep)
-      .forEach((event) => this.processInput(event, simStep));
+      .forEach((event) => this.applyInput(event));
   }
 
   /**
