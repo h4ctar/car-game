@@ -110,11 +110,11 @@ ioServer.on('connection', (socket) => {
         socketCar.health -= 10;
       }
 
-      // if the car died it will no longer exist
-      if (socketCar) {
-        // collisions often make the car go out of sync
-        ioServer.emit('update-car', socketCar.serialize());
-      }
+      // // if the car died it will no longer exist
+      // if (socketCar) {
+      //   // collisions often make the car go out of sync
+      //   ioServer.emit('update-car', socketCar.serialize());
+      // }
     });
 
     socketCar.on('health', () => {
