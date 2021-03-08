@@ -199,7 +199,7 @@ exports.Car = class Car extends EventEmitter {
       console.error('no last history');
     }
 
-    console.log('sync error', length(sub(oldPosition, this.position)));
+    console.error('sync error', length(sub(oldPosition, this.position)));
 
     this.checkHistory(currentSimStep);
   }
