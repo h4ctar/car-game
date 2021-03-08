@@ -10,7 +10,7 @@
 const { EventEmitter } = require('events');
 const util = require('./util');
 const {
-  DT, STEER_RESOLUTION, CAR_RADIUS, TREE_RADIUS, ROCK_TYPE: QT_ROCK, ROCK_RADIUS, TREE_TYPE: QT_TREE,
+  DT, STEER_RESOLUTION, CAR_RADIUS, TREE_RADIUS, ROCK_TYPE, ROCK_RADIUS, TREE_TYPE,
 } = require('./config');
 const {
   add, multiply, dot, rotate, length, sub, divide,
@@ -394,8 +394,8 @@ exports.Car = class Car extends EventEmitter {
     this.bullets = this.bullets.filter((bullet) => simStep - bullet.startSimStep < 50);
     this.bullets.forEach((bullet) => { bullet.position = add(bullet.position, multiply(bullet.velocity, DT)); });
 
-    this.collideAll(QT_TREE, TREE_RADIUS);
-    this.collideAll(QT_ROCK, ROCK_RADIUS);
+    this.collideAll(TREE_TYPE, TREE_RADIUS);
+    this.collideAll(ROCK_TYPE, ROCK_RADIUS);
 
     // process previously received inputs
     this.inputEvents
