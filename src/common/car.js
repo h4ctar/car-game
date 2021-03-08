@@ -136,8 +136,6 @@ exports.Car = class Car extends EventEmitter {
       color: this.color,
 
       histories: this.histories,
-      // inputEvents: this.inputEvents,
-
       score: this.score,
       health: this.health,
       position: this.position,
@@ -162,8 +160,6 @@ exports.Car = class Car extends EventEmitter {
     const oldPosition = this.position;
 
     this.histories = event.histories;
-    // this.inputEvents = event.inputEvents;
-
     this.score = event.score;
     this.health = event.health;
     this.position = event.position;
@@ -180,14 +176,11 @@ exports.Car = class Car extends EventEmitter {
     const lastHistory = this.histories[this.histories.length - 1];
     if (lastHistory) {
       if (lastHistory.simStep === currentSimStep) {
-        console.log('new history is now', lastHistory.simStep, currentSimStep);
         // all good
       } else if (lastHistory.simStep > currentSimStep) {
-        console.log('new history is in the future', lastHistory.simStep, currentSimStep);
         // new history is in the future
         this.windBackTime(currentSimStep);
       } else if (lastHistory.simStep < currentSimStep) {
-        console.log('new history is in the past', lastHistory.simStep, currentSimStep);
         // new history is in the past
         let simStep = lastHistory.simStep;
         while (simStep < currentSimStep) {
@@ -217,24 +210,9 @@ exports.Car = class Car extends EventEmitter {
 
     if (event.simStep > currentSimStep) {
       // it's in the future, process it later
-      console.log('event is in the future', event.simStep, currentSimStep);
-    // } else if (event.simStep === currentSimStep) {
-    //   // process it now
-    //   console.log('event is now', event.simStep, currentSimStep);
-    //   this.applyInput(event);
     } else {
       // it's in the past, wind back time
-      console.log('event is in the past', event.simStep, currentSimStep);
       this.windBackTime(event.simStep - 1);
-
-      // todo: does it need to wind back one more step?
-      // todo: does it need to wind back one more step?
-      // todo: does it need to wind back one more step?
-      // todo: does it need to wind back one more step?
-      // todo: does it need to wind back one more step?
-
-      // apply the input
-      // this.applyInput(event);
 
       // and step forward until now
       let simStep = event.simStep - 1;
@@ -282,7 +260,6 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   applyInput(event) {
-    console.log('apply input', event.simStep, event.steer);
     this.steer = event.steer;
     this.accelerate = event.accelerate;
     this.brake = event.brake;

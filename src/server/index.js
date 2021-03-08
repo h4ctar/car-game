@@ -13,7 +13,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const {
-  SCOREBOARD_LENGTH, WORLD_WIDTH, WORLD_HEIGHT, PICKUP_TYPE,
+  SCOREBOARD_LENGTH, WORLD_WIDTH, WORLD_HEIGHT, PICKUP_TYPE, TREE_TYPE, ROCK_TYPE,
 } = require('../common/config');
 const { randomPoint } = require('../common/util');
 const { ServerSimulation } = require('./simulation');
@@ -27,18 +27,18 @@ sim.start(Date.now(), 0);
 
 let nextId = 0;
 const entities = [];
-// for (let i = 0; i < 1000; i += 1) {
-//   entities.push({
-//     type: TREE_TYPE,
-//     point: randomPoint(),
-//     id: nextId++,
-//   });
-//   entities.push({
-//     type: ROCK_TYPE,
-//     point: randomPoint(),
-//     id: nextId++,
-//   });
-// }
+for (let i = 0; i < 1000; i += 1) {
+  entities.push({
+    type: TREE_TYPE,
+    point: randomPoint(),
+    id: nextId++,
+  });
+  entities.push({
+    type: ROCK_TYPE,
+    point: randomPoint(),
+    id: nextId++,
+  });
+}
 for (let i = 0; i < 10000; i += 1) {
   entities.push({
     type: PICKUP_TYPE,
@@ -172,7 +172,6 @@ ioServer.on('connection', (socket) => {
 
       // send the input to everyone except the sender because they have already processed it
       socket.broadcast.emit('input', event);
-      // ioServer.emit('input', event);
     }
   });
 
