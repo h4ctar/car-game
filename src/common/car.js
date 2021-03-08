@@ -203,7 +203,7 @@ exports.Car = class Car extends EventEmitter {
 
     this._inputEvents.push(event);
     this._inputEvents.sort((a, b) => b.simStep - a.simStep);
-    // this._inputEvents.splice(this._inputEvents.length - 20, 20);
+    this._inputEvents.splice(100);
 
     if (event.simStep > currentSimStep) {
       // it's in the future, process it later

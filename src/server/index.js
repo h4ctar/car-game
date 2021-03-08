@@ -13,7 +13,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const {
-  SCOREBOARD_LENGTH, WORLD_WIDTH, WORLD_HEIGHT, PICKUP_TYPE, ROCK_TYPE,
+  SCOREBOARD_LENGTH, WORLD_WIDTH, WORLD_HEIGHT, PICKUP_TYPE, ROCK_TYPE, TREE_TYPE,
 } = require('../common/config');
 const { randomPoint } = require('../common/util');
 const { ServerSimulation } = require('./simulation');
@@ -28,11 +28,11 @@ sim.start(Date.now(), 0);
 let nextId = 0;
 const entities = [];
 for (let i = 0; i < 1000; i += 1) {
-//   entities.push({
-//     type: TREE_TYPE,
-//     point: randomPoint(),
-//     id: nextId++,
-//   });
+  entities.push({
+    type: TREE_TYPE,
+    point: randomPoint(),
+    id: nextId++,
+  });
   entities.push({
     type: ROCK_TYPE,
     point: randomPoint(),
@@ -108,13 +108,6 @@ ioServer.on('connection', (socket) => {
       if (socketCar) {
         socketCar.health -= 10;
       }
-
-      // todo: delete this
-      // // if the car died it will no longer exist
-      // if (socketCar) {
-      //   // collisions often make the car go out of sync so send a sync update
-      //   ioServer.emit('update-car', socketCar.serialize());
-      // }
     });
 
     socketCar.on('health', () => {
