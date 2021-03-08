@@ -7,4 +7,4 @@ const uuid = () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) =
 const myId = uuid();
 exports.myId = myId;
 
-console.info(`id ${myId}`);
+console.info(`ID ${myId}`);

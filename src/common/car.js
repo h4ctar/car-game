@@ -189,10 +189,13 @@ exports.Car = class Car extends EventEmitter {
         }
       }
     } else {
-      console.error('no last history');
+      console.error('No last history');
     }
 
-    console.error('sync error', length(sub(oldPosition, this.position)));
+    const syncError = length(sub(oldPosition, this.position));
+    if (syncError > 10) {
+      console.error(`Large sync error: ${syncError}`);
+    }
 
     this.checkHistory(currentSimStep);
   }
