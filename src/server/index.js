@@ -25,34 +25,28 @@ const ioServer = new Server(httpServer, { serveClient: false });
 const sim = new ServerSimulation();
 sim.start(Date.now(), 0);
 
-let nextId = 0;
+// todo: dont maintain this collection
+// instead it needs to dynamically get entities from the quadtree
 const entities = [];
-for (let i = 0; i < 1000; i += 1) {
-  entities.push({
-    type: TREE_TYPE,
-    point: randomPoint(),
-    id: nextId++,
-  });
-  entities.push({
-    type: ROCK_TYPE,
-    point: randomPoint(),
-    id: nextId++,
-  });
-}
-for (let i = 0; i < 10000; i += 1) {
-  entities.push({
-    type: PICKUP_TYPE,
-    point: randomPoint(),
-    id: nextId++,
-  });
-}
-entities.forEach((entity) => sim.quadtree.insert(entity.type, entity.point, entity.id));
+
+sim.on('new-entity', (entity) => {
+  entities.push(entity);
+  ioServer.emit('new-entity', entity);
+});
 
 sim.on('delete-entity', (/** @type {number} */ id) => {
   const index = entities.findIndex((entity) => entity.id === id);
   entities.splice(index, 1);
   ioServer.emit('delete-entity', id);
 });
+
+for (let i = 0; i < 1000; i += 1) {
+  sim.addEntity(TREE_TYPE, randomPoint());
+  sim.addEntity(ROCK_TYPE, randomPoint());
+}
+for (let i = 0; i < 10000; i += 1) {
+  sim.addEntity(PICKUP_TYPE, randomPoint());
+}
 
 const createScoreboard = () => {
   /** @type {Scoreboard} */

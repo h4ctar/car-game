@@ -18,7 +18,7 @@ exports.Simulation = class Simulation extends EventEmitter {
 
     this.timeSkew = 0;
 
-    this.quadtree = new Quadtree({
+    this._quadtree = new Quadtree({
       x: 0,
       y: 0,
       width: WORLD_WIDTH,
@@ -27,6 +27,9 @@ exports.Simulation = class Simulation extends EventEmitter {
 
     /** @type {Car[]} */
     this.cars = [];
+
+    // the next entity ID
+    this._nextId = 0;
   }
 
   /**
@@ -46,7 +49,7 @@ exports.Simulation = class Simulation extends EventEmitter {
    * @returns {Car} the newly added car
    */
   addCar(id, username, color) {
-    const car = new Car(id, username, color, this.quadtree);
+    const car = new Car(id, username, color, this._quadtree);
     this.cars.push(car);
     return car;
   }
@@ -111,5 +114,31 @@ exports.Simulation = class Simulation extends EventEmitter {
     } catch (err) {
       console.error(`[${this.simStep}] Error updating cars`, err);
     }
+  }
+
+  /**
+   * @param {number} type
+   * @param {Point2} point
+   * @param {number} [id]
+   */
+  addEntity(type, point, id) {
+    if (id === undefined) {
+      id = this._nextId++;
+    }
+
+    const entity = this._quadtree.insert(type, point, id);
+    if (entity) {
+      this.emit('new-entity', { type: entity.type, point: entity.point, id: entity.id });
+    }
+  }
+
+  deleteEntity(id) {
+    if (this._quadtree.remove(id)) {
+      this.emit('delete-entity', id);
+    }
+  }
+
+  queryEntities(type, range) {
+    return this._quadtree.query(type, range);
   }
 };

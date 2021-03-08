@@ -79,23 +79,24 @@ exports.Quadtree = class Quadtree {
 
   /**
    * @param {PointRef | number} pointRef the point ref or ID of point to remove
-   * @returns {void}
+   * @returns {boolean} true if it was removed
    */
   remove(pointRef) {
     if (typeof pointRef === 'number') {
       pointRef = this._pointRefMap[pointRef];
 
       if (!pointRef) {
-        return;
+        return false;
       }
     }
 
     if (pointRef.parent === this) {
       const index = this._pointRefs.indexOf(pointRef);
       this._pointRefs.splice(index, 1);
-    } else {
-      pointRef.parent.remove(pointRef);
+      return true;
     }
+
+    return pointRef.parent.remove(pointRef);
   }
 
   /**

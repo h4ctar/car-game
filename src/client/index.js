@@ -129,8 +129,9 @@ socket.on('health', (/** @type {HealthEvent} */ event) => {
   }
 });
 
-socket.on('entities', (entities) => entities.forEach((entity) => sim.quadtree.insert(entity.type, entity.point, entity.id)));
-socket.on('delete-entity', (/** @type {number} */ id) => sim.quadtree.remove(id));
+socket.on('entities', (entities) => entities.forEach((entity) => sim.addEntity(entity.type, entity.point, entity.id)));
+socket.on('new-entity', (entity) => sim.addEntity(entity.type, entity.point, entity.id));
+socket.on('delete-entity', (/** @type {number} */ id) => sim.deleteEntity(id));
 
 const inputLoop = () => {
   if (myCar) {
@@ -168,7 +169,7 @@ const drawMap = (camera) => {
  */
 const drawObjects = (viewport, type, radius, image) => {
   const visibleRange = grow(viewport, radius);
-  const objects = sim.quadtree.query(type, visibleRange);
+  const objects = sim.queryEntities(type, visibleRange);
   objects.forEach((object) => {
     context.drawImage(image, object.point.x - image.width / 2, object.point.y - image.height / 2);
 

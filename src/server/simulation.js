@@ -4,7 +4,7 @@
 
 const { CAR_RADIUS, PICKUP_TYPE, PICKUP_RADIUS } = require('../common/config');
 const { Simulation } = require('../common/simulation');
-const { sub, length } = require('../common/vector');
+const { sub, length, add } = require('../common/vector');
 
 exports.ServerSimulation = class ServerSimulation extends Simulation {
   /**
@@ -20,6 +20,10 @@ exports.ServerSimulation = class ServerSimulation extends Simulation {
     car.on('health', () => {
       if (car.health <= 0) {
         this.deleteCar(car.id);
+
+        for (let i = 0; i < car.score / 10; i++) {
+          this.addEntity(PICKUP_TYPE, add(car.position, { x: Math.random() * 200 - 100, y: Math.random() * 200 - 100 }));
+        }
       }
     });
 
@@ -37,11 +41,14 @@ exports.ServerSimulation = class ServerSimulation extends Simulation {
       [...thisCar.bullets].forEach((bullet) => otherCars.forEach((otherCar) => {
         const distance = length(sub(bullet.position, otherCar.position));
         if (distance < CAR_RADIUS) {
-          thisCar.score += 10;
           otherCar.health -= 10;
+
+          thisCar.score += 10;
           if (otherCar.health <= 0) {
             thisCar.score += 100;
           }
+
+          this.addEntity(PICKUP_TYPE, add(otherCar.position, { x: Math.random() * 200 - 100, y: Math.random() * 200 - 100 }));
 
           // remove the bullet
           const index = thisCar.bullets.indexOf(bullet);
@@ -58,11 +65,10 @@ exports.ServerSimulation = class ServerSimulation extends Simulation {
         width: (CAR_RADIUS + PICKUP_RADIUS) * 2,
         height: (CAR_RADIUS + PICKUP_RADIUS) * 2,
       };
-      const pickups = this.quadtree.query(PICKUP_TYPE, range);
+      const pickups = this._quadtree.query(PICKUP_TYPE, range);
       pickups.forEach((pickup) => {
         car.score += 10;
-        this.quadtree.remove(pickup);
-        this.emit('delete-entity', pickup.id);
+        this.deleteEntity(pickup.id);
       });
     });
   }
