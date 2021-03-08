@@ -31,10 +31,6 @@
  *      angle: number,
  *      velocity: Point2,
  *      angularVelocity: number,
- *      steer: number,
- *      accelerate: boolean,
- *      brake: boolean,
- *      shoot: boolean,
  *      wheels: Wheel[],
  *      bullets: Bullet[],
  * }} UpdateEvent

@@ -53,7 +53,7 @@ exports.Car = class Car extends EventEmitter {
     this.histories = [];
 
     /** @type {InputEvent[]} */
-    this.inputEvents = [];
+    this._inputEvents = [];
 
     this._score = 0;
     this._health = 100;
@@ -145,10 +145,10 @@ exports.Car = class Car extends EventEmitter {
       angle: this.angle,
       velocity: this.velocity,
       angularVelocity: this.angularVelocity,
-      steer: this.steer,
-      accelerate: this.accelerate,
-      brake: this.brake,
-      shoot: this.shoot,
+      // steer: this.steer,
+      // accelerate: this.accelerate,
+      // brake: this.brake,
+      // shoot: this.shoot,
       wheels: this.wheels,
       bullets: this.bullets,
     };
@@ -171,10 +171,10 @@ exports.Car = class Car extends EventEmitter {
     this.angle = event.angle;
     this.velocity = event.velocity;
     this.angularVelocity = event.angularVelocity;
-    this.steer = event.steer;
-    this.accelerate = event.accelerate;
-    this.brake = event.brake;
-    this.shoot = event.shoot;
+    // this.steer = event.steer;
+    // this.accelerate = event.accelerate;
+    // this.brake = event.brake;
+    // this.shoot = event.shoot;
     this.wheels = event.wheels;
     this.bullets = event.bullets;
 
@@ -209,10 +209,10 @@ exports.Car = class Car extends EventEmitter {
   processInput(event, currentSimStep) {
     // console.log(`process input ${event.simStep} ${currentSimStep}`);
 
-    this.inputEvents.push(event);
-    this.inputEvents.sort((a, b) => a.simStep - b.simStep);
+    this._inputEvents.push(event);
+    this._inputEvents.sort((a, b) => a.simStep - b.simStep);
     // only remember 20 input events
-    this.inputEvents.splice(0, this.inputEvents.length - 20);
+    this._inputEvents.splice(0, this._inputEvents.length - 20);
 
     if (event.simStep > currentSimStep) {
       // it's in the future, process it later
@@ -300,7 +300,7 @@ exports.Car = class Car extends EventEmitter {
    * @returns {void}
    */
   update(simStep) {
-    // console.log(`${simStep} - update ${this.username} [${this.position.x}, ${this.position.y}] ${this.inputEvents.filter((e) => e.simStep === simStep).length}`);
+    // console.log(`${simStep} - update ${this.username} [${this.position.x}, ${this.position.y}] ${this._inputEvents.filter((e) => e.simStep === simStep).length}`);
 
     // add history to the end of histories queue
     this.histories.push({
@@ -323,7 +323,7 @@ exports.Car = class Car extends EventEmitter {
     this.checkHistory(simStep);
 
     // apply input
-    this.inputEvents
+    this._inputEvents
       .filter((event) => event.simStep === simStep)
       .forEach((event) => this.applyInput(event));
 
@@ -544,4 +544,18 @@ exports.Car = class Car extends EventEmitter {
       }
     }
   }
+
+  // checkLastInput(currentSimStep) {
+  //   const pastInputEvents = this._inputEvents.filter((event) => event.simStep <= currentSimStep);
+  //   if (pastInputEvents.length > 0) {
+  //     const lastInputEvent = pastInputEvents[pastInputEvents.length - 1];
+  //     if (this.accelerate !== lastInputEvent.accelerate || this.brake !== lastInputEvent.brake || this.steer !== lastInputEvent.steer || this.shoot !== lastInputEvent.shoot) {
+  //       console.error('The last input event has not been applied');
+  //       this.accelerate = lastInputEvent.accelerate;
+  //       this.brake = lastInputEvent.brake;
+  //       this.steer = lastInputEvent.steer;
+  //       this.shoot = lastInputEvent.shoot;
+  //     }
+  //   }
+  // }
 };
