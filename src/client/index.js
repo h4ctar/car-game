@@ -48,10 +48,7 @@ const sim = new Simulation();
 /** @type {Scoreboard} */
 let scoreboard = [];
 
-socket.on('start', (event) => {
-  console.info('Received start event', event);
-  sim.start(event.startSimTime, event.currentSimStep);
-});
+socket.on('start', (event) => sim.start(event.startSimTime, event.currentSimStep));
 
 socket.on('disconnect', () => sim.stop());
 
@@ -278,6 +275,8 @@ window.addEventListener('load', () => {
   if ('serviceWorker' in navigator) {
     navigator
       .serviceWorker
-      .register('service-worker.js');
+      .register('service-worker.js')
+      .then((registration) => console.log('Service worker registration successful, scope is:', registration.scope))
+      .catch((error) => console.log('Service worker registration failed, error:', error));
   }
 });
