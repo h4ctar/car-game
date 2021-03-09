@@ -43,12 +43,10 @@ exports.ServerSimulation = class ServerSimulation extends Simulation {
         if (distance < CAR_RADIUS) {
           otherCar.health -= 10;
 
-          thisCar.score += 10;
-          if (otherCar.health <= 0) {
-            thisCar.score += 100;
+          if (otherCar.score >= 10) {
+            otherCar.score -= 10;
+            this.addEntity(PICKUP_TYPE, add(otherCar.position, { x: Math.random() * 200 - 100, y: Math.random() * 200 - 100 }));
           }
-
-          this.addEntity(PICKUP_TYPE, add(otherCar.position, { x: Math.random() * 200 - 100, y: Math.random() * 200 - 100 }));
 
           // remove the bullet
           const index = thisCar.bullets.indexOf(bullet);

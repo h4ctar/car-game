@@ -142,6 +142,7 @@ exports.Car = class Car extends EventEmitter {
       histories: this.histories,
       score: this.score,
       health: this.health,
+
       position: this.position,
       angle: this.angle,
       velocity: this.velocity,
@@ -163,6 +164,7 @@ exports.Car = class Car extends EventEmitter {
     this.histories = event.histories;
     this.score = event.score;
     this.health = event.health;
+
     this.position = event.position;
     this.angle = event.angle;
     this.velocity = event.velocity;
