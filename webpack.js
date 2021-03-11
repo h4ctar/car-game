@@ -8,6 +8,5 @@ module.exports = {
   },
   externals: {
     'socket.io-client': 'io',
-    bootstrap: 'bootstrap',
   },
 };

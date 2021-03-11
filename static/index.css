@@ -1,10 +1,37 @@
 body {
   margin: 0;
   user-select: none;
+  overflow: hidden;
+  font: 16px monospace;
+}
+
+label {
+  padding-bottom: 5px;
+}
+
+input {
+  font: 16px monospace;
+  background-color: black;
+  color: white;
+  border: 1px solid grey;
+  padding: 5px;
+}
+
+button {
+  font: 16px monospace;
+  background-color: black;
+  border: 1px solid grey;
+  color: white;
+  padding: 5px;
 }
 
 #canvas {
   z-index: 1;
+}
+
+#start-form {
+  display: flex;
+  flex-direction: column;
 }
 
 #start-card {
@@ -13,47 +40,51 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  background-color: black;
+  padding: 10px;
+  border: 1px solid grey;
+  color: white;
 }
 
-.btn-color-1 {
-  border-color: #0d6efd;
+.form-group {
+  margin-top:10px;
+  margin-bottom:10px;
+  display: flex;
+  flex-direction: column;
 }
 
-.btn-check:checked + .btn-color-1 {
-  background-color: #0d6efd;
+.color-radio {
+  display: inline-block;
+  position: relative;
 }
 
-.btn-color-2 {
-  border-color: #198754;
+.color-radio input[type="radio"] {
+  display: none;
 }
 
-.btn-check:checked + .btn-color-2 {
-  background-color: #198754;
+.color-radio label {
+  display: inline-block;
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-width: 1px;
+  border-style: solid;
 }
 
-.btn-color-3 {
-  border-color: #dc3545;
-}
+.color-1 { border-color: #0d6efd; }
+input:checked + .color-1 { background-color: #0d6efd; }
 
-.btn-check:checked + .btn-color-3 {
-  background-color: #dc3545;
-}
+.color-2 { border-color: #198754; }
+input:checked + .color-2 { background-color: #198754; }
 
-.btn-color-4 {
-  border-color: #ffc107;
-}
+.color-3 { border-color: #dc3545; }
+input:checked + .color-3 { background-color: #dc3545; }
 
-.btn-check:checked + .btn-color-4 {
-  background-color: #ffc107;
-}
+.color-4 { border-color: #ffc107; }
+input:checked + .color-4 { background-color: #ffc107; }
 
-.btn-color-5 {
-  border-color: #0dcaf0;
-}
-
-.btn-check:checked + .btn-color-5 {
-  background-color: #0dcaf0;
-}
+.color-5 { border-color: #0dcaf0; }
+input:checked + .color-5 { background-color: #0dcaf0; }
 
 #dpad-button {
   z-index: 2;

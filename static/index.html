@@ -13,53 +13,65 @@
   <link href="favicon-128.png" rel="icon" type="image/png" sizes="128x128">
   <link href="favicon-192.png" rel="icon" type="image/png" sizes="192x192">
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="index.css" rel="stylesheet">
 
-  <script src="https://cdn.jsdelivr.net/npm/socket.io-client@3.1.0/dist/socket.io.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/socket.io-client@3.1.2/dist/socket.io.min.js"></script>
 </head>
 
 <body oncontextmenu="return false;">
   <canvas id="canvas"></canvas>
 
-  <div id="start-card" class="card">
-    <div class="card-body">
-      <form id="start-form">
-        <div class="mb-3">
-          <label for="username-input">Username:</label>
-          <input id="username-input" type="text" class="form-control" autofocus>
+  <div id="start-card">
+    <form id="start-form">
+      <h1>Cool Car Game</h1>
+
+      <div class="form-group">
+        <label for="username-input">Username:</label>
+        <input id="username-input" type="text" class="form-control" autofocus>
+      </div>
+
+      <div class="form-group">
+        <label for="color-input">Colour:</label>
+
+        <div id="color-radios">
+          <div class="color-radio">
+            <input type="radio" name="color" id="color-1-input" checked>
+            <label class="color-1" for="color-1-input"></label>
+          </div>
+
+          <div class="color-radio">
+            <input type="radio" name="color" id="color-2-input">
+            <label class="color-2" for="color-2-input"></label>
+          </div>
+
+          <div class="color-radio">
+            <input type="radio" name="color" id="color-3-input">
+            <label class="color-3" for="color-3-input"></label>
+          </div>
+
+          <div class="color-radio">
+            <input type="radio" name="color" id="color-4-input">
+            <label class="color-4" for="color-4-input"></label>
+          </div>
+
+          <div class="color-radio">
+            <input type="radio" name="color" id="color-5-input">
+            <label class="color-5" for="color-5-input"></label>
+          </div>
         </div>
-        <div class="mb-3">
-          <label for="color-input">Colour:</label><br>
+      </div>
 
-          <input type="radio" class="btn-check" name="color" id="color-1-input" autocomplete="off" checked>
-          <label class="btn btn-color-1" for="color-1-input"></label>
-
-          <input type="radio" class="btn-check" name="color" id="color-2-input" autocomplete="off">
-          <label class="btn btn-color-2" for="color-2-input"></label>
-
-          <input type="radio" class="btn-check" name="color" id="color-3-input" autocomplete="off">
-          <label class="btn btn-color-3" for="color-3-input"></label>
-
-          <input type="radio" class="btn-check" name="color" id="color-4-input" autocomplete="off">
-          <label class="btn btn-color-4" for="color-4-input"></label>
-
-          <input type="radio" class="btn-check" name="color" id="color-5-input" autocomplete="off">
-          <label class="btn btn-color-5" for="color-5-input"></label>
-        </div>
-        <button type="submit" class="btn btn-primary">Start</button>
-      </form>
-    </div>
+      <button type="submit" class="btn btn-primary">Start</button>
+    </form>
   </div>
 
-  <div id="dpad-button" class="card">
+  <!-- <div id="dpad-button">
   </div>
 
-  <div id="shoot-button" class="card">
-  </div>
+  <div id="shoot-button">
+  </div> -->
 
-  <div id="disconnected-modal" class="modal">
+  <div id="disconnected-modal">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">

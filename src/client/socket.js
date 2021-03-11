@@ -1,8 +1,7 @@
-const { Modal } = require('bootstrap');
 const { io } = require('socket.io-client');
 const { myId } = require('./id');
 
-const socket = io({ query: `id=${myId}` });
+const socket = io({ query: { id: myId } });
 exports.socket = socket;
 
 socket.on('disconnect', () => {
@@ -10,6 +9,6 @@ socket.on('disconnect', () => {
 
   socket.close();
 
-  const disconnectedModal = new Modal(document.getElementById('disconnected-modal'), { backdrop: 'static', keyboard: false });
-  disconnectedModal.show();
+  // const disconnectedModal = new Modal(document.getElementById('disconnected-modal'), { backdrop: 'static', keyboard: false });
+  // disconnectedModal.show();
 });
