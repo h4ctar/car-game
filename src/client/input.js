@@ -4,7 +4,7 @@
  */
 
 const { STEER_RESOLUTION } = require('../common/config');
-// const { clamp } = require('../common/util');
+const { clamp } = require('../common/util');
 const { myId } = require('./id');
 const { socket } = require('./socket');
 
@@ -19,28 +19,35 @@ const touchpad = {
 
 const isTouchCapable = 'ontouchstart' in window;
 
-// const dpadButton = /** @type {HTMLDivElement} */ (document.getElementById('dpad-button'));
-// const shootButton = /** @type {HTMLDivElement} */ (document.getElementById('shoot-button'));
+const joystick = /** @type {HTMLDivElement} */ (document.getElementById('joystick'));
+const stick = /** @type {HTMLDivElement} */ (document.getElementById('stick'));
+const shootButton = /** @type {HTMLDivElement} */ (document.getElementById('shoot-button'));
 
-// if (isTouchCapable) {
-//   dpadButton.addEventListener('touchmove', (/** @type {TouchEvent} */ event) => {
-//     touchpad.xAxis = clamp(-(event.touches[0].clientX - (dpadButton.offsetLeft + dpadButton.clientWidth / 2)) / (dpadButton.clientWidth / 2), -1, 1);
-//     touchpad.yAxis = clamp(-(event.touches[0].clientY - (dpadButton.offsetTop + dpadButton.clientHeight / 2)) / (dpadButton.clientHeight / 2), -1, 1);
-//   });
-//   dpadButton.addEventListener('touchend', () => {
-//     touchpad.xAxis = 0;
-//     touchpad.yAxis = 0;
-//   });
+if (isTouchCapable) {
+  stick.addEventListener('touchmove', (/** @type {TouchEvent} */ event) => {
+    const stickCenterX = joystick.offsetLeft + stick.offsetLeft + stick.clientWidth / 2;
+    const stickCenterY = joystick.offsetTop + stick.offsetTop + stick.clientHeight / 2;
+    const stickDeltaX = clamp(event.touches[0].clientX - stickCenterX, -64, 64);
+    const stickDeltaY = clamp(event.touches[0].clientY - stickCenterY, -64, 64);
+    touchpad.xAxis = stickDeltaX / 64;
+    touchpad.yAxis = stickDeltaY / 64;
+    stick.style.transform = `translate(${stickDeltaX}px, ${stickDeltaY}px)`;
+  });
+  stick.addEventListener('touchend', () => {
+    touchpad.xAxis = 0;
+    touchpad.yAxis = 0;
+    stick.style.transform = 'translate(0px, 0px)';
+  });
 
-//   shootButton.addEventListener('touchstart', () => { touchpad.shoot = true; });
-//   shootButton.addEventListener('touchend', () => { touchpad.shoot = false; });
-// } else {
-//   dpadButton.style.display = 'none';
-//   shootButton.style.display = 'none';
+  shootButton.addEventListener('touchstart', () => { touchpad.shoot = true; });
+  shootButton.addEventListener('touchend', () => { touchpad.shoot = false; });
+} else {
+  joystick.style.display = 'none';
+  shootButton.style.display = 'none';
 
-window.onkeydown = (event) => { keys[event.which] = true; };
-window.onkeyup = (event) => { keys[event.which] = false; };
-// }
+  window.onkeydown = (event) => { keys[event.which] = true; };
+  window.onkeyup = (event) => { keys[event.which] = false; };
+}
 
 /**
  * @param {Car} car the car to process the input
@@ -56,7 +63,7 @@ exports.checkInput = (car, simStep) => {
     };
 
     if (isTouchCapable) {
-      event.steer = Math.round(touchpad.xAxis * STEER_RESOLUTION);
+      event.steer = -Math.round(touchpad.xAxis * STEER_RESOLUTION);
     } else if (keys[65]) {
       event.steer = STEER_RESOLUTION;
     } else if (keys[68]) {
@@ -65,8 +72,8 @@ exports.checkInput = (car, simStep) => {
       event.steer = 0;
     }
 
-    event.accelerate = keys[87] || touchpad.yAxis > 0.5;
-    event.brake = keys[83] || (touchpad.yAxis < -0.5);
+    event.accelerate = keys[87] || touchpad.yAxis < -0.5;
+    event.brake = keys[83] || (touchpad.yAxis > 0.5);
     event.shoot = keys[32] || touchpad.shoot;
 
     const currentInput = car.lastInput();

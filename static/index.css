@@ -119,23 +119,36 @@ input:checked + .color-5 {
   background-color: #0dcaf0;
 }
 
-/* #dpad-button {
+#joystick {
   z-index: 2;
   position: absolute;
   left: 10px;
   bottom: 10px;
-  width: 40mm;
-  height: 40mm;
+  width: 128px;
+  height: 128px;
+  border: 1px solid white;
+}
+
+#stick {
+  position: absolute;
+  left: 32px;
+  top: 32px;
+  width: 64px;
+  height: 64px;
+  border: 1px solid red;
+  border-radius: 32px;
 }
 
 #shoot-button {
   z-index: 2;
   position: absolute;
-  right: 10px;
-  bottom: 10px;
-  width: 20mm;
-  height: 20mm;
-} */
+  right: 42px;
+  bottom: 42px;
+  width: 64px;
+  height: 64px;
+  border: 1px solid red;
+  border-radius: 32px;
+}
 
 #disconnected-modal {
   display: none;
