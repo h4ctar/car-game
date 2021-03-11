@@ -4,6 +4,7 @@
 
 const { socket } = require('./socket');
 
+// TODO: jquery
 const startCard = document.getElementById('start-card');
 const startForm = document.getElementById('start-form');
 const startButton = /** @type { HTMLInputElement} */ (Array.from(document.getElementsByTagName('button')).find((element) => element.textContent === 'Start'));

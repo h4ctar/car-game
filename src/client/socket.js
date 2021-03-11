@@ -9,6 +9,6 @@ socket.on('disconnect', () => {
 
   socket.close();
 
-  // const disconnectedModal = new Modal(document.getElementById('disconnected-modal'), { backdrop: 'static', keyboard: false });
-  // disconnectedModal.show();
+  const disconnectedModal = document.getElementById('disconnected-modal');
+  disconnectedModal.style.display = 'block';
 });
