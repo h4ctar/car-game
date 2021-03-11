@@ -113,11 +113,13 @@ ioServer.on('connection', (socket) => {
     });
 
     socketCar.on('score', () => {
-      /** @type {ScoreEvent} */
-      const scoreEvent = { id, score: socketCar.score };
-      ioServer.emit('score', scoreEvent);
+      if (socketCar) {
+        /** @type {ScoreEvent} */
+        const scoreEvent = { id, score: socketCar.score };
+        ioServer.emit('score', scoreEvent);
 
-      ioServer.emit('scoreboard', createScoreboard());
+        ioServer.emit('scoreboard', createScoreboard());
+      }
     });
 
     if (process.env.NODE_ENV === 'production') {
