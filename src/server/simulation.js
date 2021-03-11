@@ -22,7 +22,7 @@ exports.ServerSimulation = class ServerSimulation extends Simulation {
         this.deleteCar(car.id);
 
         for (let i = 0; i < car.score / 10; i++) {
-          this.addEntity(PICKUP_TYPE, add(car.position, { x: Math.random() * 200 - 100, y: Math.random() * 200 - 100 }));
+          this._spawnPickup(car);
         }
       }
     });
@@ -45,7 +45,7 @@ exports.ServerSimulation = class ServerSimulation extends Simulation {
 
           if (otherCar.score >= 10) {
             otherCar.score -= 10;
-            this.addEntity(PICKUP_TYPE, add(otherCar.position, { x: Math.random() * 200 - 100, y: Math.random() * 200 - 100 }));
+            this._spawnPickup(otherCar);
           }
 
           // remove the bullet
@@ -69,5 +69,9 @@ exports.ServerSimulation = class ServerSimulation extends Simulation {
         this.deleteEntity(pickup.id);
       });
     });
+  }
+
+  _spawnPickup(car) {
+    this.addEntity(PICKUP_TYPE, add(car.position, { x: Math.random() * 200 - 100, y: Math.random() * 200 - 100 }));
   }
 };

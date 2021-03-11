@@ -26,8 +26,8 @@ const shootButton = $('#shoot-button');
 
 if (isTouchCapable) {
   stick.on('touchmove', (event) => {
-    const stickCenterX = joystick.offset().left + stick.offset().left + stick.width() / 2;
-    const stickCenterY = joystick.offset().top + stick.offset().top + stick.height() / 2;
+    const stickCenterX = joystick.prop('offsetLeft') + stick.prop('offsetLeft') + stick.width() / 2;
+    const stickCenterY = joystick.prop('offsetTop') + stick.prop('offsetTop') + stick.height() / 2;
     const stickDeltaX = clamp(event.touches[0].clientX - stickCenterX, -64, 64);
     const stickDeltaY = clamp(event.touches[0].clientY - stickCenterY, -64, 64);
     touchpad.xAxis = -stickDeltaX / 64;
@@ -73,6 +73,7 @@ exports.checkInput = (car, simStep) => {
       event.steer = 0;
     }
 
+    // todo: accelerate resolution
     event.accelerate = keys[87] ? 1 : touchpad.yAxis > 0 ? touchpad.yAxis : 0;
     event.brake = keys[83] || (touchpad.yAxis < -0.1);
     event.shoot = keys[32] || touchpad.shoot;
