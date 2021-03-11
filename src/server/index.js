@@ -1,6 +1,6 @@
 /**
  * @typedef { import("../common/type").JoinEvent } JoinEvent
- * @typedef { import("../common/type").InputEvent } InputEvent
+ * @typedef { import("../common/type").CarInputEvent } CarInputEvent
  * @typedef { import("../common/type").Scoreboard } Scoreboard
  * @typedef { import("../common/type").ScoreEvent } ScoreEvent
  * @typedef { import("../common/type").HealthEvent } HealthEvent
@@ -155,7 +155,7 @@ ioServer.on('connection', (socket) => {
     }
   }, 5000);
 
-  socket.on('input', (/** @type {InputEvent} */ event) => {
+  socket.on('input', (/** @type {CarInputEvent} */ event) => {
     if (socketCar) {
       socketCar.processInput(event, sim.simStep);
 

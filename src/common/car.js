@@ -3,9 +3,9 @@
  * @typedef { import("./type").Wheel } Wheel
  * @typedef { import("./type").Bullet } Bullet
  * @typedef { import("./quadtree").Quadtree } Quadtree
- * @typedef { import("./type").InputEvent } InputEvent
+ * @typedef { import("./type").CarInputEvent } CarInputEvent
  * @typedef { import("./type").UpdateEvent } UpdateEvent
- * @typedef { import("./type").History } History
+ * @typedef { import("./type").CarHistory } CarHistory
  */
 
 const { EventEmitter } = require('events');
@@ -23,7 +23,7 @@ const WHEEL_RL = 2;
 const WHEEL_RR = 3;
 
 const DEFAULT_INPUT = {
-  steer: 0, accelerate: false, brake: false, shoot: false,
+  steer: 0, accelerate: 0, brake: false, shoot: false,
 };
 
 exports.Car = class Car extends EventEmitter {
@@ -54,10 +54,10 @@ exports.Car = class Car extends EventEmitter {
     this.reloadDuration = 10;
 
     // other properties
-    /** @type {History[]} */
+    /** @type {CarHistory[]} */
     this.histories = [];
 
-    /** @type {InputEvent[]} */
+    /** @type {CarInputEvent[]} */
     this._inputEvents = [];
 
     this._score = 0;
@@ -191,7 +191,7 @@ exports.Car = class Car extends EventEmitter {
   }
 
   /**
-   * @param {InputEvent} event the input event
+   * @param {CarInputEvent} event the input event
    * @param {number} currentSimStep the current simulation step
    * @returns {void}
    */
@@ -311,7 +311,7 @@ exports.Car = class Car extends EventEmitter {
     }
 
     // todo: power curve
-    const wheelForce = input.accelerate ? 160 : reverse ? -80 : 0;
+    const wheelForce = input.accelerate > 0 ? input.accelerate * 160 : reverse ? -80 : 0;
 
     // calculate the acceleration
     let acceleration = { x: 0, y: 0 };

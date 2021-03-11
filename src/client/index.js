@@ -3,7 +3,7 @@
  * @typedef { import('../common/type').Scoreboard } Scoreboard
  * @typedef { import('../common/type').HealthEvent } HealthEvent
  * @typedef { import('../common/type').UpdateEvent } UpdateEvent
- * @typedef { import('../common/type').InputEvent } InputEvent
+ * @typedef { import('../common/type').CarInputEvent } CarInputEvent
  * @typedef { import('../common/type').PingEvent } PingEvent
  * @typedef { import('../common/type').PongEvent } PongEvent
  * @typedef { import('../common/vector').Point2 } Point2
@@ -101,7 +101,7 @@ socket.on('delete', (/** @type {string} */ id) => {
   }
 });
 
-socket.on('input', (/** @type {InputEvent} */ event) => {
+socket.on('input', (/** @type {CarInputEvent} */ event) => {
   const car = sim.getCar(event.id);
   if (car) {
     car.processInput(event, sim.simStep);

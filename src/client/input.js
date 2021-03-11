@@ -1,6 +1,6 @@
 /**
  * @typedef { import('../common/car').Car } Car
- * @typedef { import('../common/type').InputEvent } InputEvent
+ * @typedef { import('../common/type').CarInputEvent } CarInputEvent
  */
 
 const { STEER_RESOLUTION } = require('../common/config');
@@ -29,8 +29,8 @@ if (isTouchCapable) {
     const stickCenterY = joystick.offsetTop + stick.offsetTop + stick.clientHeight / 2;
     const stickDeltaX = clamp(event.touches[0].clientX - stickCenterX, -64, 64);
     const stickDeltaY = clamp(event.touches[0].clientY - stickCenterY, -64, 64);
-    touchpad.xAxis = stickDeltaX / 64;
-    touchpad.yAxis = stickDeltaY / 64;
+    touchpad.xAxis = -stickDeltaX / 64;
+    touchpad.yAxis = -stickDeltaY / 64;
     stick.style.transform = `translate(${stickDeltaX}px, ${stickDeltaY}px)`;
   });
   stick.addEventListener('touchend', () => {
@@ -56,14 +56,14 @@ if (isTouchCapable) {
  */
 exports.checkInput = (car, simStep) => {
   if (car) {
-    /** @type {InputEvent} */
+    /** @type {CarInputEvent} */
     const event = {
       id: myId,
       simStep,
     };
 
     if (isTouchCapable) {
-      event.steer = -Math.round(touchpad.xAxis * STEER_RESOLUTION);
+      event.steer = Math.round(touchpad.xAxis * STEER_RESOLUTION);
     } else if (keys[65]) {
       event.steer = STEER_RESOLUTION;
     } else if (keys[68]) {
@@ -72,8 +72,8 @@ exports.checkInput = (car, simStep) => {
       event.steer = 0;
     }
 
-    event.accelerate = keys[87] || touchpad.yAxis < -0.5;
-    event.brake = keys[83] || (touchpad.yAxis > 0.5);
+    event.accelerate = keys[87] ? 1 : touchpad.yAxis > 0 ? touchpad.yAxis : 0;
+    event.brake = keys[83] || (touchpad.yAxis < -0.1);
     event.shoot = keys[32] || touchpad.shoot;
 
     const currentInput = car.lastInput();
