@@ -8,5 +8,6 @@ module.exports = {
   },
   externals: {
     'socket.io-client': 'io',
+    jquery: '$',
   },
 };

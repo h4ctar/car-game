@@ -11,6 +11,7 @@
  * @typedef { import("../common/car").Car } Car
  */
 
+const $ = require('jquery');
 const {
   SIM_PERIOD, TREE_RADIUS, TREE_TYPE, ROCK_TYPE, ROCK_RADIUS, PICKUP_TYPE, PICKUP_RADIUS,
 } = require('../common/config');
@@ -22,17 +23,17 @@ const { myId } = require('./id');
 const { checkInput } = require('./input');
 const { socket } = require('./socket');
 const { hideStartCard, showStartCard } = require('./start-card');
-require('./input');
 
-const canvas = /** @type { HTMLCanvasElement } */ (document.getElementById('canvas'));
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+const canvas = $('#canvas');
+canvas.prop('width', window.innerWidth);
+canvas.prop('height', window.innerHeight);
 window.addEventListener('resize', () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.prop('width', window.innerWidth);
+  canvas.prop('height', window.innerHeight);
 });
 
-const context = canvas.getContext('2d');
+// @ts-ignore
+const context = canvas[0].getContext('2d');
 
 const treeImage = new Image();
 treeImage.src = 'tree.svg';
@@ -145,13 +146,13 @@ const drawMap = (camera) => {
   const GRID_SIZE = 200;
   context.beginPath();
   context.strokeStyle = 'grey';
-  for (let x = -(camera.x % GRID_SIZE); x < canvas.width; x += GRID_SIZE) {
+  for (let x = -(camera.x % GRID_SIZE); x < canvas.width(); x += GRID_SIZE) {
     context.moveTo(x, 0);
-    context.lineTo(x, canvas.height);
+    context.lineTo(x, canvas.height());
   }
-  for (let y = camera.y % GRID_SIZE; y < canvas.height; y += GRID_SIZE) {
+  for (let y = camera.y % GRID_SIZE; y < canvas.height(); y += GRID_SIZE) {
     context.moveTo(0, y);
-    context.lineTo(canvas.width, y);
+    context.lineTo(canvas.width(), y);
   }
   context.stroke();
 };
@@ -186,7 +187,7 @@ const drawRadar = () => {
       .forEach((car) => {
         const v = sub(car.position, myCar.position);
         const angle = Math.atan2(-v.y, v.x);
-        const blipPosition = add(rotate({ x: radarRadius, y: 0 }, angle), { x: canvas.width / 2, y: canvas.height / 2 });
+        const blipPosition = add(rotate({ x: radarRadius, y: 0 }, angle), { x: canvas.width() / 2, y: canvas.height() / 2 });
 
         context.fillStyle = car.color;
         context.fillRect(blipPosition.x, blipPosition.y, 4, 4);
@@ -212,7 +213,7 @@ const drawScoreboard = () => {
       const username = entry.username.substring(0, 14).padEnd(14);
       const score = String(entry.score).padStart(5);
       context.fillStyle = entry.color;
-      context.fillText(`${username} ${score}`, canvas.width - 200, 30 + index * 20);
+      context.fillText(`${username} ${score}`, canvas.width() - 200, 30 + index * 20);
     });
     context.restore();
   }
@@ -235,19 +236,19 @@ const draw = () => {
   if (sim.simRunning) {
     const camera = myCar ? myCar.position : { x: 0, y: 0 };
     const viewport = {
-      x: camera.x - canvas.width / 2,
-      y: camera.y - canvas.height / 2,
-      width: canvas.width,
-      height: canvas.height,
+      x: camera.x - canvas.width() / 2,
+      y: camera.y - canvas.height() / 2,
+      width: canvas.width(),
+      height: canvas.height(),
     };
 
     context.fillStyle = 'black';
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillRect(0, 0, canvas.width(), canvas.height());
 
     drawMap(camera);
 
     context.save();
-    context.translate(canvas.width / 2, canvas.height - canvas.height / 2);
+    context.translate(canvas.width() / 2, canvas.height() - canvas.height() / 2);
     context.scale(1, -1);
 
     context.translate(-camera.x, -camera.y);

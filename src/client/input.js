@@ -3,6 +3,7 @@
  * @typedef { import('../common/type').CarInputEvent } CarInputEvent
  */
 
+const $ = require('jquery');
 const { STEER_RESOLUTION } = require('../common/config');
 const { clamp } = require('../common/util');
 const { myId } = require('./id');
@@ -19,31 +20,31 @@ const touchpad = {
 
 const isTouchCapable = 'ontouchstart' in window;
 
-const joystick = /** @type {HTMLDivElement} */ (document.getElementById('joystick'));
-const stick = /** @type {HTMLDivElement} */ (document.getElementById('stick'));
-const shootButton = /** @type {HTMLDivElement} */ (document.getElementById('shoot-button'));
+const joystick = $('#joystick');
+const stick = $('#stick');
+const shootButton = $('#shoot-button');
 
 if (isTouchCapable) {
-  stick.addEventListener('touchmove', (/** @type {TouchEvent} */ event) => {
-    const stickCenterX = joystick.offsetLeft + stick.offsetLeft + stick.clientWidth / 2;
-    const stickCenterY = joystick.offsetTop + stick.offsetTop + stick.clientHeight / 2;
+  stick.on('touchmove', (event) => {
+    const stickCenterX = joystick.offset().left + stick.offset().left + stick.width() / 2;
+    const stickCenterY = joystick.offset().top + stick.offset().top + stick.height() / 2;
     const stickDeltaX = clamp(event.touches[0].clientX - stickCenterX, -64, 64);
     const stickDeltaY = clamp(event.touches[0].clientY - stickCenterY, -64, 64);
     touchpad.xAxis = -stickDeltaX / 64;
     touchpad.yAxis = -stickDeltaY / 64;
-    stick.style.transform = `translate(${stickDeltaX}px, ${stickDeltaY}px)`;
+    stick.css('transform', `translate(${stickDeltaX}px, ${stickDeltaY}px)`);
   });
-  stick.addEventListener('touchend', () => {
+  stick.on('touchend', () => {
     touchpad.xAxis = 0;
     touchpad.yAxis = 0;
-    stick.style.transform = 'translate(0px, 0px)';
+    stick.css('transform', 'translate(0px, 0px)');
   });
 
-  shootButton.addEventListener('touchstart', () => { touchpad.shoot = true; });
-  shootButton.addEventListener('touchend', () => { touchpad.shoot = false; });
+  shootButton.on('touchstart', () => { touchpad.shoot = true; });
+  shootButton.on('touchend', () => { touchpad.shoot = false; });
 } else {
-  joystick.style.display = 'none';
-  shootButton.style.display = 'none';
+  joystick.hide();
+  shootButton.hide();
 
   window.onkeydown = (event) => { keys[event.which] = true; };
   window.onkeyup = (event) => { keys[event.which] = false; };

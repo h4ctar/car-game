@@ -1,4 +1,5 @@
 const { io } = require('socket.io-client');
+const $ = require('jquery');
 const { myId } = require('./id');
 
 const socket = io({ query: { id: myId } });
@@ -9,6 +10,5 @@ socket.on('disconnect', () => {
 
   socket.close();
 
-  const disconnectedModal = document.getElementById('disconnected-modal');
-  disconnectedModal.style.display = 'block';
+  $('#disconnected-modal').show();
 });
