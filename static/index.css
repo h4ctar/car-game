@@ -1,3 +1,12 @@
+@font-face {
+  font-family: "TheGoodMonolith";
+  font-style: normal;
+  font-weight: 500;
+  src: local("TheGoodMonolith"),
+    url("https://fonts.cdnfonts.com/s/32398/TheGoodMonolith.woff")
+      format("woff");
+}
+
 body {
   margin: 0;
   user-select: none;
