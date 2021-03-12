@@ -2,7 +2,7 @@ body {
   margin: 0;
   user-select: none;
   overflow: hidden;
-  font: 16px monospace;
+  font: 16px TheGoodMonolith;
 }
 
 label {
@@ -10,7 +10,7 @@ label {
 }
 
 input {
-  font: 16px monospace;
+  font: 16px TheGoodMonolith;
   background-color: black;
   color: white;
   border: 2px solid grey;
@@ -18,7 +18,7 @@ input {
 }
 
 button {
-  font: 16px monospace;
+  font: 16px TheGoodMonolith;
   background-color: black;
   border: 2px solid grey;
   color: white;

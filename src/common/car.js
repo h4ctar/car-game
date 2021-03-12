@@ -428,7 +428,7 @@ exports.Car = class Car extends EventEmitter {
     context.save();
     context.fillStyle = this.color;
     context.textAlign = 'center';
-    context.font = '16px monospace';
+    context.font = '16px TheGoodMonolith';
     context.scale(1, -1);
     context.fillText(this.username, 0, -42);
 

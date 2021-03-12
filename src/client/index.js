@@ -198,7 +198,7 @@ const drawScore = () => {
   if (myCar) {
     context.save();
     context.fillStyle = myCar.color;
-    context.font = '30px monospace';
+    context.font = '30px TheGoodMonolith';
     context.fillText(String(myCar.score), 10, 30);
     context.restore();
   }
@@ -207,7 +207,7 @@ const drawScore = () => {
 const drawScoreboard = () => {
   if (scoreboard) {
     context.save();
-    context.font = '16px monospace';
+    context.font = '16px TheGoodMonolith';
     scoreboard.forEach((entry, index) => {
       const username = entry.username.substring(0, 14).padEnd(14);
       const score = String(entry.score).padStart(5);
@@ -222,7 +222,7 @@ const drawDebug = () => {
   if (process.env.NODE_ENV !== 'production') {
     context.save();
     context.fillStyle = 'white';
-    context.font = '16px monospace';
+    context.font = '16px TheGoodMonolith';
     context.fillText(`Latency: ${Math.round(latency)}`, 10, 50);
     context.fillText(`Time skew: ${Math.round(sim.timeSkew)}`, 10, 70);
     context.fillText(`Sync error: ${myCar && myCar.syncError}`, 10, 90);
