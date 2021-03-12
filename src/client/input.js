@@ -4,7 +4,7 @@
  */
 
 const $ = require('jquery');
-const { STEER_RESOLUTION } = require('../common/config');
+const { STEER_RESOLUTION, ACCELERATE_RESOLUTION } = require('../common/config');
 const { clamp } = require('../common/util');
 const { myId } = require('./id');
 const { socket } = require('./socket');
@@ -73,8 +73,8 @@ exports.checkInput = (car, simStep) => {
       event.steer = 0;
     }
 
-    // todo: accelerate resolution
     event.accelerate = keys[87] ? 1 : touchpad.yAxis > 0 ? touchpad.yAxis : 0;
+    event.accelerate = Math.round(event.accelerate * ACCELERATE_RESOLUTION) / ACCELERATE_RESOLUTION;
     event.brake = keys[83] || (touchpad.yAxis < -0.1);
     event.shoot = keys[32] || touchpad.shoot;
 
