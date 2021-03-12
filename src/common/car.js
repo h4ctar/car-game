@@ -439,6 +439,7 @@ exports.Car = class Car extends EventEmitter {
     context.rotate(this.angle);
 
     // draw the body
+    context.lineWidth = 2;
     context.strokeStyle = this.color;
 
     // todo: car svg asf

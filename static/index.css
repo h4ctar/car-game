@@ -13,14 +13,14 @@ input {
   font: 16px monospace;
   background-color: black;
   color: white;
-  border: 1px solid grey;
+  border: 2px solid grey;
   padding: 5px;
 }
 
 button {
   font: 16px monospace;
   background-color: black;
-  border: 1px solid grey;
+  border: 2px solid grey;
   color: white;
   padding: 5px;
 }
@@ -50,7 +50,7 @@ button:disabled {
   transform: translate(-50%, -50%);
   background-color: black;
   padding: 10px;
-  border: 1px solid grey;
+  border: 2px solid grey;
   color: white;
 }
 
@@ -80,7 +80,7 @@ button:disabled {
   position: relative;
   width: 20px;
   height: 20px;
-  border-width: 1px;
+  border-width: 2px;
   border-style: solid;
 }
 
@@ -126,7 +126,7 @@ input:checked + .color-5 {
   bottom: 10px;
   width: 128px;
   height: 128px;
-  border: 1px solid white;
+  border: 2px solid white;
 }
 
 #stick {
@@ -135,7 +135,7 @@ input:checked + .color-5 {
   top: 32px;
   width: 64px;
   height: 64px;
-  border: 1px solid red;
+  border: 2px solid red;
   border-radius: 32px;
 }
 
@@ -146,7 +146,7 @@ input:checked + .color-5 {
   bottom: 42px;
   width: 64px;
   height: 64px;
-  border: 1px solid red;
+  border: 2px solid red;
   border-radius: 32px;
 }
 
