@@ -8,12 +8,13 @@
  * @typedef { import("../common/type").PongEvent } PongEvent
  * @typedef { import("../common/vector").Point2 } Point2
  * @typedef { import("../common/car").Car } Car
+ * @typedef { import("socket.io").Socket } Socket
  */
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const {
-  SCOREBOARD_LENGTH, WORLD_WIDTH, WORLD_HEIGHT, PICKUP_TYPE, ROCK_TYPE, TREE_TYPE,
+  SCOREBOARD_LENGTH, WORLD_WIDTH, WORLD_HEIGHT, PICKUP_TYPE, ROCK_TYPE, TREE_TYPE, STEER_RESOLUTION, COLORS,
 } = require('../common/config');
 const { randomPoint } = require('../common/util');
 const { ServerSimulation } = require('./simulation');
@@ -61,8 +62,8 @@ const createScoreboard = () => {
   return scoreboard;
 };
 
-ioServer.on('connection', (socket) => {
-  // eslint-disable-next-line no-underscore-dangle
+ioServer.on('connection', (/** @type {Socket} */ socket) => {
+  // @ts-ignore
   const id = socket.request._query.id;
 
   console.info(`New client connected ${id}`);
@@ -96,6 +97,14 @@ ioServer.on('connection', (socket) => {
 
   socket.on('join', (/** @type {JoinEvent} */ event) => {
     console.info(`Client joining ${event.username}`);
+
+    // validate the color
+    if (!COLORS.includes(event.color)) {
+      console.error('The join event has an invalid colour');
+      socket.disconnect();
+      return;
+    }
+
     socketCar = sim.addCar(id, event.username, event.color);
 
     socketCar.on('collide', () => {
@@ -155,8 +164,32 @@ ioServer.on('connection', (socket) => {
     }
   }, 5000);
 
+  // todo: remove console logs
+
   socket.on('input', (/** @type {CarInputEvent} */ event) => {
     if (socketCar) {
+      // validate the input
+      if (event.id !== id) {
+        console.error('Input event must be for socket car');
+        socket.disconnect();
+        return;
+      }
+      if (event.simStep < sim.simStep - 100 || event.simStep > sim.simStep + 100) {
+        console.error('Input event is too old or too new');
+        socket.disconnect();
+        return;
+      }
+      if (event.accelerate !== undefined && (event.accelerate < 0 || event.accelerate > 1)) {
+        console.error('Input event accelerate must be between 0 and 1');
+        socket.disconnect();
+        return;
+      }
+      if (event.steer !== undefined && (event.steer < -STEER_RESOLUTION || event.steer > STEER_RESOLUTION)) {
+        console.error(`Input event steer must be between ${-STEER_RESOLUTION} and ${STEER_RESOLUTION}`);
+        socket.disconnect();
+        return;
+      }
+
       socketCar.processInput(event, sim.simStep);
 
       // send the input to everyone except the sender because they have already processed it

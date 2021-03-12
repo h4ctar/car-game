@@ -3,6 +3,7 @@
  */
 
 const $ = require('jquery');
+const { COLORS } = require('../common/config');
 const { socket } = require('./socket');
 
 const startCard = $('#start-card');
@@ -16,13 +17,11 @@ usernameInput.on('input', () => startButton.prop('disabled', !usernameInput.val(
 startForm.on('submit', (event) => {
   console.info('Starting');
 
-  const colors = ['#0d6efd', '#198754', '#dc3545', '#ffc107', '#0dcaf0'];
-
   let color;
   for (let i = 0; i < 5; i += 1) {
     const input = $(`#color-${i + 1}-input`);
     if (input.prop('checked')) {
-      color = colors[i];
+      color = COLORS[i];
     }
   }
 

@@ -1,6 +1,8 @@
 exports.DT = 0.016;
 exports.SIM_PERIOD = exports.DT * 1000;
 
+exports.COLORS = ['#0d6efd', '#198754', '#dc3545', '#ffc107', '#0dcaf0'];
+
 exports.STEER_RESOLUTION = 5;
 exports.ACCELERATE_RESOLUTION = 5;
 
