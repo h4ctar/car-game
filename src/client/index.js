@@ -22,7 +22,7 @@ const {
 const { myId } = require('./id');
 const { checkInput } = require('./input');
 const { socket } = require('./socket');
-const { hideStartCard, showStartCard } = require('./start-card');
+const { showStartCard } = require('./start-card');
 
 const canvas = $('#canvas');
 canvas.prop('width', window.innerWidth);
@@ -84,7 +84,6 @@ socket.on('update-car', (/** @type {UpdateEvent} */ event) => {
 
     if (car.id === myId) {
       myCar = car;
-      hideStartCard();
     }
   }
 

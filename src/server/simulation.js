@@ -20,10 +20,6 @@ exports.ServerSimulation = class ServerSimulation extends Simulation {
     car.on('health', () => {
       if (car.health <= 0) {
         this.deleteCar(car.id);
-
-        for (let i = 0; i < car.score / 10; i++) {
-          this._spawnPickup(car);
-        }
       }
     });
 
@@ -71,7 +67,24 @@ exports.ServerSimulation = class ServerSimulation extends Simulation {
     });
   }
 
+  /**
+   * Delete a car.
+   * @param {string} id the ID of the car to delete
+   * @returns {void}
+   */
+  deleteCar(id) {
+    const car = this.cars.find((c) => c.id === id);
+    if (car) {
+      for (let i = 0; i < car.score / 10; i++) {
+        this._spawnPickup(car);
+      }
+    }
+    super.deleteCar(id);
+  }
+
   _spawnPickup(car) {
-    this.addEntity(PICKUP_TYPE, add(car.position, { x: Math.random() * 200 - 100, y: Math.random() * 200 - 100 }));
+    const x = Math.random() - 0.5 * 300;
+    const y = Math.random() - 0.5 * 300;
+    this.addEntity(PICKUP_TYPE, add(car.position, { x, y }));
   }
 };

@@ -32,8 +32,10 @@ startForm.on('submit', (event) => {
     color,
   };
   socket.emit('join', joinEvent);
+
   event.preventDefault();
+
+  startCard.hide();
 });
 
-exports.showStartCard = () => startCard.show();
-exports.hideStartCard = () => startCard.hide();
+exports.showStartCard = () => { startCard.show(); usernameInput.trigger('focus'); };
