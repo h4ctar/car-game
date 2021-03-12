@@ -4,7 +4,7 @@
   "description": "IO Cool",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --config webpack.js",
+    "build": "webpack",
     "lint": "eslint .",
     "typecheck": "tsc -allowJs -checkJs -noEmit -moduleResolution node -module commonjs -target ES6 src/**/*.js",
     "start": "node src/server/index.js"
