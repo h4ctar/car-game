@@ -7,7 +7,7 @@ jobs:
         name: Build
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - uses: actions/setup-node@v3
               with:
                   node-version: 18
@@ -33,7 +33,7 @@ jobs:
             VITE_AUTHORITY: ${{ vars.VITE_AUTHORITY }}
             VITE_CLIENT_ID: ${{ vars.VITE_CLIENT_ID }}
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - name: Install pm2
               run: npm install --global pm2@latest
             - name: Setup SSH
