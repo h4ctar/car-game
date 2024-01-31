@@ -23,7 +23,7 @@ jobs:
         environment:
             name: production
             url: https://cargame.h4ctar.com
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         env:
             DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
