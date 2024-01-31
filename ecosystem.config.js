@@ -15,7 +15,7 @@ module.exports = {
             user: process.env.SSH_USER,
             host: process.env.DEPLOY_HOST,
             key: "~/.ssh/github_rsa",
-            ref: "origin/main",
+            ref: "origin/master",
             repo: "https://github.com/h4ctar/car-game.git",
             path: "/opt/cargame",
             "post-deploy": "./post-deploy.sh",
