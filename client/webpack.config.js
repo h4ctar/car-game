@@ -1,5 +1,6 @@
 const path = require("path");
 const TerserPlugin = require("terser-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
     mode: "development",
@@ -46,4 +47,9 @@ module.exports = {
             "/socket.io": "http://localhost:3000",
         },
     },
+    plugins: [
+        new CopyWebpackPlugin({
+            patterns: [{ from: "public" }],
+        }),
+    ],
 };

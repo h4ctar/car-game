@@ -1,3 +1,4 @@
+client/dist
 common/lib
 node_modules
 server/dist
