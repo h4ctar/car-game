@@ -1,2 +1,3 @@
+common/lib
 node_modules
-static/main.js
+server/dist

@@ -1,0 +1,23 @@
+export default {
+    DT: 0.016,
+    SIM_PERIOD: 0.016 * 1000,
+
+    COLORS: ["#0d6efd", "#198754", "#dc3545", "#ffc107", "#0dcaf0"],
+
+    STEER_RESOLUTION: 5,
+    ACCELERATE_RESOLUTION: 5,
+
+    SCOREBOARD_LENGTH: 5,
+
+    WORLD_WIDTH: 20000,
+    WORLD_HEIGHT: 20000,
+
+    CAR_RADIUS: 30,
+    TREE_RADIUS: 50,
+    ROCK_RADIUS: 20,
+    PICKUP_RADIUS: 10,
+
+    TREE_TYPE: 0,
+    ROCK_TYPE: 1,
+    PICKUP_TYPE: 2,
+};

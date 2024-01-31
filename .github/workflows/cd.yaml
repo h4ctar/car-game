@@ -1,0 +1,48 @@
+name: Continuous Deployment
+
+on: push
+
+jobs:
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+            - name: Install dependencies
+              run: npm ci
+            - name: Build
+              run: npm run build --workspaces --if-present
+
+    prod-deploy:
+        name: Production Deploy
+        needs:
+            - build
+        environment:
+            name: production
+            url: https://cargame.h4ctar.com
+        if: github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        env:
+            DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+            JWKS_URL: ${{ vars.JWKS_URL }}
+            ISSUER: ${{ vars.ISSUER }}
+            SSH_USER: ${{ vars.SSH_USER }}
+            VITE_AUTHORITY: ${{ vars.VITE_AUTHORITY }}
+            VITE_CLIENT_ID: ${{ vars.VITE_CLIENT_ID }}
+        steps:
+            - uses: actions/checkout@v3
+            - name: Install pm2
+              run: npm install --global pm2@latest
+            - name: Setup SSH
+              env:
+                  SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+                  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+              run: |
+                  mkdir -m 700 -p ~/.ssh &&
+                  echo "$SSH_PRIVATE_KEY" > ~/.ssh/github_rsa && chmod 600 ~/.ssh/github_rsa &&
+                  echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts && chmod 600 ~/.ssh/known_hosts
+            - name: Deploy to production
+              run: pm2 deploy production

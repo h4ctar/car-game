@@ -1,0 +1,23 @@
+{
+    "name": "@cargame/common",
+    "private": true,
+    "version": "0.0.0",
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "files": [
+        "lib"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "check:prettier": "prettier --check src",
+        "dev": "tsc --watch",
+        "prettier": "prettier --write src"
+    },
+    "author": "Ben",
+    "license": "ISC",
+    "dependencies": {},
+    "devDependencies": {
+        "prettier": "^3.0.0",
+        "typescript": "^5.0.3"
+    }
+}
